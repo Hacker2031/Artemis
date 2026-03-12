@@ -1,0 +1,1402 @@
+{% extends "layout.html" %}
+{% load static %}
+
+
+{% block extra_links%}   
+    <!-- Links para os ícones do Google -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="artemis-global.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- ApexCharts (para sparklines) -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+{% endblock %}   
+
+{% block extra_css %}
+    
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+        
+        :root {
+            --color-primary: #6C9BCF;
+            --color-danger: #FF0060;
+            --color-success: #1B9C85;
+            --color-warning: #F7D060;
+            --color-white: #fff;
+            --color-info-dark: #7d8da1;
+            --color-dark: #363949;
+            --color-light: rgba(132, 139, 200, 0.18);
+            --color-dark-variant: #677483;
+            --color-background: #f6f6f9;
+
+            --card-border-radius: 2rem;
+            --border-radius-1: 0.4rem;
+            --border-radius-2: 1.2rem;
+            --card-padding: 1.8rem;
+            --padding-1: 1.2rem;
+            --box-shadow: 0 2rem 3rem var(--color-light);
+        }
+
+        .dark-mode-variables{
+            --color-background: #181a1e;
+            --color-white: #202528;
+            --color-dark: #edeffd;
+            --color-dark-variant: #a3bdcc;
+            --color-light: rgba(0, 0, 0, 0.4);
+            --box-shadow: 0 2rem 3rem var(--color-light);
+        }
+
+        *{
+            margin: 0;
+            padding: 0;
+            outline: 0;
+            appearance: none;
+            border: 0;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+
+        html{
+            font-size: 14px;
+            scroll-behavior: smooth;
+        }
+
+        body{
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.88rem;
+            user-select: none;
+            overflow-x: hidden;
+            color: var(--color-dark);
+            background-color: var(--color-background);
+            transition: background-color 0.3s ease;
+        }
+
+        a{
+            color: var(--color-dark);
+        }
+
+        img{
+            display: block;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        h1{
+            font-weight: 800;
+            font-size: 1.8rem;
+        }
+
+        h2{
+            font-weight: 600;
+            font-size: 1.4rem;
+        }
+
+        h3{
+            font-weight: 500;
+            font-size: 0.87rem;
+        }
+
+        small{
+            font-size: 0.76rem;
+        }
+
+        p{
+            color: var(--color-dark-variant);
+        }
+
+        b{
+            color: var(--color-dark);
+        }
+
+        .text-muted{
+            color: var(--color-info-dark);
+        }
+
+        .primary{
+            color: var(--color-primary);
+        }
+
+        .danger{
+            color: var(--color-danger);
+        }
+
+        .success{
+            color: var(--color-success);
+        }
+
+        .warning{
+            color: var(--color-warning);
+        }
+
+        .container{
+            margin: 0 auto;
+            gap: 1.8rem;
+            grid-template-columns: auto 23rem;
+        }
+
+        main{
+            margin-top: 1.4rem;
+        }
+
+        /* ============== HEADER COM SAUDAÇÃO E PESQUISA ============== */
+        .header-principal{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .saudacao{
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .saudacao h1{
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .saudacao p{
+            font-size: 0.95rem;
+        }
+
+        .pesquisa-rapida{
+            position: relative;
+            width: 350px;
+        }
+
+        .pesquisa-rapida input{
+            width: 100%;
+            padding: 0.9rem 1.2rem 0.9rem 3rem;
+            border-radius: var(--border-radius-1);
+            background-color: var(--color-white);
+            box-shadow: var(--box-shadow);
+            border: 2px solid transparent;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .pesquisa-rapida input:focus{
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px rgba(244, 246, 248, 0.1);
+        }
+
+        .pesquisa-rapida span{
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--color-white);
+        }
+
+        /* ============== CARDS DE ANÁLISE COM SPARKLINES ============== */
+        main .analise{
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.6rem;
+            margin-bottom: 2rem;
+        }
+
+        main .analise > div{
+            background-color: var(--color-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        main .analise > div::before{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        main .analise > div:hover{
+            box-shadow: none;
+            transform: translateY(-8px);
+        }
+
+        main .analise > div:hover::before{
+            transform: scaleX(1);
+        }
+
+        main .analise > div .Estado{
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        main .analise .info h3{
+            font-size: 0.9rem;
+            color: var(--color-dark-variant);
+            margin-bottom: 0.5rem;
+        }
+
+        main .analise .info h1{
+            font-size: 1.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        main .analise .info .variacao{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        main .analise .info .variacao.positiva{
+            background-color: rgba(27, 156, 133, 0.15);
+            color: var(--color-success);
+        }
+
+        main .analise .info .variacao.negativa{
+            background-color: rgba(255, 0, 96, 0.15);
+            color: var(--color-danger);
+        }
+
+        main .analise .info .variacao span{
+            font-size: 1rem;
+        }
+
+        /* Sparkline Chart */
+        .sparkline{
+            width: 100%;
+            height: 60px;
+            margin-top: 1rem;
+        }
+
+        /* ============== WIDGETS RÁPIDOS ============== */
+        .widgets-rapidos{
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.6rem;
+            margin-bottom: 2rem;
+        }
+
+        .widget{
+            background-color: var(--color-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .widget:hover{
+            box-shadow: none;
+            transform: translateY(-5px);
+        }
+
+        .widget h3{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .widget h3 span{
+            color: var(--color-primary);
+        }
+
+        /* Metas do Mês */
+        .metas-item{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--color-light);
+        }
+
+        .metas-item:last-child{
+            border-bottom: none;
+        }
+
+        .metas-info h4{
+            font-size: 0.85rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .metas-info small{
+            color: var(--color-info-dark);
+        }
+
+        .barra-progresso{
+            width: 120px;
+            height: 8px;
+            background-color: var(--color-light);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .barra-progresso-fill{
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+            transition: width 1s ease;
+        }
+
+        /* Atividades Recentes */
+        .atividade-item{
+            display: flex;
+            gap: 1rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--color-light);
+        }
+
+        .atividade-item:last-child{
+            border-bottom: none;
+        }
+
+        .atividade-icone{
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--color-white);
+        }
+
+        .atividade-icone.success{
+            background-color: var(--color-success);
+        }
+
+        .atividade-icone.primary{
+            background-color: var(--color-primary);
+        }
+
+        .atividade-icone.warning{
+            background-color: var(--color-warning);
+        }
+
+        .atividade-conteudo h4{
+            font-size: 0.85rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .atividade-conteudo small{
+            color: var(--color-info-dark);
+        }
+
+        /* ============== TABELA MELHORADA ============== */
+        main .novas-ordens{
+            margin-bottom: 2rem;
+        }
+
+        main .novas-ordens h2{
+            margin-bottom: 1rem;
+        }
+
+        main .novas-ordens table{
+            background-color: var(--color-white);
+            width: 100%;
+            padding: var(--card-padding);
+            text-align: left;
+            box-shadow: var(--box-shadow);
+            border-radius: var(--card-border-radius);
+            transition: all 0.3s ease;
+        }
+
+        main .novas-ordens table:hover{
+            box-shadow: none;
+        }
+
+        main .novas-ordens thead{
+            background-color: var(--color-light);
+        }
+
+        main .novas-ordens th{
+            padding: 1rem;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        main table tbody td{
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-light);
+            color: var(--color-dark-variant);
+        }
+
+        main table tbody tr{
+            transition: all 0.2s ease;
+        }
+
+        main table tbody tr:hover{
+            background-color: var(--color-light);
+        }
+
+        main table tbody tr:last-child td{
+            border: none;
+        }
+
+        .status-badge{
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-badge.aprovado{
+            background-color: rgba(27, 156, 133, 0.2);
+            color: var(--color-success);
+        }
+
+        .status-badge.pendente{
+            background-color: rgba(247, 208, 96, 0.2);
+            color: var(--color-warning);
+        }
+
+        .status-badge.cancelado{
+            background-color: rgba(255, 0, 96, 0.2);
+            color: var(--color-danger);
+        }
+
+        /* ============== GRÁFICOS ============== */
+        main .graficos{
+            margin-bottom: 2rem;
+        }
+
+        main .graficos .header-graficos{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        main .graficos .controles-tipo{
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        main .graficos .controles-tipo button{
+            background-color: var(--color-light);
+            color: var(--color-dark-variant);
+            padding: 0.7rem 1.3rem;
+            border-radius: var(--border-radius-1);
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        main .graficos .controles-tipo button:hover{
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            transform: translateY(-2px);
+        }
+
+        main .graficos .controles-tipo button.active{
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        main .graficos .container-grafico{
+            background-color: var(--color-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+        }
+
+        main .graficos .container-grafico:hover{
+            box-shadow: none;
+        }
+
+        main .graficos .tabs-modulos{
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--color-light);
+        }
+
+        main .graficos .tabs-modulos button{
+            background-color: transparent;
+            color: var(--color-dark-variant);
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        main .graficos .tabs-modulos button:hover{
+            color: var(--color-primary);
+        }
+
+        main .graficos .tabs-modulos button.active{
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        main .graficos .area-grafico{
+            height: 350px;
+            position: relative;
+        }
+
+        main .graficos .grafico-wrapper{
+            display: none;
+            height: 100%;
+        }
+
+        main .graficos .grafico-wrapper.active{
+            display: block;
+        }
+
+        main .graficos a{
+            text-align: center;
+            display: block;
+            margin: 1.2rem auto 0;
+            color: var(--color-primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        /* ============== LADO DIREITO ============== */
+        .lado-direito{
+            margin-top: 1.4rem;
+        }
+
+        .lado-direito .nav{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .lado-direito .nav button{
+            display: none;
+        }
+
+        /* Assistente IA */
+        .assistente-ia{
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            color: var(--color-white);
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--box-shadow);
+        }
+
+        .assistente-ia:hover{
+            transform: translateY(-5px);
+            box-shadow: 0 1rem 2rem rgba(108, 155, 207, 0.3);
+        }
+
+        .assistente-ia h3{
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--color-white);
+        }
+
+        .assistente-ia h3 span{
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse{
+            0%, 100%{
+                transform: scale(1);
+            }
+            50%{
+                transform: scale(1.1);
+            }
+        }
+
+        .assistente-ia p{
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* ============== LEMBRETES ============== */
+        .lado-direito .lembrete{
+            margin-top: 0;
+        }
+
+        .lado-direito .lembrete .header{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .lado-direito .lembrete .header span{
+            padding: 10px;
+            box-shadow: var(--box-shadow);
+            background-color: var(--color-white);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lado-direito .lembrete .header span:hover{
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            transform: rotate(15deg);
+        }
+
+        .lado-direito .lembrete .notification{
+            padding: 1rem var(--card-padding);
+            box-shadow: var(--box-shadow);
+            background-color: var(--color-white);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.7rem;
+            border-radius: var(--border-radius-2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .lado-direito .lembrete .notification::before{
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            border-radius: var(--border-radius-2) 0 0 var(--border-radius-2);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .lado-direito .lembrete .notification:hover{
+            box-shadow: none;
+            transform: translateX(5px);
+        }
+
+        .lado-direito .lembrete .notification:hover::before{
+            transform: scaleY(1);
+        }
+
+        .lado-direito .lembrete .notification.deactive::before{
+            background-color: var(--color-danger);
+        }
+
+        .lado-direito .lembrete .notification .content{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .lado-direito .lembrete .notification .icon{
+            padding: 0.6rem;
+            color: var(--color-white);
+            background-color: var(--color-success);
+            border-radius: 30%;
+            display: flex;
+            min-width: 2.5rem;
+            min-height: 2.5rem;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lado-direito .lembrete .notification.deactive .icon{
+            background-color: var(--color-danger);
+        }
+
+        .lado-direito .lembrete .add-lembrete{
+            background-color: var(--color-white);
+            border: 2px dashed var(--color-primary);
+            color: var(--color-primary);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: var(--border-radius-2);
+            transition: all 0.3s ease;
+        }
+
+        .lado-direito .lembrete .add-lembrete:hover{
+            background-color: var(--color-primary);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        .lado-direito .lembrete .add-lembrete div{
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* ============== TOAST NOTIFICATION ============== */
+        .toast{
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--color-white);
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius-1);
+            box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transform: translateX(400px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show{
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast .toast-icon{
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+        }
+
+        .toast.success .toast-icon{
+            background-color: var(--color-success);
+        }
+
+        .toast.info .toast-icon{
+            background-color: var(--color-primary);
+        }
+
+        /* ============== ANIMAÇÕES ============== */
+        @keyframes fadeInUp{
+            from{
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to{
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up{
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .analise > div:nth-child(1){
+            animation-delay: 0.1s;
+        }
+
+        .analise > div:nth-child(2){
+            animation-delay: 0.2s;
+        }
+
+        .analise > div:nth-child(3){
+            animation-delay: 0.3s;
+        }
+
+{% endblock %}
+
+{% block conteudo %}
+
+    <!-- ============== CONTEÚDO PRINCIPAL ============== -->
+    <main>
+        <!-- Header com Saudação -->
+        <div class="header-principal">
+            <div class="saudacao">
+                <h1>Bom dia, {{request.user.first_name}}!</h1>
+                <p class="text-muted">Aqui está o resumo do seu negócio hoje</p>
+            </div>
+            <div class="pesquisa-rapida">
+                <span class="material-icons-sharp">search</span>
+                <input type="text" placeholder="Pesquisar...">
+            </div>
+        </div>
+
+        <!-- Cards de Análise com Sparklines -->
+        <div class="analise">
+            <div class="Vendas fade-in-up">
+                <div class="Estado">
+                    <div class="info">
+                        <h3>Total de Vendas</h3>
+                        <h1>100.200Kz</h1>
+                        <span class="variacao positiva">
+                            <span class="material-icons-sharp">trending_up</span>
+                            +90%
+                        </span>
+                    </div>
+                </div>
+                <div class="sparkline" id="sparklineVendas"></div>
+            </div>
+
+            <div class="users fade-in-up">
+                <div class="Estado">
+                    <div class="info">
+                        <h3>Novos Usuários</h3>
+                        <h1>450</h1>
+                        <span class="variacao negativa">
+                            <span class="material-icons-sharp">trending_down</span>
+                            -45%
+                        </span>
+                    </div>
+                </div>
+                <div class="sparkline" id="sparklineUsers"></div>
+            </div>
+
+            <div class="pendentes fade-in-up">
+                <div class="Estado">
+                    <div class="info">
+                        <h3>Pendências</h3>
+                        <h1>150</h1>
+                        <span class="variacao positiva">
+                            <span class="material-icons-sharp">trending_up</span>
+                            +55%
+                        </span>
+                    </div>
+                </div>
+                <div class="sparkline" id="sparklinePendentes"></div>
+            </div>
+        </div>
+
+        <!-- Widgets Rápidos -->
+        <div class="widgets-rapidos">
+            <!-- Metas do Mês -->
+            <div class="widget">
+                <h3>
+                    <span class="material-icons-sharp">flag</span>
+                    Metas do Mês
+                </h3>
+                <div class="metas-item">
+                    <div class="metas-info">
+                        <h4>Vendas</h4>
+                        <small>85.000Kz / 100.000Kz</small>
+                    </div>
+                    <div class="barra-progresso">
+                        <div class="barra-progresso-fill" style="width: 85%"></div>
+                    </div>
+                </div>
+                <div class="metas-item">
+                    <div class="metas-info">
+                        <h4>Novos Clientes</h4>
+                        <small>340 / 500</small>
+                    </div>
+                    <div class="barra-progresso">
+                        <div class="barra-progresso-fill" style="width: 68%"></div>
+                    </div>
+                </div>
+                <div class="metas-item">
+                    <div class="metas-info">
+                        <h4>Satisfação</h4>
+                        <small>92% / 95%</small>
+                    </div>
+                    <div class="barra-progresso">
+                        <div class="barra-progresso-fill" style="width: 97%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atividades Recentes -->
+            <div class="widget">
+                <h3>
+                    <span class="material-icons-sharp">history</span>
+                    Atividades Recentes
+                </h3>
+                <div class="atividade-item">
+                    <div class="atividade-icone success">
+                        <span class="material-icons-sharp">check_circle</span>
+                    </div>
+                    <div class="atividade-conteudo">
+                        <h4>Venda Aprovada</h4>
+                        <small>Ordem #85631 - há 5 minutos</small>
+                    </div>
+                </div>
+                <div class="atividade-item">
+                    <div class="atividade-icone primary">
+                        <span class="material-icons-sharp">person_add</span>
+                    </div>
+                    <div class="atividade-conteudo">
+                        <h4>Novo Cliente Registado</h4>
+                        <small>Maria Santos - há 12 minutos</small>
+                    </div>
+                </div>
+                <div class="atividade-item">
+                    <div class="atividade-icone warning">
+                        <span class="material-icons-sharp">inventory</span>
+                    </div>
+                    <div class="atividade-conteudo">
+                        <h4>Stock Baixo</h4>
+                        <small>Produto XYZ - há 1 hora</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Ordens -->
+        <div class="novas-ordens">
+            <h2>Novas Ordens</h2>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><b>João Silva</b></td>
+                        <td>#12345</td>
+                        <td>Laptop Dell XPS</td>
+                        <td>125.000Kz</td>
+                        <td><span class="status-badge aprovado">Aprovado</span></td>
+                        <td><a href="#" class="primary">Ver Detalhes</a></td>
+                    </tr>
+                    <tr>
+                        <td><b>Maria Santos</b></td>
+                        <td>#12346</td>
+                        <td>iPhone 15 Pro</td>
+                        <td>285.000Kz</td>
+                        <td><span class="status-badge pendente">Pendente</span></td>
+                        <td><a href="#" class="primary">Ver Detalhes</a></td>
+                    </tr>
+                    <tr>
+                        <td><b>Carlos Costa</b></td>
+                        <td>#12347</td>
+                        <td>Samsung Galaxy S24</td>
+                        <td>195.000Kz</td>
+                        <td><span class="status-badge aprovado">Aprovado</span></td>
+                        <td><a href="#" class="primary">Ver Detalhes</a></td>
+                    </tr>
+                    <tr>
+                        <td><b>Ana Oliveira</b></td>
+                        <td>#12348</td>
+                        <td>MacBook Air M3</td>
+                        <td>425.000Kz</td>
+                        <td><span class="status-badge cancelado">Cancelado</span></td>
+                        <td><a href="#" class="primary">Ver Detalhes</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="graficos">
+            <div class="header-graficos">
+                <h2>Estatísticas</h2>
+                <div class="controles-tipo">
+                    <button class="btn-tipo active" data-tipo="linha">
+                        <span class="material-icons-sharp">show_chart</span>
+                        Linhas
+                    </button>
+                    <button class="btn-tipo" data-tipo="pizza">
+                        <span class="material-icons-sharp">pie_chart</span>
+                        Pizza
+                    </button>
+                </div>
+            </div>
+
+            <div class="container-grafico">
+                <div class="tabs-modulos">
+                    <button class="tab-modulo active" data-modulo="vendas">Vendas</button>
+                    <button class="tab-modulo" data-modulo="stock">Stock</button>
+                </div>
+
+                <div class="area-grafico">
+                    <div class="grafico-wrapper active" id="graficoLinha">
+                        <canvas id="chartLinha"></canvas>
+                    </div>
+                    <div class="grafico-wrapper" id="graficoPizza">
+                        <canvas id="chartPizza"></canvas>
+                    </div>
+                </div>
+            </div>
+         
+
+            <a href="#">Mostrar tudo</a>
+        </div>
+
+    </main>  
+{% endblock %}
+
+{% block painel_direito%}
+    <!-- ============== LADO DIREITO ============== -->
+    <div class="lado-direito">
+        <div class="nav">
+            <button id="menu-btn">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+        </div>
+
+        <!-- Assistente IA -->
+        <div class="assistente-ia" onclick="showToast('Bumba, Alcides!', 'info')">
+            <h3>
+                <span class="material-symbols-outlined">smart_toy</span>
+                Assistente IA
+            </h3>
+            <p>Olá sou o CRONOS! Como posso ajudar você hoje?</p>
+        </div>
+
+        <!-- Lembretes -->
+        <div class="lembrete">
+            <div class="header">
+                <h2>Lembretes</h2>
+                <span class="material-icons-sharp">notifications_none</span>
+            </div>
+
+            <div class="notification">
+                <div class="icon">
+                    <span class="material-icons-sharp">volume_up</span>
+                </div>
+                <div class="content">
+                    <div class="info">
+                        <h3>Reunião de Equipa</h3>
+                        <small class="text-muted">08:00 AM - 09:30 AM</small>
+                    </div>
+                    <span class="material-icons-sharp">more_vert</span>
+                </div>
+            </div>
+
+            <div class="notification deactive">
+                <div class="icon">
+                    <span class="material-icons-sharp">edit</span>
+                </div>
+                <div class="content">
+                    <div class="info">
+                        <h3>Relatório Mensal</h3>
+                        <small class="text-muted">Prazo: Amanhã</small>
+                    </div>
+                    <span class="material-icons-sharp">more_vert</span>
+                </div>
+            </div>
+
+            <div class="notification">
+                <div class="icon">
+                    <span class="material-icons-sharp">shopping_cart</span>
+                </div>
+                <div class="content">
+                    <div class="info">
+                        <h3>Nova Encomenda</h3>
+                        <small class="text-muted">Ordem #85631</small>
+                    </div>
+                    <span class="material-icons-sharp">more_vert</span>
+                </div>
+            </div>
+
+            <div class="notification add-lembrete">
+                <div>
+                    <span class="material-icons-sharp">add</span>
+                    <h3>Adicionar Lembrete</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toastContainer"></div>
+{% endblock %}
+
+{% block scripts %}
+
+    <script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>   
+
+<script>
+// ============== FUNÇÃO DE TOAST NOTIFICATION ==============
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icon = type === 'success' ? 'check_circle' : 'info';
+    
+    toast.innerHTML = `
+        <div class="toast-icon">
+            <span class="material-icons-sharp">${icon}</span>
+        </div>
+        <div class="toast-content">
+            <p><b>${message}</b></p>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ============== SPARKLINES (Mini Gráficos) ==============
+function criarSparklines() {
+    // Sparkline Vendas
+    const sparklineVendasOptions = {
+        series: [{
+            data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000]
+        }],
+        chart: {
+            type: 'area',
+            height: 60,
+            sparkline: {
+                enabled: true
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        fill: {
+            opacity: 0.3,
+            gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+            }
+        },
+        colors: ['#1B9C85']
+    };
+    new ApexCharts(document.querySelector("#sparklineVendas"), sparklineVendasOptions).render();
+
+    // Sparkline Users
+    const sparklineUsersOptions = {
+        series: [{
+            data: [450, 420, 380, 350, 320, 290, 260, 230]
+        }],
+        chart: {
+            type: 'area',
+            height: 60,
+            sparkline: {
+                enabled: true
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        fill: {
+            opacity: 0.3,
+        },
+        colors: ['#FF0060']
+    };
+    new ApexCharts(document.querySelector("#sparklineUsers"), sparklineUsersOptions).render();
+
+    // Sparkline Pendentes
+    const sparklinePendentesOptions = {
+        series: [{
+            data: [100, 110, 120, 130, 135, 140, 145, 150]
+        }],
+        chart: {
+            type: 'area',
+            height: 60,
+            sparkline: {
+                enabled: true
+            }
+        },
+        stroke: {
+            curve: 'smooth',
+            width: 2
+        },
+        fill: {
+            opacity: 0.3,
+        },
+        colors: ['#6C9BCF']
+    };
+    new ApexCharts(document.querySelector("#sparklinePendentes"), sparklinePendentesOptions).render();
+}
+
+// ============== DADOS DOS GRÁFICOS ==============
+const dadosGraficos = {
+    vendas: {
+        linha: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+            dados: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
+            titulo: 'Vendas Mensais (Kz)'
+        },
+        pizza: {
+            labels: ['Eletrónicos', 'Vestuário', 'Alimentos', 'Livros', 'Outros'],
+            dados: [35, 25, 20, 12, 8]
+        }
+    },
+    stock: {
+        linha: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+            dados: [850, 920, 880, 1050, 1100, 1080, 1200, 1150, 1300, 1280, 1400, 1450],
+            titulo: 'Stock Total (unidades)'
+        },
+        pizza: {
+            labels: ['Disponível', 'Reservado', 'Em Trânsito', 'Baixo', 'Esgotado'],
+            dados: [40, 25, 20, 10, 5]
+        }
+    }
+};
+
+let graficoLinha, graficoPizza;
+
+// ============== INICIALIZAR GRÁFICOS ==============
+function inicializarGraficos() {
+    const ctxLinha = document.getElementById('chartLinha').getContext('2d');
+    graficoLinha = new Chart(ctxLinha, {
+        type: 'line',
+        data: {
+            labels: dadosGraficos.vendas.linha.labels,
+            datasets: [{
+                label: dadosGraficos.vendas.linha.titulo,
+                data: dadosGraficos.vendas.linha.dados,
+                borderColor: '#6C9BCF',
+                backgroundColor: 'rgba(108, 155, 207, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3,
+                pointRadius: 5,
+                pointBackgroundColor: '#6C9BCF',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        font: {
+                            family: 'Poppins',
+                            size: 12
+                        },
+                        padding: 15
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(132, 139, 200, 0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        }
+    });
+
+    const ctxPizza = document.getElementById('chartPizza').getContext('2d');
+    graficoPizza = new Chart(ctxPizza, {
+        type: 'doughnut',
+        data: {
+            labels: dadosGraficos.vendas.pizza.labels,
+            datasets: [{
+                data: dadosGraficos.vendas.pizza.dados,
+                backgroundColor: [
+                    '#6C9BCF',
+                    '#1B9C85',
+                    '#F7D060',
+                    '#FF0060',
+                    '#7d8da1'
+                ],
+                borderWidth: 0,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            family: 'Poppins',
+                            size: 11
+                        },
+                        usePointStyle: true
+                    }
+                }
+            },
+            cutout: '65%'
+        }
+    });
+}
+
+// ============== ATUALIZAR GRÁFICOS ==============
+function atualizarGraficos(modulo) {
+    graficoLinha.data.labels = dadosGraficos[modulo].linha.labels;
+    graficoLinha.data.datasets[0].data = dadosGraficos[modulo].linha.dados;
+    graficoLinha.data.datasets[0].label = dadosGraficos[modulo].linha.titulo;
+    graficoLinha.update();
+
+    graficoPizza.data.labels = dadosGraficos[modulo].pizza.labels;
+    graficoPizza.data.datasets[0].data = dadosGraficos[modulo].pizza.dados;
+    graficoPizza.update();
+}
+
+// ============== ALTERNAR TIPO DE GRÁFICO ==============
+function alternarTipoGrafico(tipo) {
+    document.querySelectorAll('.grafico-wrapper').forEach(wrapper => {
+        wrapper.classList.remove('active');
+    });
+
+    if (tipo === 'linha') {
+        document.getElementById('graficoLinha').classList.add('active');
+    } else {
+        document.getElementById('graficoPizza').classList.add('active');
+    }
+}
+
+// ============== INICIALIZAR TUDO ==============
+document.addEventListener('DOMContentLoaded', function() {
+    criarSparklines();
+    inicializarGraficos();
+
+    // Botões de tipo de gráfico
+    document.querySelectorAll('.btn-tipo').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.btn-tipo').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            alternarTipoGrafico(this.dataset.tipo);
+        });
+    });
+
+    // Tabs de módulos
+    document.querySelectorAll('.tab-modulo').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.tab-modulo').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            atualizarGraficos(this.dataset.modulo);
+        });
+    });
+
+    // Toast de boas-vindas
+    setTimeout(() => {
+        showToast('Bem-vindo ao Artemis ERP, {{request.user.first_name}}!', 'success');
+    }, 1000);
+});
+</script>
+{% endblock %}

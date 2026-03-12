@@ -1,0 +1,506 @@
+/* ============================================================
+   ARTEMIS ERP — Responsive Stylesheet
+   Breakpoints:
+     • xl  > 1280px  (large desktop)
+     • lg  ≤ 1280px  (desktop / small laptop)
+     • md  ≤ 1024px  (tablet landscape / small laptop)
+     • sm  ≤ 768px   (tablet portrait)
+     • xs  ≤ 480px   (phone)
+   ============================================================ */
+
+/* ── 0. Shared mobile helpers ── */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 150;
+    backdrop-filter: blur(2px);
+}
+
+.sidebar-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-primary);
+    font-size: 1.6rem;
+    padding: 0.3rem;
+    border-radius: var(--border-radius-1);
+    transition: var(--transition-all);
+    flex-shrink: 0;
+}
+
+.sidebar-toggle:hover {
+    background: var(--color-light);
+}
+
+/* ── 1. Large desktop (> 1280px) — no changes needed ── */
+
+/* ── 2. Desktop / small laptop (≤ 1280px) ── */
+@media screen and (max-width: 1280px) {
+    /* Layout shell */
+    :root {
+        --sidebar-width: 200px;
+    }
+
+    /* Module body grids */
+    body {
+        grid-template-columns: auto 16rem !important;
+    }
+
+    /* Kanban: 3 cols instead of 5 */
+    .kanban-board {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+
+    /* Funnel stages keep proportions */
+    .funnel-stage:nth-child(2) { width: 88% !important; }
+    .funnel-stage:nth-child(3) { width: 72% !important; }
+    .funnel-stage:nth-child(4) { width: 54% !important; }
+    .funnel-stage:nth-child(5) { width: 38% !important; }
+}
+
+/* ── 3. Tablet landscape / small laptop (≤ 1024px) ── */
+@media screen and (max-width: 1024px) {
+    :root {
+        --sidebar-width: 180px;
+        --topbar-height: 54px;
+    }
+
+    /* Sidebar: icon-only mode */
+    aside {
+        width: var(--sidebar-width) !important;
+        overflow: hidden;
+    }
+
+    aside .sidebar a h3 {
+        font-size: 0.78rem;
+    }
+
+    /* Module body grids collapse right panel below */
+    body {
+        grid-template-columns: 1fr !important;
+    }
+
+    .lado-direito {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    /* Content grid in layout.html */
+    .content-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .content-grid .lado-direito {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+
+    /* Grid cols */
+    .grid-3 {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Stats grid */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Kanban: 2 cols */
+    .kanban-board {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Chat container height */
+    .chat-container {
+        height: 500px !important;
+    }
+}
+
+/* ── 4. Tablet portrait (≤ 768px) ── */
+@media screen and (max-width: 768px) {
+    :root {
+        --topbar-height: 52px;
+    }
+
+    /* Show toggle, hide sidebar by default */
+    .sidebar-toggle {
+        display: flex;
+    }
+
+    /* Topbar: hide some items on small screens */
+    .topbar .profile .info {
+        display: none;
+    }
+
+    .topbar-divider:last-of-type {
+        display: none;
+    }
+
+    /* Aside: slide-out drawer */
+    aside {
+        position: fixed !important;
+        left: -100% !important;
+        top: var(--topbar-height) !important;
+        height: calc(100vh - var(--topbar-height)) !important;
+        width: 240px !important;
+        z-index: 160 !important;
+        transition: left 0.3s ease !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.35) !important;
+        overflow-y: auto;
+    }
+
+    aside.open {
+        left: 0 !important;
+    }
+
+    .sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Layout: full-width content */
+    .layout {
+        margin-top: var(--topbar-height) !important;
+        height: calc(100vh - var(--topbar-height)) !important;
+    }
+
+    .main-content {
+        padding: 1rem !important;
+        width: 100%;
+    }
+
+    /* Module body */
+    body {
+        grid-template-columns: 1fr !important;
+        width: 100% !important;
+        padding: 0.8rem !important;
+    }
+
+    /* Grids */
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Module header */
+    .modulo-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .modulo-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .modulo-header .actions {
+        width: 100%;
+    }
+
+    .modulo-header .actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    /* Tabs: scrollable */
+    .tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab {
+        white-space: nowrap;
+        padding: 0.7rem 1rem;
+        font-size: 0.82rem;
+    }
+
+    /* Kanban: 1 col */
+    .kanban-board {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Funnel */
+    .funnel-stage {
+        width: 100% !important;
+    }
+
+    /* Tables: horizontal scroll */
+    .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 600px;
+    }
+
+    /* Chat */
+    .chat-container {
+        height: 420px !important;
+    }
+
+    .message-content {
+        max-width: 85% !important;
+    }
+
+    /* Suggestion chips */
+    .suggestion-chips {
+        flex-wrap: wrap;
+    }
+
+    /* Right panel: stacked single-col */
+    .lado-direito {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    /* Filters */
+    .filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-bar {
+        max-width: 100%;
+    }
+
+    /* Form rows */
+    .form-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Recruitment pipeline */
+    .recruitment-pipeline {
+        flex-wrap: wrap;
+        gap: 0.8rem;
+    }
+
+    .pipeline-stage {
+        min-width: 80px;
+        flex: 1;
+    }
+
+    /* Department grid in funcionarios */
+    .department-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Attendance calendar stays 7 cols */
+    .attendance-calendar {
+        font-size: 0.65rem;
+    }
+
+    /* Inventory grid */
+    .inventory-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Product performance */
+    .product-performance {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Heatmap */
+    .heatmap {
+        gap: 0.2rem;
+    }
+
+    /* Stat values smaller */
+    .stat-value {
+        font-size: 1.6rem;
+    }
+
+    /* Topbar logo */
+    .topbar .logo h1 {
+        font-size: 1.2rem;
+    }
+
+    .topbar .logo img {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    /* Btn-logout: icon only */
+    .btn-logout span + span,
+    .btn-logout :not(span.material-symbols-outlined) {
+        display: none;
+    }
+}
+
+/* ── 5. Phone (≤ 480px) ── */
+@media screen and (max-width: 480px) {
+    html {
+        font-size: 13px;
+    }
+
+    body {
+        padding: 0.5rem !important;
+    }
+
+    .topbar {
+        padding: 0 0.8rem !important;
+        gap: 0.5rem;
+    }
+
+    .topbar .logo h1 {
+        display: none; /* show only logo image on very small screens */
+    }
+
+    .topbar .logo img {
+        width: 2.2rem;
+        height: 2.2rem;
+    }
+
+    .dark-mode span:not(.active) {
+        display: none; /* show only active icon */
+    }
+
+    /* Stats: 1 col on phone */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .modulo-header h1 {
+        font-size: 1.1rem;
+    }
+
+    .modulo-header h1 span {
+        font-size: 1.4rem;
+    }
+
+    .btn {
+        padding: 0.65rem 1rem;
+        font-size: 0.8rem;
+    }
+
+    .card {
+        padding: 1rem !important;
+    }
+
+    /* Chat */
+    .chat-container {
+        height: 360px !important;
+    }
+
+    .chat-input {
+        gap: 0.5rem !important;
+    }
+
+    /* Employee card: stack vertically */
+    .employee-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    /* Commission items */
+    .commission-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    /* Deal card */
+    .deal-header {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    /* Timeline */
+    .timeline {
+        padding-left: 1.5rem;
+    }
+
+    /* Funnel values */
+    .funnel-value {
+        font-size: 1.1rem;
+    }
+
+    /* Department grid 1 col */
+    .department-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ai-capability grid */
+    .grid.grid-3 .ai-capability {
+        min-width: 100%;
+    }
+
+    /* Tabs font */
+    .tab {
+        font-size: 0.78rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    /* Task cards */
+    .task-card .flex-between {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    /* Settings items */
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+
+    /* User permission */
+    .user-permission {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    /* Pagination */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 0.3rem;
+    }
+
+    /* Movement items */
+    .movement-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+
+    /* Report history */
+    .report-history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    /* Schedule card buttons */
+    .schedule-card .flex {
+        flex-wrap: wrap;
+    }
+}
+
+/* ── 6. Layout.html — sidebar drawer JS hook ── */
+/* The sidebar JS logic is injected via artemis-responsive.js */

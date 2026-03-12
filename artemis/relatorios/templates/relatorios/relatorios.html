@@ -1,0 +1,173 @@
+{% extends "layout.html" %}
+{% load static %}
+
+
+
+{% block extra_css %}
+
+     .report-template {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow-sm);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition-all);
+            border-left: 4px solid var(--color-primary);
+        }
+        .report-template:hover { box-shadow: var(--box-shadow); transform: translateY(-3px); }
+        .report-icon { width: 60px; height: 60px; border-radius: var(--border-radius-1); background-color: var(--color-light); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--color-primary); margin-bottom: 1rem; }
+        .schedule-card { background: linear-gradient(135deg, rgba(108, 155, 207, 0.1), rgba(27, 156, 133, 0.1)); padding: 1.2rem; border-radius: var(--border-radius-2); margin-bottom: 1rem; }
+        .report-history-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--color-light); }
+        .custom-field { margin-bottom: 1rem; padding: 1rem; background-color: var(--color-light); border-radius: var(--border-radius-1); }
+
+   
+        .lado-direito { margin-right: 0; }
+        canvas { max-height: 260px; }
+
+
+{% endblock extra_css %}
+
+
+{% block extra_links %}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block conteudo %}
+
+            <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1><span class="material-symbols-outlined">edit_document</span>Centro de Relatórios</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline"><span class="material-icons-sharp">folder</span>Meus Relatórios</button>
+                        <button class="btn btn-primary" onclick="criarRelatorioCustom()"><span class="material-icons-sharp">add</span>Criar Personalizado</button>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab active" onclick="mudarTab('templates')">Templates</button>
+                    <button class="tab" onclick="mudarTab('agendados')">Agendados</button>
+                    <button class="tab" onclick="mudarTab('historico')">Histórico</button>
+                    <button class="tab" onclick="mudarTab('customizado')">Construtor</button>
+                </div>
+                <div class="tab-content active" id="templates">
+                    <div class="grid grid-3">
+                        <div class="report-template" onclick="gerarRelatorio('vendas')">
+                            <div class="report-icon"><span class="material-icons-sharp">trending_up</span></div>
+                            <h3>Relatório de Vendas</h3>
+                            <p class="text-muted">Análise completa de vendas por período, produto e vendedor</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-primary">Vendas</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                        <div class="report-template" onclick="gerarRelatorio('financeiro')">
+                            <div class="report-icon"><span class="material-icons-sharp">account_balance</span></div>
+                            <h3>Demonstrativo Financeiro</h3>
+                            <p class="text-muted">Balanço, DRE, fluxo de caixa e indicadores financeiros</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-success">Financeiro</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                        <div class="report-template" onclick="gerarRelatorio('rh')">
+                            <div class="report-icon"><span class="material-icons-sharp">people</span></div>
+                            <h3>Análise de RH</h3>
+                            <p class="text-muted">Performance, rotatividade, presença e satisfação</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-warning">RH</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                        <div class="report-template" onclick="gerarRelatorio('stock')">
+                            <div class="report-icon"><span class="material-icons-sharp">inventory</span></div>
+                            <h3>Inventário e Stock</h3>
+                            <p class="text-muted">Movimentação, valorização e previsão de demanda</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-danger">Stock</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                        <div class="report-template" onclick="gerarRelatorio('cliente')">
+                            <div class="report-icon"><span class="material-icons-sharp">groups</span></div>
+                            <h3>Análise de Clientes</h3>
+                            <p class="text-muted">Segmentação, lifetime value, churn e satisfação</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-primary">CRM</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                        <div class="report-template" onclick="gerarRelatorio('executivo')">
+                            <div class="report-icon"><span class="material-icons-sharp">dashboard</span></div>
+                            <h3>Dashboard Executivo</h3>
+                            <p class="text-muted">Visão consolidada de todos os KPIs da empresa</p>
+                            <div class="flex gap-1 mt-2"><span class="badge badge-success">Executivo</span><span class="badge badge-info">Diário</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="agendados">
+                    <div class="card">
+                        <div class="card-header"><h3>Relatórios Automáticos</h3><button class="btn btn-sm btn-primary" onclick="novoAgendamento()">Agendar Novo</button></div>
+                        <div class="schedule-card">
+                            <div class="flex-between mb-2"><h4>Vendas Mensais</h4><span class="badge badge-success">Ativo</span></div>
+                            <p class="text-muted">Enviado todo dia 1 às 08:00 para <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89f979682999f99b8998a8c9d95918bd69997">[email&#160;protected]</a></p>
+                            <div class="flex gap-2 mt-2"><button class="btn btn-sm btn-secondary">Editar</button><button class="btn btn-sm btn-outline">Pausar</button></div>
+                        </div>
+                        <div class="schedule-card">
+                            <div class="flex-between mb-2"><h4>Dashboard Executivo</h4><span class="badge badge-success">Ativo</span></div>
+                            <p class="text-muted">Enviado diariamente às 07:00 para <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="385d494d51485d78594a4c5d55514b165957">[email&#160;protected]</a></p>
+                            <div class="flex gap-2 mt-2"><button class="btn btn-sm btn-secondary">Editar</button><button class="btn btn-sm btn-outline">Pausar</button></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="historico">
+                    <div class="card">
+                        <div class="card-header"><h3>Relatórios Gerados</h3></div>
+                        <div id="reportHistory"></div>
+                    </div>
+                </div>
+                <div class="tab-content" id="customizado">
+                    <div class="card">
+                        <div class="card-header"><h3>Construtor de Relatórios</h3><p class="text-muted">Crie relatórios personalizados arrastando e soltando campos</p></div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Nome do Relatório</label><input type="text" class="form-control" placeholder="Ex: Vendas por Região"></div>
+                            <div class="form-group"><label class="form-label">Fonte de Dados</label><select class="form-control"><option>Vendas</option><option>Funcionários</option><option>Stock</option><option>RH</option></select></div>
+                        </div>
+                        <div class="custom-field"><h4 class="mb-2">Campos Disponíveis</h4><div class="flex gap-1 flex-wrap"><span class="badge badge-primary" style="cursor: pointer;">Data</span><span class="badge badge-primary" style="cursor: pointer;">Valor</span><span class="badge badge-primary" style="cursor: pointer;">Produto</span><span class="badge badge-primary" style="cursor: pointer;">Cliente</span><span class="badge badge-primary" style="cursor: pointer;">Vendedor</span><span class="badge badge-primary" style="cursor: pointer;">Região</span></div></div>
+                        <div class="form-row">
+                            <div class="form-group"><label class="form-label">Período</label><select class="form-control"><option>Último mês</option><option>Último trimestre</option><option>Último ano</option><option>Personalizado</option></select></div>
+                            <div class="form-group"><label class="form-label">Formato</label><select class="form-control"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
+                        </div>
+                        <button class="btn btn-primary mt-2" onclick="gerarRelatorioCustom()">Gerar Relatório</button>
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+{% block painel_direito %}
+        <div class="lado-direito">
+            <div class="card mt-2"><h3 class="mb-2">Exportação Rápida</h3><button class="btn btn-primary w-100 mb-1"><span class="material-icons-sharp">picture_as_pdf</span>Exportar PDF</button><button class="btn btn-secondary w-100 mb-1"><span class="material-icons-sharp">table_chart</span>Exportar Excel</button><button class="btn btn-outline w-100"><span class="material-icons-sharp">email</span>Enviar por Email</button></div>
+            <div class="card mt-2"><h3 class="mb-2">Insights IA</h3><div class="ai-insight"><div class="ai-insight-header"><span class="material-symbols-outlined">insights</span>Análise</div><p style="font-size: 0.85rem;">Vendas aumentaram 23% comparado ao mês anterior. Melhor performance no setor de eletrónicos.</p></div></div>
+        </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>   
+    
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+    
+    <script>
+        
+        function renderHistory() {
+            const history = [
+                { nome: 'Vendas Janeiro 2026', data: '2026-02-01', tipo: 'PDF', size: '2.4 MB' },
+                { nome: 'Dashboard Executivo', data: '2026-02-08', tipo: 'Excel', size: '1.8 MB' },
+                { nome: 'Análise de Stock', data: '2026-02-05', tipo: 'PDF', size: '3.1 MB' },
+            ];
+            document.getElementById('reportHistory').innerHTML = history.map(r => `
+                <div class="report-history-item"><div><div style="font-weight: 500;">${r.nome}</div><small class="text-muted">${r.data} • ${r.tipo} • ${r.size}</small></div><div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">download</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">share</span></button></div></div>
+            `).join('');
+        }
+       function mudarTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            if (tabName === 'historico') renderHistory();
+        }
+        function gerarRelatorio(tipo) { alert('Gerando relatório de ' + tipo + '...'); setTimeout(() => alert('Relatório gerado com sucesso!'), 1000); }
+        function criarRelatorioCustom() { document.querySelectorAll('.tab')[3].click(); }
+        function gerarRelatorioCustom() { alert('Gerando relatório personalizado...'); }
+        function novoAgendamento() { alert('Criar novo agendamento'); }
+    </script>
+
+{% endblock %}

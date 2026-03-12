@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% load static %}
+
+
+
+{% block extra_links %}
+    <link rel="stylesheet" href="{% static "css/agente-ia.css"%}">
+{% endblock %}
+    
+{% block conteudo %}
+ <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1><span class="material-symbols-outlined">cognition_2</span>Assistente Inteligente Artemis</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline"><span class="material-icons-sharp">history</span>Histórico</button>
+                        <button class="btn btn-primary" onclick="novaSessao()"><span class="material-icons-sharp">add</span>Nova Conversa</button>
+                    </div>
+                </div>
+                <div class="grid grid-3 mb-3">
+                    <div class="ai-capability">
+                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">psychology</span><h3>Análise Preditiva</h3></div>
+                        <p class="text-muted">Previsões de vendas, demanda e tendências usando ML</p>
+                    </div>
+                    <div class="ai-capability">
+                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">auto_awesome</span><h3>Automação</h3></div>
+                        <p class="text-muted">Automatize tarefas repetitivas e processos</p>
+                    </div>
+                    <div class="ai-capability">
+                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">insights</span><h3>Insights</h3></div>
+                        <p class="text-muted">Descubra padrões e oportunidades ocultas</p>
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div><h3>💬 Chat com IA</h3><p class="text-muted">Seu assistente empresarial inteligente</p></div>
+                        <button class="btn btn-sm btn-outline" onclick="limparChat()">Limpar</button>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message ai">
+                            <div class="message-avatar">CN</div>
+                            <div class="message-content">
+                                <p><strong>Olá! Sou o CRONOS 👋</strong></p>
+                                <p>Posso ajudá-lo com análises, relatórios, previsões e automações. Como posso ajudar hoje?</p>
+                            </div>
+                        </div>
+                        <div class="suggestion-chips">
+                            <div class="chip" onclick="enviarSugestao('Analise as vendas do último mês')">Analisar vendas</div>
+                            <div class="chip" onclick="enviarSugestao('Qual a previsão de stock para os próximos 7 dias?')"> Previsão de stock</div>
+                            <div class="chip" onclick="enviarSugestao('Gere um relatório de performance da equipe')"> Performance da equipe</div>
+                            <div class="chip" onclick="enviarSugestao('Identifique oportunidades de melhoria')">💡 Insights</div>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" class="form-control" id="messageInput" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') enviarMensagem()">
+                        <button class="btn btn-primary" onclick="enviarMensagem()"><span class="material-icons-sharp">send</span></button>
+                    </div>
+                </div>
+                <div class="card mt-3">
+                    <div class="card-header"><h3>Tarefas Automáticas Agendadas</h3></div>
+                    <div class="task-card">
+                        <div class="flex-between mb-2"><h4>Análise Diária de Vendas</h4><span class="task-status status-completed">Concluída</span></div>
+                        <p class="text-muted">Última execução: Hoje às 07:00</p>
+                        <p>✅ Vendas analisadas | 📊 Relatório gerado | 📧 Email enviado</p>
+                    </div>
+                    <div class="task-card">
+                        <div class="flex-between mb-2"><h4>Previsão de Demanda de Stock</h4><span class="task-status status-running">Executando</span></div>
+                        <p class="text-muted">Iniciada: Hoje às 12:30</p>
+                        <div class="progress-bar mt-2"><div class="progress-fill primary" style="width: 65%"></div></div>
+                    </div>
+                    <div class="task-card">
+                        <div class="flex-between mb-2"><h4>Otimização de Turnos</h4><span class="task-status status-pending">Agendada</span></div>
+                        <p class="text-muted">Próxima execução: Amanhã às 06:00</p>
+                    </div>
+                </div>
+            </div>
+
+{% endblock %}
+
+{% block painel_direito %}
+            
+        <div class="lado-direito">
+            <div class="card mt-2">
+                <h3 class="mb-2">Capacidades IA</h3>
+                <div style="margin-bottom: 1rem;">
+                    <div class="flex-between mb-1"><span>Análise de Dados</span><span class="success">100%</span></div>
+                    <div class="progress-bar"><div class="progress-fill success" style="width: 100%"></div></div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <div class="flex-between mb-1"><span>Previsões</span><span class="primary">95%</span></div>
+                    <div class="progress-bar"><div class="progress-fill primary" style="width: 95%"></div></div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <div class="flex-between mb-1"><span>Automação</span><span class="warning">88%</span></div>
+                    <div class="progress-bar"><div class="progress-fill warning" style="width: 88%"></div></div>
+                </div>
+            </div>
+            <div class="card mt-2">
+                <h3 class="mb-2">Ações Rápidas</h3>
+                <button class="btn btn-primary w-100 mb-1" onclick="analisarDados()"><span class="material-icons-sharp">analytics</span>Análise Rápida</button>
+                <button class="btn btn-secondary w-100 mb-1" onclick="gerarPrevisao()"><span class="material-icons-sharp">trending_up</span>Gerar Previsão</button>
+                <button class="btn btn-outline w-100" onclick="otimizar()"><span class="material-icons-sharp">auto_fix_high</span>Otimizar Processos</button>
+            </div>
+        </div>
+
+{% endblock %}
+
+{% block scripts %}
+
+
+    <script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>   
+    
+    <script>
+        
+        function enviarMensagem() {
+            const input = document.getElementById('messageInput');
+            const mensagem = input.value.trim();
+            if (!mensagem) return;
+            const chatMessages = document.getElementById('chatMessages');
+            const userMsg = `<div class="message user"><div class="message-avatar">U</div><div class="message-content"><p>${mensagem}</p></div></div>`;
+            chatMessages.innerHTML += userMsg;
+            input.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            const typingIndicator = `<div class="message ai" id="typing"><div class="message-avatar">AI</div><div class="message-content"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div></div>`;
+            chatMessages.innerHTML += typingIndicator;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            setTimeout(() => {
+                document.getElementById('typing').remove();
+                const respostas = {
+                    'vendas': 'Analisando as vendas do último mês... <br><br>📊 <strong>Resultados:</strong><br>• Total: 875.500 Kz (+23.5%)<br>• Melhor produto: Laptop HP<br>• Melhor vendedor: Ana Silva<br>• Taxa de conversão: 34.2%<br><br>💡 <strong>Insight:</strong> Há uma tendência de crescimento nos produtos eletrónicos. Recomendo aumentar o stock desta categoria.',
+                    'stock': '📦 <strong>Previsão de Stock (próximos 7 dias):</strong><br><br>⚠️ <strong>Alertas:</strong><br>• Mouse Wireless: esgota em 3 dias<br>• Teclado Mecânico: stock adequado<br>• Laptop HP: demanda +45%<br><br>🎯 <strong>Recomendação:</strong> Reabastecer urgente: Mouse Wireless (50 unidades)',
+                    'performance': '👥 <strong>Performance da Equipe:</strong><br><br>⭐ <strong>Destaques:</strong><br>• Equipe TI: 15% acima da meta<br>• Vendas: performance excelente (92%)<br>• RH: dentro do esperado<br><br>💡 <strong>Sugestão:</strong> Considere bônus para equipe TI este mês',
+                    'default': 'Entendi! Estou processando sua solicitação. Posso ajudar com análises de vendas, previsões de stock, performance de equipe, relatórios automáticos e muito mais. O que gostaria de fazer especificamente?'
+                };
+                let resposta = respostas.default;
+                if (mensagem.toLowerCase().includes('venda')) resposta = respostas.vendas;
+                if (mensagem.toLowerCase().includes('stock') || mensagem.toLowerCase().includes('previsão')) resposta = respostas.stock;
+                if (mensagem.toLowerCase().includes('equipe') || mensagem.toLowerCase().includes('performance')) resposta = respostas.performance;
+                const aiMsg = `<div class="message ai"><div class="message-avatar">AI</div><div class="message-content"><p>${resposta}</p></div></div>`;
+                chatMessages.innerHTML += aiMsg;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1500);
+        }
+        function enviarSugestao(texto) {
+            document.getElementById('messageInput').value = texto;
+            enviarMensagem();
+        }
+        function limparChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '<div class="message ai"><div class="message-avatar">AI</div><div class="message-content"><p><strong>Olá! Sou o Assistente Artemis. 👋</strong></p><p>Posso ajudá-lo com análises, relatórios, previsões e automações. Como posso ajudar hoje?</p></div></div><div class="suggestion-chips"><div class="chip" onclick="enviarSugestao(\'Analise as vendas do último mês\')">📊 Analisar vendas</div><div class="chip" onclick="enviarSugestao(\'Qual a previsão de stock para os próximos 7 dias?\')">📦 Previsão de stock</div><div class="chip" onclick="enviarSugestao(\'Gere um relatório de performance da equipe\')">👥 Performance da equipe</div><div class="chip" onclick="enviarSugestao(\'Identifique oportunidades de melhoria\')">💡 Insights</div></div>';
+        }
+        function novaSessao() { limparChat(); }
+        function analisarDados() { enviarSugestao('Faça uma análise completa dos dados da empresa'); }
+        function gerarPrevisao() { enviarSugestao('Gere previsões para os próximos 30 dias'); }
+        function otimizar() { enviarSugestao('Sugira otimizações para nossos processos'); }
+    </script>
+{% endblock %}

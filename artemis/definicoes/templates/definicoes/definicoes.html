@@ -1,0 +1,262 @@
+{% extends "layout.html" %}
+{% load static %}
+
+
+
+
+{%block extra_css%}
+
+
+        .settings-section { background-color: var(--color-white); padding: 2rem; border-radius: var(--border-radius-2); box-shadow: var(--box-shadow-sm); margin-bottom: 1.5rem; }
+        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0; border-bottom: 1px solid var(--color-light); }
+        .settings-item:last-child { border-bottom: none; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-light); transition: 0.4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--color-success); }
+        input:checked + .slider:before { transform: translateX(26px); }
+        .theme-option { background-color: var(--color-white); padding: 1.5rem; border-radius: var(--border-radius-2); box-shadow: var(--box-shadow-sm); cursor: pointer; transition: var(--transition-all); border: 2px solid transparent; }
+        .theme-option:hover { border-color: var(--color-primary); transform: translateY(-3px); }
+        .theme-option.active { border-color: var(--color-success); background-color: var(--color-light); }
+        .color-picker { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid var(--color-light); transition: var(--transition-all); }
+        .color-picker:hover { transform: scale(1.1); }
+        .backup-card { background: linear-gradient(135deg, rgba(108, 155, 207, 0.1), rgba(27, 156, 133, 0.1)); padding: 1.5rem; border-radius: var(--border-radius-2); margin-bottom: 1rem; }
+        .security-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--color-light); border-radius: 2rem; font-size: 0.85rem; }
+        .user-permission { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--color-light); border-radius: var(--border-radius-1); margin-bottom: 0.8rem; }
+        /* ── Layout: 2-col grid (main + lado-direito) ── */
+        
+        .lado-direito { margin-right: 0; }
+        canvas { max-height: 260px; }
+
+{% endblock %}
+
+{%block conteudo %}
+            <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1><span class="material-symbols-outlined">settings</span>Configurações do Sistema</h1>
+                </div>
+                <div class="tabs">
+                    <button class="tab active" onclick="mudarTab('geral')">Geral</button>
+                    <button class="tab" onclick="mudarTab('aparencia')">Aparência</button>
+                    <button class="tab" onclick="mudarTab('notificacoes')">Notificações</button>
+                    <button class="tab" onclick="mudarTab('seguranca')">Segurança</button>
+                    <button class="tab" onclick="mudarTab('integracao')">Integrações</button>
+                    <button class="tab" onclick="mudarTab('backup')">Backup</button>
+                </div>
+                <div class="tab-content active" id="geral">
+                    <div class="settings-section">
+                        <h3 class="mb-3">Configurações Gerais</h3>
+                        <div class="settings-item">
+                            <div><h4>Nome da Empresa</h4><p class="text-muted">Artemis ERP Solutions</p></div>
+                            <button class="btn btn-sm btn-secondary">Editar</button>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Fuso Horário</h4><p class="text-muted">GMT+1 (Luanda)</p></div>
+                            <select class="form-control" style="max-width: 200px;"><option>GMT+1 (Luanda)</option><option>GMT+0 (UTC)</option></select>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Moeda Padrão</h4><p class="text-muted">Kwanza Angolano (Kz)</p></div>
+                            <select class="form-control" style="max-width: 200px;"><option>Kz</option><option>USD</option><option>EUR</option></select>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Idioma do Sistema</h4><p class="text-muted">Português</p></div>
+                            <select class="form-control" style="max-width: 200px;"><option>Português</option><option>English</option></select>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Formato de Data</h4><p class="text-muted">DD/MM/AAAA</p></div>
+                            <select class="form-control" style="max-width: 200px;"><option>DD/MM/AAAA</option><option>MM/DD/AAAA</option><option>AAAA-MM-DD</option></select>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Funcionalidades</h3>
+                        <div class="settings-item">
+                            <div><h4>Modo Multi-empresa</h4><p class="text-muted">Gerir múltiplas empresas num único sistema</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Análise de IA</h4><p class="text-muted">Insights e previsões automáticas</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Auditoria Automática</h4><p class="text-muted">Registar todas as ações no sistema</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="aparencia">
+                    <div class="settings-section">
+                        <h3 class="mb-3">Tema</h3>
+                        <div class="grid grid-3">
+                            <div class="theme-option active">
+                                <div class="flex-between mb-2"><h4>Claro</h4><span class="material-icons-sharp success">check_circle</span></div>
+                                <div style="background: linear-gradient(135deg, #f6f6f9, #ffffff); height: 100px; border-radius: 0.5rem;"></div>
+                            </div>
+                            <div class="theme-option">
+                                <div class="flex-between mb-2"><h4>Escuro</h4><span class="material-icons-sharp" style="color: var(--color-light);">radio_button_unchecked</span></div>
+                                <div style="background: linear-gradient(135deg, #181a1e, #202528); height: 100px; border-radius: 0.5rem;"></div>
+                            </div>
+                            <div class="theme-option">
+                                <div class="flex-between mb-2"><h4>Automático</h4><span class="material-icons-sharp" style="color: var(--color-light);">radio_button_unchecked</span></div>
+                                <div style="background: linear-gradient(135deg, #f6f6f9, #181a1e); height: 100px; border-radius: 0.5rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Cores Personalizadas</h3>
+                        <div class="flex gap-2 flex-wrap">
+                            <div><p class="text-muted mb-1">Primária</p><div class="color-picker" style="background-color: #6C9BCF;"></div></div>
+                            <div><p class="text-muted mb-1">Sucesso</p><div class="color-picker" style="background-color: #1B9C85;"></div></div>
+                            <div><p class="text-muted mb-1">Perigo</p><div class="color-picker" style="background-color: #FF0060;"></div></div>
+                            <div><p class="text-muted mb-1">Aviso</p><div class="color-picker" style="background-color: #F7D060;"></div></div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Layout</h3>
+                        <div class="settings-item">
+                            <div><h4>Barra Lateral Compacta</h4><p class="text-muted">Mostrar apenas ícones na barra lateral</p></div>
+                            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Animações</h4><p class="text-muted">Ativar animações de transição</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="notificacoes">
+                    <div class="settings-section">
+                        <h3 class="mb-3">Notificações Email</h3>
+                        <div class="settings-item">
+                            <div><h4>Relatórios Diários</h4><p class="text-muted">Receber resumo diário por email</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Alertas de Stock</h4><p class="text-muted">Notificar quando stock estiver baixo</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Novas Vendas</h4><p class="text-muted">Notificar em tempo real sobre vendas</p></div>
+                            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Notificações Push</h3>
+                        <div class="settings-item">
+                            <div><h4>Ativar Push</h4><p class="text-muted">Receber notificações no navegador</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="seguranca">
+                    <div class="settings-section">
+                        <h3 class="mb-3">Autenticação</h3>
+                        <div class="settings-item">
+                            <div><h4>Autenticação de Dois Fatores (2FA)</h4><p class="text-muted">Adicionar camada extra de segurança</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Sessões Simultâneas</h4><p class="text-muted">2 sessões ativas</p></div>
+                            <button class="btn btn-sm btn-danger">Encerrar Todas</button>
+                        </div>
+                        <div class="security-badge success mt-2"><span class="material-icons-sharp">verified_user</span>Nível de Segurança: Alto</div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Permissões de Usuários</h3>
+                        <div class="user-permission">
+                            <div><h4>Admin</h4><p class="text-muted">Acesso total ao sistema</p></div>
+                            <span class="badge badge-danger">Total</span>
+                        </div>
+                        <div class="user-permission">
+                            <div><h4>Gerente</h4><p class="text-muted">Gestão de equipe e relatórios</p></div>
+                            <span class="badge badge-warning">Avançado</span>
+                        </div>
+                        <div class="user-permission">
+                            <div><h4>Funcionário</h4><p class="text-muted">Acesso básico</p></div>
+                            <span class="badge badge-info">Básico</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="integracao">
+                    <div class="settings-section">
+                        <h3 class="mb-3">APIs e Integrações</h3>
+                        <div class="settings-item">
+                            <div><h4>Chave API</h4><p class="text-muted">ak_live_xxxxxxxxxxxxxxxx</p></div>
+                            <div class="flex gap-1"><button class="btn btn-sm btn-secondary">Copiar</button><button class="btn btn-sm btn-danger">Regenerar</button></div>
+                        </div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Integrações Ativas</h3>
+                        <div class="grid grid-2">
+                            <div class="card"><div class="flex-between"><div><h4>Google Workspace</h4><p class="text-muted">Email e Calendário</p></div><span class="badge badge-success">Conectado</span></div></div>
+                            <div class="card"><div class="flex-between"><div><h4>WhatsApp Business</h4><p class="text-muted">Notificações</p></div><span class="badge badge-success">Conectado</span></div></div>
+                            <div class="card"><div class="flex-between"><div><h4>Slack</h4><p class="text-muted">Comunicação</p></div><span class="badge badge-info">Disponível</span></div></div>
+                            <div class="card"><div class="flex-between"><div><h4>Zapier</h4><p class="text-muted">Automações</p></div><span class="badge badge-info">Disponível</span></div></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="backup">
+                    <div class="backup-card">
+                        <h3 class="mb-2">Último Backup</h3>
+                        <p class="text-muted">09/02/2026 às 03:00 PM</p>
+                        <div class="flex gap-2 mt-2"><span class="badge badge-success">Completo</span><span class="badge badge-info">127.5 GB</span></div>
+                    </div>
+                    <div class="settings-section">
+                        <h3 class="mb-3">Configurações de Backup</h3>
+                        <div class="settings-item">
+                            <div><h4>Backup Automático</h4><p class="text-muted">Diariamente às 03:00</p></div>
+                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Retenção</h4><p class="text-muted">Manter backups por 30 dias</p></div>
+                            <select class="form-control" style="max-width: 200px;"><option>30 dias</option><option>60 dias</option><option>90 dias</option></select>
+                        </div>
+                        <div class="settings-item">
+                            <div><h4>Armazenamento</h4><p class="text-muted">Cloud Storage (Encrypted)</p></div>
+                            <span class="badge badge-success">Seguro</span>
+                        </div>
+                        <button class="btn btn-primary mt-3" onclick="fazerBackup()"><span class="material-icons-sharp">backup</span>Fazer Backup Agora</button>
+                    </div>
+                </div>
+            </div>
+{% endblock %}
+
+{% block painel_direito %}
+        <div class="lado-direito">
+            <div class="card mt-2">
+                <h3 class="mb-2">Estado do Sistema</h3>
+                <div class="flex-between mb-2"><span>CPU</span><span class="success">32%</span></div>
+                <div class="progress-bar mb-2"><div class="progress-fill success" style="width: 32%"></div></div>
+                <div class="flex-between mb-2"><span>Memória</span><span class="warning">68%</span></div>
+                <div class="progress-bar mb-2"><div class="progress-fill warning" style="width: 68%"></div></div>
+                <div class="flex-between mb-2"><span>Storage</span><span class="primary">45%</span></div>
+                <div class="progress-bar"><div class="progress-fill primary" style="width: 45%"></div></div>
+            </div>
+            <div class="card mt-2">
+                <h3 class="mb-2">Versão</h3>
+                <p><strong>Artemis ERP</strong></p>
+                <p class="text-muted">v2.5.0 (Build 20260209)</p>
+                <button class="btn btn-outline w-100 mt-2"><span class="material-icons-sharp">update</span>Verificar Atualizações</button>
+            </div>
+        </div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.querySelector('.dark-mode').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode-variables');
+            this.querySelector('span:nth-child(1)').classList.toggle('active');
+            this.querySelector('span:nth-child(2)').classList.toggle('active');
+        });
+        function mudarTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        function fazerBackup() {
+            alert('Iniciando backup...');
+            setTimeout(() => alert('Backup concluído com sucesso!'), 2000);
+        }
+    </script>
+{%endblock%}

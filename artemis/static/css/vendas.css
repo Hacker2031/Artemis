@@ -1,0 +1,235 @@
+        .sales-funnel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin: 2rem 0;
+        }
+
+        .funnel-stage {
+            background: linear-gradient(90deg, var(--color-primary), transparent);
+            padding: 1.2rem;
+            border-radius: var(--border-radius-1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: var(--transition-all);
+            position: relative;
+        }
+
+        .funnel-stage:nth-child(1) { width: 100%; background: linear-gradient(90deg, #1B9C85, transparent); }
+        .funnel-stage:nth-child(2) { width: 85%; background: linear-gradient(90deg, #6C9BCF, transparent); }
+        .funnel-stage:nth-child(3) { width: 65%; background: linear-gradient(90deg, #F7D060, transparent); }
+        .funnel-stage:nth-child(4) { width: 45%; background: linear-gradient(90deg, #FF0060, transparent); }
+        .funnel-stage:nth-child(5) { width: 30%; background: linear-gradient(90deg, #9b59b6, transparent); }
+
+        .funnel-stage:hover {
+            transform: translateX(10px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .funnel-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .funnel-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-dark);
+        }
+
+        .deal-card {
+            background-color: var(--color-white);
+            padding: 1rem;
+            border-radius: var(--border-radius-2);
+            border-left: 4px solid var(--color-primary);
+            margin-bottom: 0.8rem;
+            cursor: move;
+            transition: var(--transition-all);
+        }
+
+        .deal-card:hover {
+            box-shadow: var(--box-shadow);
+            transform: translateY(-2px);
+        }
+
+        .deal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .deal-title {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+
+        .deal-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--color-success);
+        }
+
+        .deal-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--color-dark-variant);
+            margin-top: 0.5rem;
+        }
+
+        .kanban-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .kanban-column {
+            background-color: var(--color-light);
+            padding: 1rem;
+            border-radius: var(--border-radius-2);
+            min-height: 400px;
+        }
+
+        .kanban-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--color-white);
+        }
+
+        .kanban-title {
+            font-weight: 600;
+            color: var(--color-dark);
+        }
+
+        .kanban-count {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+        }
+
+        .forecast-card {
+            background: linear-gradient(135deg, rgba(108, 155, 207, 0.1), rgba(27, 156, 133, 0.1));
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            border-left: 4px solid var(--color-primary);
+        }
+
+        .forecast-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 1rem 0;
+        }
+
+        .forecast-confidence {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .product-performance {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .product-card {
+            background-color: var(--color-white);
+            padding: 1rem;
+            border-radius: var(--border-radius-1);
+            box-shadow: var(--box-shadow-sm);
+        }
+
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .product-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--color-dark-variant);
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.3rem;
+            margin-top: 1rem;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: var(--border-radius-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition-all);
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .commission-tracker {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow);
+        }
+
+        .commission-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-light);
+        }
+
+        .commission-item:last-child {
+            border-bottom: none;
+        }
+
+        .seller-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .seller-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* ── Layout: 2-col grid (main + lado-direito) ── */
+        body {
+            display: grid;
+            grid-template-columns: auto 18rem;
+            gap: 1.5rem;
+            width: 96%;
+            margin: 0 auto;
+        }
+        .lado-direito { margin-right: 0; }
+        canvas { max-height: 260px; }

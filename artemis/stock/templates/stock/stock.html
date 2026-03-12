@@ -1,0 +1,251 @@
+{% extends "layout.html" %}
+{% load static %}
+
+
+{% block extra_links %}
+    {% comment %} <link rel="stylesheet" href="{% static "css/stock.css"%}"> {% endcomment %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock extra_links %}
+
+{% block extra_css %}
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .product-item {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow-sm);
+            transition: var(--transition-all);
+        }
+        .product-item:hover {
+            box-shadow: var(--box-shadow);
+            transform: translateY(-3px);
+        }
+        .product-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            border-radius: var(--border-radius-1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        .product-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .stock-level {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 0.8rem 0;
+        }
+        .stock-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .stock-high { background-color: rgba(27, 156, 133, 0.2); color: var(--color-success); }
+        .stock-medium { background-color: rgba(247, 208, 96, 0.2); color: #d4a017; }
+        .stock-low { background-color: rgba(255, 0, 96, 0.2); color: var(--color-danger); }
+        .qr-code {
+            width: 80px;
+            height: 80px;
+            background-color: var(--color-dark);
+            margin: 0 auto;
+            border-radius: var(--border-radius-1);
+        }
+        .movement-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-light);
+        }
+        .movement-type {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+
+
+{% endblock extra_css %}
+
+
+{% block conteudo %}
+
+            <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1><span class="material-symbols-outlined">inventory_2</span>Gestão de Stock</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline"><span class="material-icons-sharp">qr_code_scanner</span>Scanner</button>
+                        <button class="btn btn-primary" onclick="novoProduto()"><span class="material-icons-sharp">add</span>Novo Produto</button>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div><div class="stat-label">Total em Stock</div><div class="stat-value">8,542</div></div>
+                            <div class="stat-icon primary"><span class="material-icons-sharp">inventory</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div><div class="stat-label">Valor Total</div><div class="stat-value">2.8M Kz</div></div>
+                            <div class="stat-icon success"><span class="material-icons-sharp">payments</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div><div class="stat-label">Alerta Baixo</div><div class="stat-value danger">23</div></div>
+                            <div class="stat-icon warning"><span class="material-icons-sharp">warning</span></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div><div class="stat-label">Rotação Média</div><div class="stat-value">12 dias</div></div>
+                            <div class="stat-icon danger"><span class="material-icons-sharp">sync</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tabs">
+                    <button class="tab active" onclick="mudarTab('produtos')">Produtos</button>
+                    <button class="tab" onclick="mudarTab('movimentacoes')">Movimentações</button>
+                    <button class="tab" onclick="mudarTab('previsao')">Previsão de Demanda (IA)</button>
+                    <button class="tab" onclick="mudarTab('fornecedores')">Fornecedores</button>
+                </div>
+                <div class="tab-content active" id="produtos">
+                    <div class="filters mb-3">
+                        <div class="search-bar"><span class="material-icons-sharp">search</span><input type="text" placeholder="Buscar produto..." id="searchProduct"></div>
+                        <select class="form-control" style="max-width: 200px;"><option>Todas Categorias</option><option>Eletrónicos</option><option>Vestuário</option><option>Alimentos</option></select>
+                        <select class="form-control" style="max-width: 200px;"><option>Todos Status</option><option>Em Stock</option><option>Stock Baixo</option><option>Esgotado</option></select>
+                    </div>
+                    <div class="inventory-grid" id="productGrid"></div>
+                </div>
+                <div class="tab-content" id="movimentacoes">
+                    <div class="card"><div class="card-header"><h3>Histórico de Movimentações</h3></div><div id="movementsList"></div></div>
+                </div>
+                <div class="tab-content" id="previsao">
+                    <div class="card"><div class="card-header"><h3>Previsão de Demanda com IA</h3><p class="text-muted">Análise preditiva baseada em histórico e tendências</p></div><canvas id="demandChart"></canvas></div>
+                    <div class="grid grid-3 mt-3">
+                        <div class="card"><h4>Produto em Alta</h4><p class="stat-value primary">Laptop HP</p><p class="text-muted">Demanda prevista +45%</p></div>
+                        <div class="card"><h4>Reabastecer Urgente</h4><p class="stat-value danger">Mouse Wireless</p><p class="text-muted">Esgota em 3 dias</p></div>
+                        <div class="card"><h4>Tendência</h4><p class="stat-value success">+18%</p><p class="text-muted">Crescimento trimestral</p></div>
+                    </div>
+                </div>
+                <div class="tab-content" id="fornecedores">
+                    <div class="table-container"><table class="table"><thead><tr><th>Fornecedor</th><th>Produtos</th><th>Prazo Médio</th><th>Confiabilidade</th><th>Ações</th></tr></thead><tbody id="supplierTable"></tbody></table></div>
+                </div>
+            </div>
+{% endblock %}
+{% block painel_direito%}
+
+        <div class="lado-direito">
+            
+            <div class="card mt-2"><h3 class="mb-2">Ações Rápidas</h3><button class="btn btn-primary w-100 mb-1"><span class="material-icons-sharp">add_shopping_cart</span>Nova Entrada</button><button class="btn btn-secondary w-100 mb-1"><span class="material-icons-sharp">remove_shopping_cart</span>Registar Saída</button><button class="btn btn-outline w-100"><span class="material-icons-sharp">inventory</span>Inventário</button></div>
+            <div class="card mt-2"><h3 class="mb-2">Alertas</h3><div class="alert alert-danger"><span class="material-icons-sharp">error</span><div>1 produto com stock baixo</div></div></div>
+        </div>
+{% endblock %}
+
+{% block scripts%}
+
+ <script src="{% static "js/ordens.js" %}"></script>
+<script src="{% static "js/index.js" %}"></script>
+<script src="{% static "js/artemis-utils.js" %}"></script>   
+
+    <script>
+        
+        const produtos = [
+            { id: 1, nome: 'Laptop HP', stock: 45, min: 20, preco: 120000, categoria: 'Eletrónicos' },
+            { id: 2, nome: 'Mouse Wireless', stock: 8, min: 50, preco: 2500, categoria: 'Eletrónicos' },
+            { id: 3, nome: 'Teclado Mecânico', stock: 120, min: 30, preco: 8500, categoria: 'Eletrónicos' },
+            { id: 4, nome: 'Monitor 24"', stock: 67, min: 25, preco: 45000, categoria: 'Eletrónicos' },
+            { id: 5, nome: 'Webcam HD', stock: 32, min: 15, preco: 15000, categoria: 'Eletrónicos' },
+            { id: 6, nome: 'Headset Gamer', stock: 89, min: 40, preco: 12000, categoria: 'Eletrónicos' },
+        ];
+        function getStockStatus(stock, min) {
+            if (stock === 0) return { class: 'stock-low', text: 'Esgotado' };
+            if (stock < min) return { class: 'stock-low', text: 'Stock Baixo' };
+            if (stock < min * 2) return { class: 'stock-medium', text: 'Stock Médio' };
+            return { class: 'stock-high', text: 'Stock Alto' };
+        }
+        function renderProducts() {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = produtos.map(p => {
+                const status = getStockStatus(p.stock, p.min);
+                return `<div class="product-item">
+                    <div class="product-image"><span class="material-icons-sharp" style="font-size: 4rem; color: white;">inventory_2</span></div>
+                    <div class="product-name">${p.nome}</div>
+                    <p class="text-muted">${p.categoria}</p>
+                    <div class="stock-level"><span class="material-icons-sharp">widgets</span><span>${p.stock} unidades</span></div>
+                    <div class="stock-status ${status.class}">${status.text}</div>
+                    <div class="flex-between mt-2"><span class="success" style="font-weight: 700;">${p.preco.toLocaleString('pt-BR')} Kz</span><div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">edit</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">qr_code</span></button></div></div>
+                </div>`;
+            }).join('');
+        }
+        function renderMovements() {
+            const movements = [
+                { type: 'Entrada', produto: 'Laptop HP', qtd: 20, date: '2026-02-08', user: 'João Silva' },
+                { type: 'Saída', produto: 'Mouse Wireless', qtd: -15, date: '2026-02-07', user: 'Maria Costa' },
+                { type: 'Entrada', produto: 'Teclado Mecânico', qtd: 50, date: '2026-02-06', user: 'Pedro Santos' },
+            ];
+            document.getElementById('movementsList').innerHTML = movements.map(m => `
+                <div class="movement-item">
+                    <div class="movement-type"><span class="material-icons-sharp ${m.type === 'Entrada' ? 'success' : 'danger'}">${m.type === 'Entrada' ? 'add_circle' : 'remove_circle'}</span><div><div style="font-weight: 500;">${m.produto}</div><small class="text-muted">${m.date} • ${m.user}</small></div></div>
+                    <div class="${m.qtd > 0 ? 'success' : 'danger'}" style="font-weight: 700;">${m.qtd > 0 ? '+' : ''}${m.qtd}</div>
+                </div>
+            `).join('');
+        }
+        function renderSuppliers() {
+            const suppliers = [
+                { nome: 'TechSupply Angola', produtos: 45, prazo: '7 dias', confiabilidade: 98 },
+                { nome: 'ElectroWorld', produtos: 32, prazo: '5 dias', confiabilidade: 95 },
+                { nome: 'GlobalTech', produtos: 28, prazo: '10 dias', confiabilidade: 92 },
+            ];
+            document.getElementById('supplierTable').innerHTML = suppliers.map(s => `
+                <tr><td>${s.nome}</td><td>${s.produtos}</td><td>${s.prazo}</td><td><div class="flex-between"><span>${s.confiabilidade}%</span><div class="progress-bar" style="width: 100px;"><div class="progress-fill success" style="width: ${s.confiabilidade}%"></div></div></div></td><td><button class="btn btn-sm btn-primary">Ver</button></td></tr>
+            `).join('');
+        }
+        function initDemandChart() {
+        Chart.defaults.color = '#9ab0c8';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+            new Chart(document.getElementById('demandChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'],
+                    datasets: [{
+                        label: 'Demanda Real',
+                        data: [450, 520, 480, 590, 550],
+                        borderColor: '#6C9BCF'
+                    }, {
+                        label: 'Previsão IA',
+                        data: [null, null, null, null, 550, 620, 680],
+                        borderColor: '#FF0060',
+                        borderDash: [5, 5]
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+        function mudarTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            if (tabName === 'produtos') renderProducts();
+            if (tabName === 'movimentacoes') renderMovements();
+            if (tabName === 'previsao') setTimeout(initDemandChart, 100);
+            if (tabName === 'fornecedores') renderSuppliers();
+        }
+        function novoProduto() { alert('Adicionar novo produto'); }
+        renderProducts();
+    </script>
+
+{% endblock %}

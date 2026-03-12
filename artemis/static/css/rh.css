@@ -1,0 +1,516 @@
+ /* ─── Dark Theme Variables ─────────────────────────────── */
+        :root {
+            --color-primary: #6C9BCF;
+            --color-success: #1B9C85;
+            --color-warning: #F7D060;
+            --color-danger:  #FF0060;
+            --color-purple:  #a855f7;
+            --color-white:   #1e2a3a;
+            --color-light:   #253347;
+            --color-dark:    #e0e8f0;
+            --color-dark-variant: #9ab0c8;
+            --color-background: #141c26;
+            --color-info-dark: #c5d8ec;
+
+            --card-border-radius: 14px;
+            --border-radius-1: 8px;
+            --border-radius-2: 14px;
+            --card-padding: 1.2rem;
+            --box-shadow-sm: 0 2px 12px rgba(0,0,0,0.35);
+            --box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+            --transition-all: all 0.3s ease;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            color: var(--color-dark);
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        h1, h2, h3, h4 { color: var(--color-dark); }
+        p, small { color: var(--color-dark-variant); }
+
+        /* ─── Layout ────────────────────────────────────────────── */
+       
+
+        /* ─── Main ──────────────────────────────────────────────── */
+        main { margin-top: 1.4rem; }
+
+
+        .modulo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        .modulo-header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 1.5rem;
+        }
+
+        /* ─── Buttons ───────────────────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: var(--border-radius-1);
+            border: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: var(--transition-all);
+        }
+        .btn-primary  { background-color: var(--color-primary); color: #fff; }
+        .btn-primary:hover  { background-color: #5588bb; }
+        .btn-secondary { background-color: var(--color-light); color: var(--color-dark); }
+        .btn-secondary:hover { background-color: #2e4060; }
+        .btn-outline  { background: transparent; border: 1px solid var(--color-primary); color: var(--color-primary); }
+        .btn-outline:hover { background-color: var(--color-primary); color: #fff; }
+        .btn-sm { padding: 0.3rem 0.7rem; font-size: 0.78rem; }
+        .w-100 { width: 100%; justify-content: center; }
+        .mb-1 { margin-bottom: 0.5rem; }
+
+        .actions { display: flex; gap: 0.7rem; }
+
+        /* ─── Tabs ──────────────────────────────────────────────── */
+        .tabs {
+            display: flex;
+            gap: 0.3rem;
+            border-bottom: 2px solid var(--color-light);
+            margin-bottom: 1.5rem;
+        }
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.7rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--color-dark-variant);
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: var(--transition-all);
+        }
+        .tab:hover { color: var(--color-primary); }
+        .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+
+        /* ─── Tab Content ───────────────────────────────────────── */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ─── Cards ─────────────────────────────────────────────── */
+        .card {
+            background-color: var(--color-white);
+            padding: var(--card-padding);
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow-sm);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .card-header h3 { font-size: 1rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+
+        /* ─── Stats Grid ─────────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background-color: var(--color-white);
+            padding: 1.2rem;
+            border-radius: var(--card-border-radius);
+            box-shadow: var(--box-shadow-sm);
+        }
+        .stat-card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .stat-label { color: var(--color-dark-variant); font-size: 0.82rem; margin-bottom: 0.3rem; }
+        .stat-value { font-size: 1.8rem; font-weight: 700; }
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon.primary  { background: rgba(108,155,207,0.2); color: var(--color-primary); }
+        .stat-icon.success  { background: rgba(27,156,133,0.2);  color: var(--color-success); }
+        .stat-icon.warning  { background: rgba(247,208,96,0.2);  color: var(--color-warning); }
+        .stat-icon.danger   { background: rgba(255,0,96,0.2);    color: var(--color-danger);  }
+
+        /* ─── Grid helpers ───────────────────────────────────────── */
+        .grid { display: grid; gap: 1.5rem; }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+        /* ─── Progress Bar ───────────────────────────────────────── */
+        .progress-bar {
+            background-color: var(--color-light);
+            border-radius: 100px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.6s ease;
+        }
+        .progress-fill.success { background-color: var(--color-success); }
+        .progress-fill.primary { background-color: var(--color-primary); }
+        .progress-fill.warning { background-color: var(--color-warning); }
+
+        /* ─── Badge ──────────────────────────────────────────────── */
+        .badge { padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.78rem; font-weight: 700; }
+        .badge-success { background: rgba(27,156,133,0.2); color: var(--color-success); }
+
+        /* ─── Alert ──────────────────────────────────────────────── */
+        .alert {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius-1);
+            font-size: 0.82rem;
+        }
+        .alert-warning { background: rgba(247,208,96,0.15); color: var(--color-warning); border-left: 3px solid var(--color-warning); }
+
+        /* ─── Text helpers ───────────────────────────────────────── */
+        .text-muted { color: var(--color-dark-variant); }
+        .flex-between { display: flex; justify-content: space-between; }
+        .mb-1 { margin-bottom: 0.4rem; }
+        .success { color: var(--color-success); }
+        .primary { color: var(--color-primary); }
+        .warning { color: var(--color-warning); }
+        .danger  { color: var(--color-danger); }
+
+        /* ─── Recruitment Pipeline ───────────────────────────────── */
+        .recruitment-pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        .pipeline-stage {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow-sm);
+            text-align: center;
+            border-top: 4px solid var(--color-primary);
+            transition: var(--transition-all);
+            cursor: pointer;
+        }
+        .pipeline-stage:hover { transform: translateY(-5px); box-shadow: var(--box-shadow); }
+        .pipeline-count { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); margin: 0.5rem 0; }
+
+        /* ─── Candidate Card ─────────────────────────────────────── */
+        .candidate-card {
+            background-color: var(--color-light);
+            padding: 1.2rem;
+            border-radius: var(--border-radius-2);
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            transition: var(--transition-all);
+        }
+        .candidate-card:hover { box-shadow: var(--box-shadow); }
+        .candidate-photo {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: white; font-weight: 700; flex-shrink: 0;
+        }
+        .candidate-info { flex: 1; }
+        .candidate-name { font-weight: 600; margin-bottom: 0.3rem; color: var(--color-dark); }
+        .candidate-position { color: var(--color-dark-variant); font-size: 0.85rem; margin-bottom: 0.5rem; }
+        .candidate-skills { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .skill-badge {
+            padding: 0.2rem 0.7rem;
+            background-color: var(--color-background);
+            border-radius: 1rem;
+            font-size: 0.72rem;
+            color: var(--color-dark-variant);
+        }
+
+        /* ─── Evaluation Card ────────────────────────────────────── */
+        .evaluation-card {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow-sm);
+            margin-bottom: 1rem;
+        }
+        .evaluation-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .evaluation-score { font-size: 2rem; font-weight: 700; color: var(--color-success); }
+        .competency-item { margin-bottom: 1rem; }
+        .competency-name { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.85rem; }
+
+        /* ─── Wellness ───────────────────────────────────────────── */
+        .wellness-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        .wellness-card {
+            background: linear-gradient(135deg, rgba(108,155,207,0.1), rgba(27,156,133,0.1));
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            text-align: center;
+        }
+        .wellness-icon {
+            width: 60px; height: 60px; border-radius: 50%;
+            background-color: var(--color-light);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1rem; font-size: 2rem;
+        }
+        .wellness-value { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+        /* ─── Training Card ──────────────────────────────────────── */
+        .training-card {
+            background-color: var(--color-light);
+            padding: 1.2rem;
+            border-radius: var(--border-radius-2);
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--color-primary);
+        }
+        .training-progress { margin-top: 1rem; }
+
+        /* ─── Leave Calendar ─────────────────────────────────────── */
+        .leave-calendar {
+            background-color: var(--color-white);
+            padding: 1.5rem;
+            border-radius: var(--border-radius-2);
+            box-shadow: var(--box-shadow-sm);
+        }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+        .calendar-day-header { text-align: center; font-weight: 600; padding: 0.5rem; font-size: 0.75rem; color: var(--color-dark-variant); }
+        .calendar-day {
+            aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            border-radius: var(--border-radius-1); font-size: 0.85rem; cursor: pointer;
+            transition: var(--transition-all);
+        }
+        .calendar-day:hover { background-color: var(--color-light); }
+        .calendar-day.has-leave { background-color: rgba(255,0,96,0.2); color: var(--color-danger); }
+        .calendar-day.today { background-color: var(--color-primary); color: white; }
+
+        /* ─── Right Panel ────────────────────────────────────────── */
+        .lado-direito { margin-top: 1.4rem; margin-right: 0; }
+        .lado-direito .nav { display: flex; justify-content: flex-end; gap: 2rem; margin-bottom: 1rem; }
+        .lado-direito .nav button { display: none; }
+ .lado-direito { margin-right: 0; }
+        canvas { max-height: 260px; }
+        .dark-mode {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--color-white);
+            padding: 0.4rem 0.8rem;
+            border-radius: 100px;
+            box-shadow: var(--box-shadow-sm);
+        }
+        .dark-mode span { cursor: pointer; font-size: 1.3rem; color: var(--color-dark-variant); }
+        .dark-mode span.active { color: var(--color-primary); }
+
+        canvas { max-height: 260px; }
+
+        /* ─── Flex gap ───────────────────────────────────────────── */
+        .flex { display: flex; }
+        .gap-1 { gap: 0.4rem; }
+        
+
+        /* ── Fix: Avatar como círculo ────────────────────────────────── */
+#ferias .avatar {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    flex-shrink: 0 !important;
+}
+
+/* ── Fix: Linhas dos itens em linha (flex) ───────────────────── */
+#ferias .leave-request-item,
+#ferias .current-leave-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    border-bottom: 1px solid rgba(255,255,255,.07) !important;
+}
+
+#ferias .leave-request-item:last-child,
+#ferias .current-leave-item:last-child {
+    border-bottom: none !important;
+}
+
+/* ── Fix: Info do funcionário ocupa o espaço disponível ──────── */
+#ferias .leave-info,
+#ferias .current-leave-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+#ferias .leave-name,
+#ferias .current-leave-name {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+#ferias .leave-meta,
+#ferias .current-leave-dates {
+    font-size: 11px !important;
+    opacity: .65 !important;
+}
+
+/* ── Fix: Botões de ação ao lado direito ─────────────────────── */
+#ferias .leave-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+}
+
+/* ── Fix: Badge "dias restantes" inline ──────────────────────── */
+#ferias .days-left {
+    flex-shrink: 0 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 3px 8px !important;
+    border-radius: 999px !important;
+}
+
+/* ── Fix: Avatar menor na tabela de próximas férias ──────────── */
+#ferias .upcoming-table .avatar {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+    min-height: 28px !important;
+    font-size: 10px !important;
+}
+
+#ferias .upcoming-table td > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+/* ── Fix: Legenda do calendário em linha ─────────────────────── */
+#ferias .calendar-legend {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+    margin-top: 12px !important;
+}
+
+#ferias .legend-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    font-size: 12px !important;
+}
+
+#ferias .legend-color {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 3px !important;
+    flex-shrink: 0 !important;
+}
+
+
+/* ── Fix: Tabela Próximas Férias - largura total ─────────────── */
+#ferias #upcomingLeaveList {
+    padding: 0 !important;
+}
+
+#ferias .upcoming-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    table-layout: fixed !important;
+}
+
+#ferias .upcoming-table th {
+    padding: 10px 16px !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: .4px !important;
+    opacity: .5 !important;
+    text-align: left !important;
+    border-bottom: 1px solid rgba(255,255,255,.07) !important;
+}
+
+#ferias .upcoming-table td {
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    border-bottom: 1px solid rgba(255,255,255,.07) !important;
+    vertical-align: middle !important;
+}
+
+#ferias .upcoming-table tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* ── Fix: Célula do funcionário com avatar + nome alinhados ──── */
+#ferias .upcoming-table td:first-child > div,
+#ferias .upcoming-table td > div {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+/* ── Fix: Avatar pequeno centrado verticalmente ──────────────── */
+#ferias .upcoming-table .avatar {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    font-size: 11px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+}
+
+/* ── Fix: Distribuição das colunas ───────────────────────────── */
+#ferias .upcoming-table th:nth-child(1),
+#ferias .upcoming-table td:nth-child(1) { width: 30% !important; }
+
+#ferias .upcoming-table th:nth-child(2),
+#ferias .upcoming-table td:nth-child(2) { width: 22% !important; }
+
+#ferias .upcoming-table th:nth-child(3),
+#ferias .upcoming-table td:nth-child(3) { width: 17% !important; }
+
+#ferias .upcoming-table th:nth-child(4),
+#ferias .upcoming-table td:nth-child(4) { width: 17% !important; }
+
+#ferias .upcoming-table th:nth-child(5),
+#ferias .upcoming-table td:nth-child(5) { width: 14% !important; text-align: center !important; }

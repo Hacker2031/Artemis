@@ -1,0 +1,830 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block extra_links %}
+
+    <link rel="stylesheet" href="{% static "css/rh.css" %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+{% endblock extra_links %}
+
+{% block conteudo %}
+            <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1>
+                        <span class="material-symbols-outlined">crowdsource</span>
+                        Recursos Humanos
+                    </h1>
+                    <div class="actions">
+                        <button class="btn btn-outline">
+                            <span class="material-icons-sharp">article</span>
+                            Relatórios
+                        </button>
+                        <button class="btn btn-primary" onclick="novaVaga()">
+                            <span class="material-icons-sharp">work</span>
+                            Nova Vaga
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" onclick="mudarTab('recrutamento', event)">
+                        <span class="material-icons-sharp">group_add</span>
+                        Recrutamento
+                    </button>
+                    <button class="tab" onclick="mudarTab('avaliacoes', event)">
+                        <span class="material-icons-sharp">assignment</span>
+                        Avaliações
+                    </button>
+                    <button class="tab" onclick="mudarTab('treinamento', event)">
+                        <span class="material-icons-sharp">school</span>
+                        Treinamento
+                    </button>
+                    <button class="tab" onclick="mudarTab('bem-estar', event)">
+                        <span class="material-icons-sharp">favorite</span>
+                        Bem-Estar
+                    </button>
+                    <button class="tab" onclick="mudarTab('ferias', event)">
+                        <span class="material-icons-sharp">beach_access</span>
+                        Férias
+                    </button>
+                </div>
+
+                <!-- Tab Recrutamento -->
+                <div class="tab-content active" id="recrutamento">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Vagas Abertas</div>
+                                    <div class="stat-value">15</div>
+                                </div>
+                                <div class="stat-icon primary">
+                                    <span class="material-icons-sharp">work_outline</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Candidatos Ativos</div>
+                                    <div class="stat-value">87</div>
+                                </div>
+                                <div class="stat-icon success">
+                                    <span class="material-icons-sharp">people</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Tempo Médio</div>
+                                    <div class="stat-value">28 dias</div>
+                                </div>
+                                <div class="stat-icon warning">
+                                    <span class="material-icons-sharp">schedule</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Taxa de Conversão</div>
+                                    <div class="stat-value">12.5%</div>
+                                </div>
+                                <div class="stat-icon danger">
+                                    <span class="material-icons-sharp">trending_up</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recruitment-pipeline">
+                        <div class="pipeline-stage">
+                            <span class="material-icons-sharp" style="font-size: 2rem; color: var(--color-primary);">contact_mail</span>
+                            <div class="pipeline-count">87</div>
+                            <p>Candidaturas</p>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="material-icons-sharp" style="font-size: 2rem; color: var(--color-success);">fact_check</span>
+                            <div class="pipeline-count">45</div>
+                            <p>Análise de Candidatos</p>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="material-icons-sharp" style="font-size: 2rem; color: var(--color-warning);">video_call</span>
+                            <div class="pipeline-count">28</div>
+                            <p>Entrevistas</p>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="material-icons-sharp" style="font-size: 2rem; color: var(--color-danger);">psychology</span>
+                            <div class="pipeline-count">15</div>
+                            <p>Testes</p>
+                        </div>
+                        <div class="pipeline-stage">
+                            <span class="material-icons-sharp" style="font-size: 2rem; color: var(--color-purple);">check_circle</span>
+                            <div class="pipeline-count">8</div>
+                            <p>Ofertas</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Candidatos em Destaque</h3>
+                            <button class="btn btn-sm btn-primary">Ver Todos</button>
+                        </div>
+                        <div id="candidatesList"></div>
+                    </div>
+                </div>
+
+                <!-- Tab Avaliações -->
+                <div class="tab-content" id="avaliacoes">
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Performance Média por Departamento</h3>
+                            </div>
+                            <canvas id="deptPerformanceChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Distribuição de Avaliações</h3>
+                            </div>
+                            <canvas id="ratingDistChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h3>Avaliações Recentes</h3>
+                        </div>
+                        <div id="evaluationsList"></div>
+                    </div>
+                </div>
+
+                <!-- Tab Treinamento -->
+                <div class="tab-content" id="treinamento">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Cursos Ativos</div>
+                                    <div class="stat-value">24</div>
+                                </div>
+                                <div class="stat-icon primary">
+                                    <span class="material-icons-sharp">school</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Horas Treinamento</div>
+                                    <div class="stat-value">1,245</div>
+                                </div>
+                                <div class="stat-icon success">
+                                    <span class="material-icons-sharp">schedule</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Taxa de Conclusão</div>
+                                    <div class="stat-value">87%</div>
+                                </div>
+                                <div class="stat-icon warning">
+                                    <span class="material-icons-sharp">check_circle</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-header">
+                                <div>
+                                    <div class="stat-label">Certificações</div>
+                                    <div class="stat-value">156</div>
+                                </div>
+                                <div class="stat-icon danger">
+                                    <span class="material-icons-sharp">workspace_premium</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2 mt-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Cursos Populares</h3>
+                            </div>
+                            <div id="trainingList"></div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Progresso por Departamento</h3>
+                            </div>
+                            <canvas id="trainingProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Bem-Estar -->
+                <div class="tab-content" id="bem-estar">
+                    <div class="wellness-dashboard">
+                        <div class="wellness-card">
+                            <div class="wellness-icon">
+                                <span class="material-icons-sharp primary">sentiment_very_satisfied</span>
+                            </div>
+                            <div class="wellness-value success">8.5/10</div>
+                            <p>Satisfação Geral</p>
+                        </div>
+                        <div class="wellness-card">
+                            <div class="wellness-icon">
+                                <span class="material-icons-sharp warning">fitness_center</span>
+                            </div>
+                            <div class="wellness-value primary">72%</div>
+                            <p>Adesão Wellness</p>
+                        </div>
+                        <div class="wellness-card">
+                            <div class="wellness-icon">
+                                <span class="material-icons-sharp success">self_improvement</span>
+                            </div>
+                            <div class="wellness-value warning">4.2h</div>
+                            <p>Média Esporte/Semana</p>
+                        </div>
+                        <div class="wellness-card">
+                            <div class="wellness-icon">
+                                <span class="material-icons-sharp danger">favorite</span>
+                            </div>
+                            <div class="wellness-value danger">95%</div>
+                            <p>Saúde Mental</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-2 mt-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Índice de Satisfação</h3>
+                            </div>
+                            <canvas id="satisfactionChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Iniciativas de Bem-Estar</h3>
+                            </div>
+                            <div style="padding: 1rem;">
+                                <div style="margin-bottom: 1rem;">
+                                    <div class="flex-between mb-1">
+                                        <span>Ginástica Laboral</span>
+                                        <span class="success">85%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill success" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <div class="flex-between mb-1">
+                                        <span>Mindfulness</span>
+                                        <span class="primary">68%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill primary" style="width: 68%"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 1rem;">
+                                    <div class="flex-between mb-1">
+                                        <span>Nutrição</span>
+                                        <span class="warning">72%</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill warning" style="width: 72%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Férias -->
+ <!-- Tab Férias -->
+<div class="tab-content" id="ferias">
+    <!-- Stats de Férias -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-label">Solicitações Pendentes</div>
+                    <div class="stat-value">12</div>
+                </div>
+                <div class="stat-icon warning">
+                    <span class="material-icons-sharp">pending</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-label">Em Férias Hoje</div>
+                    <div class="stat-value">28</div>
+                </div>
+                <div class="stat-icon primary">
+                    <span class="material-icons-sharp">beach_access</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-label">Dias Médios/Funcionário</div>
+                    <div class="stat-value">18.5</div>
+                </div>
+                <div class="stat-icon success">
+                    <span class="material-icons-sharp">event_available</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-label">Taxa de Aprovação</div>
+                    <div class="stat-value">94%</div>
+                </div>
+                <div class="stat-icon danger">
+                    <span class="material-icons-sharp">check_circle</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendário e Solicitações -->
+    <div class="grid grid-2 mt-3">
+        <div class="leave-calendar card">
+            <div class="calendar-header">
+                <h3>
+                    <span class="material-icons-sharp">calendar_month</span>
+                    <span id="calTitle"></span>
+                </h3>
+                <div class="flex gap-1">
+                    <button class="btn btn-sm btn-secondary" onclick="mesAnterior()">
+                        <span class="material-icons-sharp">chevron_left</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="mesAtual()">Hoje</button>
+                    <button class="btn btn-sm btn-secondary" onclick="proximoMes()">
+                        <span class="material-icons-sharp">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+            <div class="calendar-wrapper">
+                <div class="calendar-grid" id="calGrid"></div>
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-color today-color"></div>
+                        <span>Hoje</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color leave-color"></div>
+                        <span>Férias</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color multiple-color"></div>
+                        <span>Múltiplos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <span class="material-icons-sharp">pending_actions</span>
+                    Solicitações Pendentes
+                </h3>
+                <span class="badge badge-warning">12</span>
+            </div>
+            <div id="leaveRequestsList" class="leave-requests-list"></div>
+        </div>
+    </div>
+
+    <!-- Planejamento e Estatísticas -->
+    <div class="grid grid-2 mt-3">
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <span class="material-icons-sharp">insights</span>
+                    Planejamento de Férias 2026
+                </h3>
+            </div>
+            <canvas id="leaveChart" style="height: 300px;"></canvas>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>
+                    <span class="material-icons-sharp">people</span>
+                    Em Férias Agora
+                </h3>
+                <span class="badge badge-primary">28</span>
+            </div>
+            <div id="currentLeaveList" class="current-leave-list"></div>
+        </div>
+    </div>
+
+    <!-- Próximas Férias -->
+    <div class="card mt-3">
+        <div class="card-header">
+            <h3>
+                <span class="material-icons-sharp">upcoming</span>
+                Próximas Férias (30 dias)
+            </h3>
+            <button class="btn btn-sm btn-outline" onclick="exportarFerias()">
+                <span class="material-icons-sharp">download</span>
+                Exportar
+            </button>
+        </div>
+        <div id="upcomingLeaveList"></div>
+    </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block painel_direito%}
+        <!-- Right Panel — sem perfil do admin -->
+        <div class="lado-direito">
+            
+            <div class="card mt-2">
+                <h3 class="mb-2">Ações Rápidas</h3>
+                <button class="btn btn-primary w-100 mb-1" onclick="aprovarFerias()">
+                    <span class="material-icons-sharp">check</span>
+                    Aprovar Férias
+                </button>
+                <button class="btn btn-secondary w-100 mb-1" onclick="agendarEntrevista()">
+                    <span class="material-icons-sharp">event</span>
+                    Agendar Entrevista
+                </button>
+                <button class="btn btn-outline w-100" onclick="gerarRelatorio()">
+                    <span class="material-icons-sharp">description</span>
+                    Gerar Relatório
+                </button>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="mb-2">Alertas</h3>
+                <div class="alert alert-warning">
+                    <span class="material-icons-sharp">warning</span>
+                    <div>3 avaliações pendentes esta semana</div>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+       
+{% block scripts %}
+
+
+<script>
+    // ── Dados (substitua por chamadas à sua API) ──────────────────────
+    const feriasPendentes = [
+        { id:1, name:'João Almeida',    dept:'TI',         periodo:'15 Mar – 29 Mar', dias:15 },
+        { id:2, name:'Carla Mendes',    dept:'Marketing',  periodo:'20 Mar – 03 Abr', dias:15 },
+        { id:3, name:'Rui Ferreira',    dept:'Vendas',     periodo:'01 Abr – 15 Abr', dias:15 },
+        { id:4, name:'Ana Costa',       dept:'Financeiro', periodo:'07 Abr – 21 Abr', dias:15 },
+        { id:5, name:'Pedro Lopes',     dept:'RH',         periodo:'14 Abr – 28 Abr', dias:15 },
+        { id:6, name:'Sofia Nunes',     dept:'Jurídico',   periodo:'22 Abr – 06 Mai', dias:15 },
+    ];
+
+    const feriasAtuais = [
+        { name:'Maria Santos',   dept:'Marketing',  retorno:'14 Mar', diasRestantes:3  },
+        { name:'Luís Rodrigues', dept:'TI',         retorno:'18 Mar', diasRestantes:7  },
+        { name:'Filipa Dias',    dept:'Vendas',     retorno:'20 Mar', diasRestantes:9  },
+        { name:'Carlos Gomes',   dept:'Financeiro', retorno:'22 Mar', diasRestantes:11 },
+        { name:'Inês Carvalho',  dept:'RH',         retorno:'25 Mar', diasRestantes:14 },
+    ];
+
+    const feriasFuturas = [
+        { name:'João Almeida',    dept:'TI',         inicio:'15 Mar', fim:'29 Mar', dias:15 },
+        { name:'Carla Mendes',    dept:'Marketing',  inicio:'20 Mar', fim:'03 Abr', dias:15 },
+        { name:'Rui Ferreira',    dept:'Vendas',     inicio:'01 Abr', fim:'15 Abr', dias:15 },
+        { name:'Ana Costa',       dept:'Financeiro', inicio:'07 Abr', fim:'21 Abr', dias:15 },
+        { name:'Pedro Lopes',     dept:'RH',         inicio:'14 Abr', fim:'28 Abr', dias:15 },
+        { name:'Sofia Nunes',     dept:'Jurídico',   inicio:'22 Abr', fim:'06 Mai', dias:15 },
+    ];
+
+    // Dias com férias no calendário: { dia: nº de funcionários }
+    const diasComFerias = { 10:1, 12:1, 13:1, 14:1, 20:3, 21:3, 22:3 };
+
+    // ── Utilitários ───────────────────────────────────────────────────
+    const CORES = ['#4f6ef7','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4'];
+    const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+    const corAvatar  = (i) => CORES[i % CORES.length];
+    const iniciais   = (n) => n.split(' ').slice(0,2).map(p => p[0]).join('').toUpperCase();
+
+    // ── Calendário ────────────────────────────────────────────────────
+    let calAno = 2026, calMes = 2; // 0-indexed
+
+    function renderCalendario(ano, mes) {
+        document.getElementById('calTitle').textContent = `${MESES[mes]} ${ano}`;
+        const hoje = new Date();
+        const primeiroDia = new Date(ano, mes, 1).getDay();
+        const diasNoMes   = new Date(ano, mes + 1, 0).getDate();
+        const headers = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+        let html = headers.map(h => `<div class="calendar-day-header">${h}</div>`).join('');
+        for (let i = 0; i < primeiroDia; i++) html += `<div class="calendar-day empty"></div>`;
+
+        for (let d = 1; d <= diasNoMes; d++) {
+            const isHoje = d === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear();
+            const qtd    = diasComFerias[d];
+            let cls      = 'calendar-day';
+            if (isHoje)    cls += ' today';
+            else if (qtd >= 2) cls += ' has-leave multiple';
+            else if (qtd)  cls += ' has-leave';
+
+            const dot   = qtd ? '<div class="leave-indicator"></div>' : '';
+            const title = qtd >= 2 ? `title="${qtd} funcionários"` : qtd ? 'title="Funcionário em férias"' : '';
+            html += `<div class="${cls}" ${title}>${d}${dot}</div>`;
+        }
+        document.getElementById('calGrid').innerHTML = html;
+    }
+
+    function mesAnterior() {
+        if (--calMes < 0) { calMes = 11; calAno--; }
+        renderCalendario(calAno, calMes);
+    }
+    function proximoMes() {
+        if (++calMes > 11) { calMes = 0; calAno++; }
+        renderCalendario(calAno, calMes);
+    }
+    function mesAtual() {
+        const t = new Date();
+        calAno = t.getFullYear(); calMes = t.getMonth();
+        renderCalendario(calAno, calMes);
+    }
+
+    // ── Solicitações pendentes ────────────────────────────────────────
+    function renderPendentes() {
+        document.getElementById('leaveRequestsList').innerHTML = feriasPendentes.map((r, i) => `
+            <div class="leave-request-item" id="req-${r.id}">
+                <div class="avatar" style="background:${corAvatar(i)}">${iniciais(r.name)}</div>
+                <div class="leave-info">
+                    <div class="leave-name">${r.name}</div>
+                    <div class="leave-meta">${r.dept} &bull; ${r.periodo} &bull; ${r.dias} dias</div>
+                </div>
+                <div class="leave-actions">
+                    <button class="btn btn-sm btn-success" onclick="aprovarFerias(${r.id})">
+                        <span class="material-icons-sharp">check</span>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="recusarFerias(${r.id})">
+                        <span class="material-icons-sharp">close</span>
+                    </button>
+                </div>
+            </div>`).join('');
+    }
+
+    function aprovarFerias(id) {
+        const idx = feriasPendentes.findIndex(r => r.id === id);
+        if (idx !== -1) { feriasPendentes.splice(idx, 1); renderPendentes(); }
+    }
+    function recusarFerias(id) {
+        const idx = feriasPendentes.findIndex(r => r.id === id);
+        if (idx !== -1) { feriasPendentes.splice(idx, 1); renderPendentes(); }
+    }
+
+    // ── Em férias agora ───────────────────────────────────────────────
+    function renderFeriasAtuais() {
+        document.getElementById('currentLeaveList').innerHTML = feriasAtuais.map((e, i) => `
+            <div class="current-leave-item">
+                <div class="avatar" style="background:${corAvatar(i)}">${iniciais(e.name)}</div>
+                <div class="current-leave-info">
+                    <div class="current-leave-name">${e.name}</div>
+                    <div class="current-leave-dates">${e.dept} &bull; Retorno: ${e.retorno}</div>
+                </div>
+                <span class="days-left">${e.diasRestantes}d</span>
+            </div>`).join('');
+    }
+
+    // ── Próximas férias ───────────────────────────────────────────────
+    function renderFeriasFuturas() {
+        document.getElementById('upcomingLeaveList').innerHTML = `
+            <table class="upcoming-table">
+                <thead>
+                    <tr>
+                        <th>Funcionário</th><th>Departamento</th>
+                        <th>Início</th><th>Fim</th><th>Dias</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${feriasFuturas.map((u, i) => `
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <div class="avatar" style="background:${corAvatar(i)};width:28px;height:28px;font-size:11px">
+                                    ${iniciais(u.name)}
+                                </div>
+                                ${u.name}
+                            </div>
+                        </td>
+                        <td>${u.dept}</td>
+                        <td>${u.inicio}</td>
+                        <td>${u.fim}</td>
+                        <td><span class="badge badge-primary">${u.dias}</span></td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>`;
+    }
+
+    // ── Gráfico ───────────────────────────────────────────────────────
+    function renderGrafico() {
+        const ctx = document.getElementById('leaveChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+                datasets: [
+                    {
+                        label: 'Aprovadas',
+                        data: [18,22,28,35,40,55,62,58,38,25,20,15],
+                        backgroundColor: 'rgba(79,110,247,.8)',
+                        borderRadius: 6, borderSkipped: false,
+                    },
+                    {
+                        label: 'Pendentes',
+                        data: [3,4,12,8,10,14,18,16,9,6,5,4],
+                        backgroundColor: 'rgba(245,158,11,.7)',
+                        borderRadius: 6, borderSkipped: false,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: { grid: { color: 'rgba(0,0,0,.06)' } }
+                }
+            }
+        });
+    }
+
+    // ── Exportar ──────────────────────────────────────────────────────
+    function exportarFerias() {
+        const linhas = [['Funcionário','Departamento','Início','Fim','Dias'],
+            ...feriasFuturas.map(u => [u.name, u.dept, u.inicio, u.fim, u.dias])];
+        const csv = linhas.map(r => r.join(';')).join('\n');
+        const a = document.createElement('a');
+        a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+        a.download = 'ferias.csv';
+        a.click();
+    }
+
+    // ── Init (chama quando a tab for ativada/carregada) ───────────────
+    function initTabFerias() {
+        renderCalendario(calAno, calMes);
+        renderPendentes();
+        renderFeriasAtuais();
+        renderFeriasFuturas();
+        renderGrafico();
+    }
+
+    // Chama automaticamente se o elemento já estiver visível
+    if (document.getElementById('ferias')) initTabFerias();
+        const candidates = [
+            { name: 'João Silva',  position: 'Desenvolvedor Full Stack', skills: ['React', 'Node.js', 'Python'], score: 92 },
+            { name: 'Maria Santos', position: 'Designer UX/UI',          skills: ['Figma', 'Adobe XD', 'CSS'],  score: 88 },
+            { name: 'Pedro Costa', position: 'Analista de Dados',        skills: ['SQL', 'Python', 'Tableau'],  score: 85 },
+        ];
+
+        function renderCandidates() {
+            document.getElementById('candidatesList').innerHTML = candidates.map(c => `
+                <div class="candidate-card">
+                    <div class="candidate-photo">${c.name.split(' ').map(n => n[0]).join('')}</div>
+                    <div class="candidate-info">
+                        <div class="candidate-name">${c.name}</div>
+                        <div class="candidate-position">${c.position}</div>
+                        <div class="candidate-skills">
+                            ${c.skills.map(s => `<span class="skill-badge">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="badge badge-success" style="font-size: 1rem;">${c.score}%</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderEvaluations() {
+            const evals = [
+                { employee: 'Ana Silva',     department: 'Vendas', score: 9.2, date: '2026-01-15' },
+                { employee: 'Carlos Mendes', department: 'TI',     score: 8.8, date: '2026-01-20' },
+            ];
+            document.getElementById('evaluationsList').innerHTML = evals.map(e => `
+                <div class="evaluation-card">
+                    <div class="evaluation-header">
+                        <div>
+                            <h4>${e.employee}</h4>
+                            <small class="text-muted">${e.department}</small>
+                        </div>
+                        <div class="evaluation-score">${e.score}</div>
+                    </div>
+                    <div class="competency-item">
+                        <div class="competency-name"><span>Liderança</span><span>9.0</span></div>
+                        <div class="progress-bar"><div class="progress-fill success" style="width:90%"></div></div>
+                    </div>
+                    <div class="competency-item">
+                        <div class="competency-name"><span>Comunicação</span><span>8.5</span></div>
+                        <div class="progress-bar"><div class="progress-fill primary" style="width:85%"></div></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTraining() {
+            const courses = [
+                { name: 'Liderança Estratégica', enrolled: 45, completed: 38 },
+                { name: 'Excel Avançado',         enrolled: 62, completed: 55 },
+                { name: 'Comunicação Eficaz',     enrolled: 38, completed: 32 },
+            ];
+            document.getElementById('trainingList').innerHTML = courses.map(c => `
+                <div class="training-card">
+                    <h4>${c.name}</h4>
+                    <p class="text-muted">${c.enrolled} inscritos • ${c.completed} concluídos</p>
+                    <div class="training-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill success" style="width:${(c.completed/c.enrolled)*100}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function mudarTab(tabName, e) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            e.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'recrutamento') renderCandidates();
+            if (tabName === 'avaliacoes')   { renderEvaluations(); setTimeout(initEvaluationCharts, 100); }
+            if (tabName === 'treinamento')  { renderTraining();    setTimeout(initTrainingCharts,   100); }
+            if (tabName === 'bem-estar')    setTimeout(initWellnessCharts, 100);
+        }
+
+        Chart.defaults.color = '#9ab0c8';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+
+        function initEvaluationCharts() {
+            new Chart(document.getElementById('deptPerformanceChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Liderança','Comunicação','Técnica','Inovação','Equipe'],
+                    datasets: [{ label: 'Média Empresa', data: [8.5,8.2,7.8,8.0,8.7],
+                        borderColor: '#6C9BCF', backgroundColor: 'rgba(108,155,207,0.2)' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            new Chart(document.getElementById('ratingDistChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excelente (9-10)','Bom (7-8.9)','Regular (5-6.9)','Baixo (<5)'],
+                    datasets: [{ data: [45,38,15,2],
+                        backgroundColor: ['#1B9C85','#6C9BCF','#F7D060','#FF0060'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function initTrainingCharts() {
+            new Chart(document.getElementById('trainingProgressChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Vendas','TI','RH','Financeiro'],
+                    datasets: [{ label: 'Horas de Treinamento', data: [340,420,280,205],
+                        backgroundColor: '#1B9C85' }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function initWellnessCharts() {
+            new Chart(document.getElementById('satisfactionChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan','Fev','Mar','Abr','Mai','Jun'],
+                    datasets: [{ label: 'Índice de Satisfação', data: [7.8,8.0,8.3,8.1,8.4,8.5],
+                        borderColor: '#1B9C85', tension: 0.4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function novaVaga()        { alert('Criar nova vaga'); }
+        function aprovarFerias()   { alert('Aprovar férias'); }
+        function agendarEntrevista() { alert('Agendar entrevista'); }
+        function gerarRelatorio()  { alert('Gerar relatório'); }
+
+        renderCandidates();
+    </script>
+<script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>
+{% endblock %}

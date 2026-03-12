@@ -1,0 +1,450 @@
+{% extends "layout.html" %}
+{% load static %}
+   
+   
+   
+{% block extra_links %} 
+    <link rel="stylesheet" href="{% static "css/funcionarios.css" %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+       
+{% block conteudo %}
+
+            <div class="modulo-container">
+                <div class="modulo-header">
+                    <h1>
+                        <span class="material-icons-sharp">person_outline</span>
+                        Gestão de Funcionários
+                    </h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="exportarDados()">
+                            <span class="material-icons-sharp">download</span>
+                            Exportar
+                        </button>
+                        <button class="btn btn-primary" onclick="abrirModalNovoFuncionario()">
+                            <span class="material-icons-sharp">add</span>
+                            Novo Funcionário
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Departamentos -->
+                <div class="department-grid">
+                    <div class="department-card" onclick="filtrarPorDepartamento('todos')">
+                        <div class="department-count">124</div>
+                        <p>Total</p>
+                    </div>
+                    <div class="department-card" onclick="filtrarPorDepartamento('vendas')">
+                        <div class="department-count">32</div>
+                        <p>Vendas</p>
+                    </div>
+                    <div class="department-card" onclick="filtrarPorDepartamento('ti')">
+                        <div class="department-count">18</div>
+                        <p>TI</p>
+                    </div>
+                    <div class="department-card" onclick="filtrarPorDepartamento('rh')">
+                        <div class="department-count">12</div>
+                        <p>RH</p>
+                    </div>
+                    <div class="department-card" onclick="filtrarPorDepartamento('financeiro')">
+                        <div class="department-count">15</div>
+                        <p>Financeiro</p>
+                    </div>
+                    <div class="department-card" onclick="filtrarPorDepartamento('operacoes')">
+                        <div class="department-count">47</div>
+                        <p>Operações</p>
+                    </div>
+                </div>
+
+                <!-- Filtros e Busca -->
+                <div class="filters">
+                    <div class="search-bar">
+                        <span class="material-icons-sharp">search</span>
+                        <input type="text" placeholder="Buscar funcionário..." id="searchInput" onkeyup="buscarFuncionario()">
+                    </div>
+                    <select class="form-control" style="max-width: 200px;" onchange="filtrarPorStatus(this.value)">
+                        <option value="todos">Todos Status</option>
+                        <option value="ativo">Ativos</option>
+                        <option value="ferias">Em Férias</option>
+                        <option value="afastado">Afastados</option>
+                    </select>
+                    <select class="form-control" style="max-width: 200px;" onchange="ordenarPor(this.value)">
+                        <option value="nome">Ordenar por Nome</option>
+                        <option value="departamento">Por Departamento</option>
+                        <option value="performance">Por Performance</option>
+                        <option value="admissao">Por Data de Admissão</option>
+                    </select>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab active" onclick="mudarTab('lista')">
+                        <span class="material-icons-sharp">list</span>
+                        Lista
+                    </button>
+                    <button class="tab" onclick="mudarTab('cards')">
+                        <span class="material-icons-sharp">grid_view</span>
+                        Cards
+                    </button>
+                    <button class="tab" onclick="mudarTab('analytics')">
+                        <span class="material-icons-sharp">analytics</span>
+                        Analytics
+                    </button>
+                </div>
+
+                <!-- Conteúdo Tab Lista -->
+                <div class="tab-content active" id="lista">
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Funcionário</th>
+                                    <th>Departamento</th>
+                                    <th>Cargo</th>
+                                    <th>Admissão</th>
+                                    <th>Performance</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeeTableBody">
+                                <!-- Gerado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Conteúdo Tab Cards -->
+                <div class="tab-content" id="cards">
+                    <div id="employeeCardsContainer" style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;">
+                        <!-- Gerado por JS -->
+                    </div>
+                </div>
+
+                <!-- Conteúdo Tab Analytics -->
+                <div class="tab-content" id="analytics">
+                    <div class="grid grid-2">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Performance por Departamento</h3>
+                            </div>
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Distribuição Etária</h3>
+                            </div>
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Taxa de Rotatividade</h3>
+                            </div>
+                            <canvas id="turnoverChart"></canvas>
+                        </div>
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Crescimento da Equipe</h3>
+                            </div>
+                            <canvas id="growthChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+{% endblock %}
+
+{% block painel_direito %}
+        <div class="lado-direito">
+
+            <!-- Quick Stats -->
+            <div class="card mt-2">
+                <h3 class="mb-2">Estatísticas Rápidas</h3>
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-value" style="font-size: 1.5rem;">98.5%</div>
+                        <div class="stat-label">Taxa de Presença</div>
+                    </div>
+                    <div class="stat-icon success">
+                        <span class="material-icons-sharp">check_circle</span>
+                    </div>
+                </div>
+                <div class="progress-bar mt-2">
+                    <div class="progress-fill success" style="width: 98.5%"></div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="mb-2">Aniversariantes do Mês</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div class="employee-avatar" style="width: 40px; height: 40px; font-size: 1rem;">MJ</div>
+                        <div>
+                            <div style="font-weight: 500;">Maria João</div>
+                            <small class="text-muted">15 de Fevereiro</small>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.8rem;">
+                        <div class="employee-avatar" style="width: 40px; height: 40px; font-size: 1rem;">PC</div>
+                        <div>
+                            <div style="font-weight: 500;">Pedro Costa</div>
+                            <small class="text-muted">22 de Fevereiro</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-2">
+                <h3 class="mb-2">Insights de IA</h3>
+                <div class="ai-insight">
+                    <div class="ai-insight-header">
+                        <span class="material-symbols-outlined">lightbulb</span>
+                        Recomendação
+                    </div>
+                    <p style="font-size: 0.85rem;">A equipe de TI está 15% acima da meta. Considere oferecer bônus de performance este mês.</p>
+                </div>
+            </div>
+        </div>
+        
+ 
+{% endblock %}
+
+
+    <!-- Modal Novo Funcionário -->
+
+
+{% block scripts%}
+    <script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>   
+
+    <script>
+        // Dados de exemplo
+        const funcionarios = [
+            { id: 1, nome: 'Ana Silva', departamento: 'Vendas', cargo: 'Gerente de Vendas', admissao: '2020-03-15', performance: 95, status: 'ativo', email: 'ana.silva@artemis.ao' },
+            { id: 2, nome: 'Carlos Mendes', departamento: 'TI', cargo: 'Desenvolvedor Senior', admissao: '2019-07-22', performance: 88, status: 'ativo', email: 'carlos.mendes@artemis.ao' },
+            { id: 3, nome: 'Beatriz Costa', departamento: 'RH', cargo: 'Analista de RH', admissao: '2021-01-10', performance: 92, status: 'ativo', email: 'beatriz.costa@artemis.ao' },
+            { id: 4, nome: 'Daniel Santos', departamento: 'Financeiro', cargo: 'Contador', admissao: '2018-11-05', performance: 85, status: 'ferias', email: 'daniel.santos@artemis.ao' },
+            { id: 5, nome: 'Elena Rodrigues', departamento: 'Operações', cargo: 'Coordenadora', admissao: '2022-02-28', performance: 90, status: 'ativo', email: 'elena.rodrigues@artemis.ao' },
+        ];
+
+        // Renderizar tabela
+        function renderizarTabela() {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = funcionarios.map(f => `
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.8rem;">
+                            <div class="employee-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                                ${f.nome.split(' ').map(n => n[0]).join('')}
+                            </div>
+                            <div>
+                                <div style="font-weight: 500;">${f.nome}</div>
+                                <small class="text-muted">${f.email}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td>${f.departamento}</td>
+                    <td>${f.cargo}</td>
+                    <td>${new Date(f.admissao).toLocaleDateString('pt-BR')}</td>
+                    <td>
+                        <div class="progress-bar">
+                            <div class="progress-fill ${f.performance >= 90 ? 'success' : f.performance >= 70 ? '' : 'warning'}" 
+                                 style="width: ${f.performance}%"></div>
+                        </div>
+                        <small>${f.performance}%</small>
+                    </td>
+                    <td>
+                        <span class="badge badge-${f.status === 'ativo' ? 'success' : f.status === 'ferias' ? 'warning' : 'danger'}">
+                            ${f.status.charAt(0).toUpperCase() + f.status.slice(1)}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-sm btn-primary" onclick="verDetalhes(${f.id})">
+                                <span class="material-icons-sharp">visibility</span>
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="editarFuncionario(${f.id})">
+                                <span class="material-icons-sharp">edit</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Renderizar cards
+        function renderizarCards() {
+            const container = document.getElementById('employeeCardsContainer');
+            container.innerHTML = funcionarios.map(f => `
+                <div class="card">
+                    <div class="employee-card">
+                        <div class="employee-avatar">
+                            ${f.nome.split(' ').map(n => n[0]).join('')}
+                        </div>
+                        <div class="employee-info">
+                            <div class="employee-name">${f.nome}</div>
+                            <div class="employee-role">${f.cargo}</div>
+                            <div class="employee-meta">
+                                <div class="employee-meta-item">
+                                    <span class="material-icons-sharp">business</span>
+                                    ${f.departamento}
+                                </div>
+                                <div class="employee-meta-item">
+                                    <span class="material-icons-sharp">calendar_today</span>
+                                    ${new Date(f.admissao).toLocaleDateString('pt-BR')}
+                                </div>
+                                <div class="employee-meta-item">
+                                    <span class="material-icons-sharp">trending_up</span>
+                                    ${f.performance}% Performance
+                                </div>
+                            </div>
+                            <div class="skill-tags">
+                                <span class="skill-tag">Liderança</span>
+                                <span class="skill-tag">Comunicação</span>
+                                <span class="skill-tag">Excel</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Gráficos
+        function inicializarGraficos() {
+            // Performance por Departamento
+            Chart.defaults.color = '#9ab0c8';
+        Chart.defaults.borderColor = 'rgba(255,255,255,0.07)';
+        new Chart(document.getElementById('performanceChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Vendas', 'TI', 'RH', 'Financeiro', 'Operações'],
+                    datasets: [{
+                        label: 'Performance Média (%)',
+                        data: [85, 92, 88, 78, 82],
+                        backgroundColor: 'rgba(108, 155, 207, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Distribuição Etária
+            new Chart(document.getElementById('ageChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['18-25', '26-35', '36-45', '46-55', '56+'],
+                    datasets: [{
+                        data: [15, 45, 32, 18, 10],
+                        backgroundColor: ['#6C9BCF', '#1B9C85', '#F7D060', '#FF0060', '#7d8da1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Taxa de Rotatividade
+            new Chart(document.getElementById('turnoverChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Taxa de Rotatividade (%)',
+                        data: [3.2, 2.8, 3.5, 2.1, 2.9, 2.5],
+                        borderColor: '#FF0060',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Crescimento da Equipe
+            new Chart(document.getElementById('growthChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Total de Funcionários',
+                        data: [110, 115, 118, 120, 122, 124],
+                        borderColor: '#1B9C85',
+                        backgroundColor: 'rgba(27, 156, 133, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Funções de interação
+        function mudarTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            event.target.closest('.tab').classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'analytics') {
+                setTimeout(inicializarGraficos, 100);
+            }
+        }
+
+        function abrirModalNovoFuncionario() {
+            document.getElementById('modalNovoFuncionario').classList.add('active');
+        }
+
+        function fecharModal() {
+            document.querySelector('.modal').classList.remove('active');
+        }
+
+        function salvarFuncionario(e) {
+            e.preventDefault();
+            alert('Funcionário salvo com sucesso!');
+            fecharModal();
+        }
+
+        function buscarFuncionario() {
+            // Implementar busca
+        }
+
+        function filtrarPorDepartamento(dept) {
+            // Implementar filtro
+        }
+
+        function filtrarPorStatus(status) {
+            // Implementar filtro
+        }
+
+        function ordenarPor(criterio) {
+            // Implementar ordenação
+        }
+
+        function exportarDados() {
+            alert('Exportando dados...');
+        }
+
+        function verDetalhes(id) {
+            alert('Ver detalhes do funcionário #' + id);
+        }
+
+        function editarFuncionario(id) {
+            alert('Editar funcionário #' + id);
+        }
+
+        // Inicialização
+        renderizarTabela();
+        renderizarCards();
+    </script>
+
+{% endblock %}
