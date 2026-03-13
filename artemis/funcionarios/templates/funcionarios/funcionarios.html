@@ -22,7 +22,7 @@
                             <span class="material-icons-sharp">download</span>
                             Exportar
                         </button>
-                        <button class="btn btn-primary" onclick="abrirModalNovoFuncionario()">
+                        <button class="btn btn-primary" onclick="window.location.href='{% url "NovoFuncionario" %}'">
                             <span class="material-icons-sharp">add</span>
                             Novo Funcionário
                         </button>
@@ -32,7 +32,7 @@
                 <!-- Departamentos -->
                 <div class="department-grid">
                     <div class="department-card" onclick="filtrarPorDepartamento('todos')">
-                        <div class="department-count">124</div>
+                        <div class="department-count">{{funcionarios.count}}</div>
                         <p>Total</p>
                     </div>
                     <div class="department-card" onclick="filtrarPorDepartamento('vendas')">
@@ -222,11 +222,10 @@
     <script>
         // Dados de exemplo
         const funcionarios = [
-            { id: 1, nome: 'Ana Silva', departamento: 'Vendas', cargo: 'Gerente de Vendas', admissao: '2020-03-15', performance: 95, status: 'ativo', email: 'ana.silva@artemis.ao' },
-            { id: 2, nome: 'Carlos Mendes', departamento: 'TI', cargo: 'Desenvolvedor Senior', admissao: '2019-07-22', performance: 88, status: 'ativo', email: 'carlos.mendes@artemis.ao' },
-            { id: 3, nome: 'Beatriz Costa', departamento: 'RH', cargo: 'Analista de RH', admissao: '2021-01-10', performance: 92, status: 'ativo', email: 'beatriz.costa@artemis.ao' },
-            { id: 4, nome: 'Daniel Santos', departamento: 'Financeiro', cargo: 'Contador', admissao: '2018-11-05', performance: 85, status: 'ferias', email: 'daniel.santos@artemis.ao' },
-            { id: 5, nome: 'Elena Rodrigues', departamento: 'Operações', cargo: 'Coordenadora', admissao: '2022-02-28', performance: 90, status: 'ativo', email: 'elena.rodrigues@artemis.ao' },
+
+        {% for funcionario in funcionarios%}
+            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '2020-03-15', performance: {{funcionario.nota }}, status: 'ativo', email: '{{funcionario.email}}' },
+        {% endfor%} 
         ];
 
         // Renderizar tabela

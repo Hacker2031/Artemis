@@ -53,7 +53,7 @@ class Funcionarios(models.Model):
     cargo = models.ForeignKey('rh.Cargos', models.DO_NOTHING, db_column='cargo', blank=True, null=True)
     id_docs = models.IntegerField(unique=True, blank=True, null=True)
     estado = models.CharField(max_length=45)
-    avaliacao = models.TextField(blank=True, null=True)
+    avaliacao = models.FloatField(blank=True, null=True) 
     id_controlo = models.OneToOneField(Controlo, models.DO_NOTHING, db_column='id_controlo', blank=True, null=True)
     contacto = models.CharField(unique=True, max_length=25)
     contacto_alt = models.CharField(max_length=45, blank=True, null=True)
@@ -65,6 +65,12 @@ class Funcionarios(models.Model):
     conta_bancaria = models.CharField(unique=True, max_length=45)
     departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
     ativo = models.IntegerField()
+
+    @property
+    def nota(self):
+        return self.avaliacao * 10 if self.avaliacao is not None else None
+    
+
 
     class Meta:
         managed = False
