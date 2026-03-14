@@ -179,20 +179,18 @@
             <div class="card mt-2">
                 <h3 class="mb-2">Aniversariantes do Mês</h3>
                 <div style="display: flex; flex-direction: column; gap: 0.8rem;">
+                   
+                    {%for aniversariante in aniversariantes%}
+                    
                     <div style="display: flex; align-items: center; gap: 0.8rem;">
                         <div class="employee-avatar" style="width: 40px; height: 40px; font-size: 1rem;">MJ</div>
                         <div>
-                            <div style="font-weight: 500;">Maria João</div>
-                            <small class="text-muted">15 de Fevereiro</small>
+                            <div style="font-weight: 500;">{{aniversariante.f_nome}}</div>
+                            <small class="text-muted">{{aniversariante.data_nasc}}</small>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.8rem;">
-                        <div class="employee-avatar" style="width: 40px; height: 40px; font-size: 1rem;">PC</div>
-                        <div>
-                            <div style="font-weight: 500;">Pedro Costa</div>
-                            <small class="text-muted">22 de Fevereiro</small>
-                        </div>
-                    </div>
+                    {%endfor%}
+
                 </div>
             </div>
 

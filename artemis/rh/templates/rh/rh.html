@@ -690,9 +690,9 @@
     // Chama automaticamente se o elemento já estiver visível
     if (document.getElementById('ferias')) initTabFerias();
         const candidates = [
-            { name: 'João Silva',  position: 'Desenvolvedor Full Stack', skills: ['React', 'Node.js', 'Python'], score: 92 },
-            { name: 'Maria Santos', position: 'Designer UX/UI',          skills: ['Figma', 'Adobe XD', 'CSS'],  score: 88 },
-            { name: 'Pedro Costa', position: 'Analista de Dados',        skills: ['SQL', 'Python', 'Tableau'],  score: 85 },
+            {% for funcionario in funcionarios%}
+            { name: '{{funcionario.f_nome}}',  position: '{{funcionario.cargo}}', skills: ['React', 'Node.js', 'Python'], score: {{funcionario.avaliacao}} },
+            {% endfor %}
         ];
 
         function renderCandidates() {
@@ -707,7 +707,7 @@
                         </div>
                     </div>
                     <div>
-                        <div class="badge badge-success" style="font-size: 1rem;">${c.score}%</div>
+                        <div class="badge badge-success" style="font-size: 1rem;">${c.score * 20}%</div>
                     </div>
                 </div>
             `).join('');

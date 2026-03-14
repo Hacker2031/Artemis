@@ -65,19 +65,17 @@ class Funcionarios(models.Model):
     conta_bancaria = models.CharField(unique=True, max_length=45)
     departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
     ativo = models.IntegerField()
+    data_contratacao = models.DateField(null=True, blank=True)
+    data_nasc = models.DateField(null=True, blank=True)
 
-    @property
-    def nota(self):
-        return self.avaliacao * 10 if self.avaliacao is not None else None
+
     
-
-
     class Meta:
-        managed = False
+        managed = True
         db_table = 'funcionarios'
     
     def __str__(self):
-        return self.f_nome
+        return f"{self.f_nome} - {self.cargo}"
 
 
 class MembrosEquipas(models.Model):
