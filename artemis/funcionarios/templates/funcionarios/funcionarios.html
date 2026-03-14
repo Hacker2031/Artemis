@@ -197,7 +197,7 @@
             </div>
 
             <div class="card mt-2">
-                <h3 class="mb-2">Insights de IA</h3>
+                <h3 class="mb-2">Análise de IA</h3>
                 <div class="ai-insight">
                     <div class="ai-insight-header">
                         <span class="material-symbols-outlined">lightbulb</span>
@@ -220,11 +220,10 @@
     <script src="{% static "js/artemis-utils.js" %}"></script>   
 
     <script>
-        // Dados de exemplo
         const funcionarios = [
 
         {% for funcionario in funcionarios%}
-            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '2020-03-15', performance: {{funcionario.nota }}, status: 'ativo', email: '{{funcionario.email}}' },
+            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '2020-03-15', performance: {{funcionario.avaliacao }}, status: 'ativo', email: '{{funcionario.email}}' },
         {% endfor%} 
         ];
 
@@ -249,10 +248,10 @@
                     <td>${new Date(f.admissao).toLocaleDateString('pt-BR')}</td>
                     <td>
                         <div class="progress-bar">
-                            <div class="progress-fill ${f.performance >= 90 ? 'success' : f.performance >= 70 ? '' : 'warning'}" 
-                                 style="width: ${f.performance}%"></div>
+                            <div class="progress-fill ${f.performance * 20 >= 90 ? 'success' : f.performance * 20 >= 70 ? '' : 'warning'}" 
+                                 style="width: ${f.performance * 20}%"></div>
                         </div>
-                        <small>${f.performance}%</small>
+                        <small>${f.performance * 20}%</small>
                     </td>
                     <td>
                         <span class="badge badge-${f.status === 'ativo' ? 'success' : f.status === 'ferias' ? 'warning' : 'danger'}">
