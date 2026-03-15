@@ -149,4 +149,4 @@ class ProcessoSeletivo(models.Model):
         verbose_name_plural = 'Processos Seletivos'
 
     def __str__(self):
-        return f"{self.candidato.nome} | {self.get_etapa_display()} — {self.get_resultado_display()}"
+        return f"{self.candidatos.nome} | {self.get_etapa_display()} — {self.get_resultado_display()}"

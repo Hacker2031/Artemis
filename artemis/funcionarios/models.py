@@ -32,6 +32,10 @@ class Equipas(models.Model):
     class Meta:
         managed = False
         db_table = 'equipas'
+        verbose_name = 'Equipa'
+        verbose_name_plural = 'Equipas'
+    def __str__(self):
+        return f"{self.nome_equipa}"
 
 
 class FDocuments(models.Model):
@@ -45,6 +49,7 @@ class FDocuments(models.Model):
     class Meta:
         managed = False
         db_table = 'f_documents'
+        verbose_name='Documentos'
 
 
 class Funcionarios(models.Model):
@@ -71,23 +76,26 @@ class Funcionarios(models.Model):
 
     
     class Meta:
-        managed = True
+        managed = False
         db_table = 'funcionarios'
+        verbose_name='Funcionario'
+        verbose_name_plural='Funcionarios'
     
     def __str__(self):
         return f"{self.f_nome} - {self.cargo}"
 
 
 class MembrosEquipas(models.Model):
-    cod_membro = models.IntegerField(primary_key=True)
+    cod_membro = models.AutoField(primary_key=True)
     id_equipas = models.ForeignKey(Equipas, models.DO_NOTHING, db_column='id_equipas')
-    f = models.ForeignKey(Funcionarios, models.DO_NOTHING)
+    f = models.ForeignKey(Funcionarios, models.DO_NOTHING, null=True)
     papel = models.CharField(max_length=45)
     data_entrada = models.DateField()
     data_saida = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'membros_equipas'
-
-
+        verbose_name='Membro de Equipa'
+        verbose_name_plural='Membros de Equipas'
+    

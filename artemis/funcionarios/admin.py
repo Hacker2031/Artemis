@@ -34,7 +34,8 @@ class FuncionariosAdmin(admin.ModelAdmin):
     )
 
 
+
 admin.site.register(Controlo)
-admin.site.register(Equipas)
 admin.site.register(FDocuments)
-admin.site.register(MembrosEquipas)
+admin.site.register(Equipas, list_display = ['nome_equipa','responsavel_equipa','departamento','tipo_equipa','data_inicio','data_fim'])
+admin.site.register(MembrosEquipas, list_display = ['f','id_equipas', 'papel'])
