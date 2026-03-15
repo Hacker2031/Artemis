@@ -89,3 +89,5 @@ class MembrosEquipas(models.Model):
     class Meta:
         managed = False
         db_table = 'membros_equipas'
+
+
