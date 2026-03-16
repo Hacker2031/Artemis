@@ -52,12 +52,23 @@ class FDocuments(models.Model):
         verbose_name='Documentos'
 
 
+
 class Funcionarios(models.Model):
+    ATIVO_CHOICES=[
+    ('ativo', 'Ativo'),
+    ('ferias', 'Férias'),
+    ('afastado', 'Afastado'),
+]
+    EVENTUAL_CHOICES=[
+    ('efetivo', 'Efetivo'),
+    ('em_formacao', 'Em Formação'),
+    ('eventual', 'Eventual'),
+]
     f_id = models.AutoField(primary_key=True)
     f_nome = models.CharField(max_length=45)
     cargo = models.ForeignKey('rh.Cargos', models.DO_NOTHING, db_column='cargo', blank=True, null=True)
     id_docs = models.IntegerField(unique=True, blank=True, null=True)
-    estado = models.CharField(max_length=45)
+    estado = models.CharField(max_length=45, choices=EVENTUAL_CHOICES, default='efetivo')
     avaliacao = models.FloatField(blank=True, null=True) 
     id_controlo = models.OneToOneField(Controlo, models.DO_NOTHING, db_column='id_controlo', blank=True, null=True)
     contacto = models.CharField(unique=True, max_length=25)
@@ -69,7 +80,7 @@ class Funcionarios(models.Model):
     banco_nome = models.CharField(max_length=45)
     conta_bancaria = models.CharField(unique=True, max_length=45)
     departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
-    ativo = models.IntegerField()
+    ativo = models.CharField(max_length=15, choices= ATIVO_CHOICES, default='ativo')
     data_contratacao = models.DateField(null=True, blank=True)
     data_nasc = models.DateField(null=True, blank=True)
 

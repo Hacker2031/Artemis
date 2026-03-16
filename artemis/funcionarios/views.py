@@ -15,10 +15,19 @@ def FuncionariosPage(request):
         mes_aniversario = ExtractMonth('data_nasc')
     ).filter(mes_aniversario = mes_atual)
 
+    funcionarios = Funcionarios.objects.all()
+    status = request.GET.get('status', 'todos')
+    if status and status != "todos":
+        funcionarios = funcionarios.filter(ativo=status)
+
+    ordenarpor = request.GET.get('ordenarpor', 'cargo_id')
+    f_funcionarios = funcionarios.order_by(ordenarpor)
 
     context ={
-        'funcionarios': Funcionarios.objects.all(),
+        'funcionarios': Funcionarios.objects.all().order_by('cargo_id'),
         'aniversariantes': aniversariantes,
+        'ativos': Funcionarios.ATIVO_CHOICES,
+        'funcionarios_filtro': f_funcionarios,
     }
     return render(request, "funcionarios/funcionarios.html", context)
 

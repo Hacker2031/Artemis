@@ -63,17 +63,26 @@
                         <span class="material-icons-sharp">search</span>
                         <input type="text" placeholder="Buscar funcionário..." id="searchInput" onkeyup="buscarFuncionario()">
                     </div>
-                    <select class="form-control" style="max-width: 200px;" onchange="filtrarPorStatus(this.value)">
-                        <option value="todos">Todos Status</option>
-                        <option value="ativo">Ativos</option>
-                        <option value="ferias">Em Férias</option>
-                        <option value="afastado">Afastados</option>
-                    </select>
-                    <select class="form-control" style="max-width: 200px;" onchange="ordenarPor(this.value)">
-                        <option value="nome">Ordenar por Nome</option>
-                        <option value="departamento">Por Departamento</option>
-                        <option value="performance">Por Performance</option>
-                        <option value="admissao">Por Data de Admissão</option>
+                    <select class="form-control" style="max-width: 200px;"
+                        onchange="window.location.href='?status=' + this.value + '&ordenarpor={{ request.GET.ordenarpor|default:"cargo_id" }}'">
+
+                    <option value="todos">Todos Status</option>
+
+                    {% for valor, label in ativos %}
+                        <option value="{{ valor }}" {% if request.GET.status == valor %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+                    <select class="form-control" style="max-width: 200px;"
+                            onchange="window.location.href='?ordenarpor=' + this.value + '&status={{ request.GET.status|default:"todos" }}'">
+
+                        <option value="f_nome" {% if request.GET.ordenarpor == "f_nome" %}selected{% endif %}>Ordenar por Nome</option>
+                        <option value="departamento" {% if request.GET.ordenarpor == "departamento" %}selected{% endif %}>Por Departamento</option>
+                        <option value="avaliacao" {% if request.GET.ordenarpor == "avaliacao" %}selected{% endif %}>Por Performance</option>
+                        <option value="data_contratacao" {% if request.GET.ordenarpor == "data_contratacao" %}selected{% endif %}>Por Data de Admissão</option>
+                        <option value="cargo_id" {% if request.GET.ordenarpor == "cargo_id" or not request.GET.ordenarpor %}selected{% endif %}>Por Cargo</option>
+
                     </select>
                 </div>
 
@@ -218,10 +227,22 @@
     <script src="{% static "js/artemis-utils.js" %}"></script>   
 
     <script>
+
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+    const termo = this.value.toLowerCase();
+    const linhas = document.querySelectorAll('#lista tbody tr');
+
+    linhas.forEach(linha => {
+        const textoLinha = linha.innerText.toLowerCase();
+        linha.style.display = textoLinha.includes(termo) ? '' : 'none';
+    });
+    });
+
+        
         const funcionarios = [
 
-        {% for funcionario in funcionarios%}
-            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '2020-03-15', performance: {{funcionario.avaliacao }}, status: 'ativo', email: '{{funcionario.email}}' },
+        {% for funcionario in funcionarios_filtro%}
+            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '{{funcionario.data_contratacao|date:"d/m/Y"|default:"Não informada"}}', performance: {{funcionario.avaliacao}}, status: '{{funcionario.ativo}}', email: '{{funcionario.contacto_alt}}' },
         {% endfor%} 
         ];
 
@@ -243,17 +264,17 @@
                     </td>
                     <td>${f.departamento}</td>
                     <td>${f.cargo}</td>
-                    <td>${new Date(f.admissao).toLocaleDateString('pt-BR')}</td>
+                    <td>${f.admissao}</td>
                     <td>
                         <div class="progress-bar">
-                            <div class="progress-fill ${f.performance * 20 >= 90 ? 'success' : f.performance * 20 >= 70 ? '' : 'warning'}" 
-                                 style="width: ${f.performance * 20}%"></div>
+                            <div class="progress-fill ${f.performance >= 90 ? 'success' : f.performance  >= 70 ? '' : 'warning'}" 
+                                 style="width: ${f.performance }%"></div>
                         </div>
-                        <small>${f.performance * 20}%</small>
+                        <small>${f.performance }%</small>
                     </td>
                     <td>
-                        <span class="badge badge-${f.status === 'ativo' ? 'success' : f.status === 'ferias' ? 'warning' : 'danger'}">
-                            ${f.status.charAt(0).toUpperCase() + f.status.slice(1)}
+                        <span class="badge badge-${f.status == 'ativo' ? 'success' : f.status == 'afastado' ? 'danger' : 'warning'}">
+                             ${f.status.charAt(0).toUpperCase() + f.status.slice(1)}
                         </span>
                     </td>
                     <td>
@@ -289,11 +310,11 @@
                                 </div>
                                 <div class="employee-meta-item">
                                     <span class="material-icons-sharp">calendar_today</span>
-                                    ${new Date(f.admissao).toLocaleDateString('pt-BR')}
+                                    ${f.admissao}
                                 </div>
                                 <div class="employee-meta-item">
                                     <span class="material-icons-sharp">trending_up</span>
-                                    ${f.performance * 20}% Performance
+                                    ${f.performance}% Performance
                                 </div>
                             </div>
                             <div class="skill-tags">

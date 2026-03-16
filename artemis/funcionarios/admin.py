@@ -17,7 +17,7 @@ class FuncionariosAdmin(admin.ModelAdmin):
     # 4. Organização visual dos campos na tela de CADASTRO e EDIÇÃO. Yeah, Alcides? Não adiciones nada aqui bro
     fieldsets = (
         ('Informações Pessoais', {
-            'fields': ('f_nome', 'naturalidade', 'nacionalidade', 'sexo', 'estado_civil')
+            'fields': ('f_nome', 'naturalidade', 'nacionalidade', 'sexo', 'estado_civil'),
         }),
         ('Contactos', {
             'fields': ('contacto', 'contacto_alt')

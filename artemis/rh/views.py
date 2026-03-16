@@ -7,7 +7,7 @@ from funcionarios.models import Funcionarios
 def rhPage(request):
 
     context = {
-        'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=4.7).order_by('-avaliacao'), 
+        'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=90).order_by('-avaliacao'), 
     }
 
     return render(request, "rh/rh.html", context)
