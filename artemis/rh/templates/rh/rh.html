@@ -30,19 +30,8 @@
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ── FIX SCROLLBAR: overflow-x hidden no body ── */
-        body {
-            font-family: var(--font);
-            background: var(--bg-base);
-            color: var(--text-primary);
-            display: flex;
-            align-items: flex-start;
-            min-height: 100vh;
-            overflow-x: hidden; /* ← remove scrollbar horizontal */
-        }
-
-        /* ── Layout base ── */
-        main { flex: 1; overflow: hidden; }
+       
+       
 
         /* ── Painel lateral ── */
         .lado-direito {
@@ -1011,7 +1000,8 @@
 {%endblock%}
 
 {%block scripts%}
-
+<script src="{% static "js/index.js" %}"></script>
+    <script src="{% static "js/artemis-utils.js" %}"></script>
 <script>
 /* ── Helpers ── */
 const CORES = ['#4f6ef7','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316'];
@@ -1186,7 +1176,6 @@ function renderVagas(lista) {
         <tr>
             <td>
                 <div style="display:flex;align-items:center;gap:10px">
-                    <div class="avatar" style="background:${corAvatar(i)}">${iniciais(v.titulo)}</div>
                     <div>
                         <div style="font-weight:600">${v.titulo}</div>
                         <div class="text-muted fs-sm">${v.tipo}</div>
