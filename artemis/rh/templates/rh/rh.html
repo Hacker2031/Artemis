@@ -475,7 +475,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <div><div class="stat-label">Vagas Abertas</div><div class="stat-value" id="m-vagas">0</div></div>
+                        <div><div class="stat-label">Vagas Abertas</div><div class="stat-value" id="m-vagas">{{num_vagas}}</div></div>
                         <div class="stat-icon primary"><span class="material-icons-sharp">work_outline</span></div>
                     </div>
                 </div>
@@ -1036,26 +1036,14 @@ function toast(msg, tipo='success') {
 
 /* ══ DADOS ══ */
 let vagas = [
-    { id:1, titulo:'Desenvolvedor Full Stack', dept:'TI', cargo:'Engenheiro de Software', nvagas:2,
-      dataLimite:'2026-04-30', estado:'Aberta', tipo:'Externo', salario:'450.000 – 600.000 AOA',
-      descricao:'Desenvolvimento e manutenção de aplicações web de alto desempenho.',
-      requisitos:'3+ anos de experiência em React e Node.js, conhecimento de bases de dados SQL/NoSQL.' },
-    { id:2, titulo:'Designer UX/UI', dept:'Marketing', cargo:'Designer Sénior', nvagas:1,
-      dataLimite:'2026-04-15', estado:'Aberta', tipo:'Misto', salario:'350.000 – 450.000 AOA',
-      descricao:'Criação de interfaces intuitivas e atrativas para os produtos da empresa.',
-      requisitos:'Portfolio sólido, domínio de Figma e Adobe XD, experiência em Design Systems.' },
-    { id:3, titulo:'Analista Financeiro', dept:'Financeiro', cargo:'Analista Sénior', nvagas:1,
-      dataLimite:'2026-05-10', estado:'Aberta', tipo:'Externo', salario:'400.000 – 500.000 AOA',
-      descricao:'Análise de demonstrações financeiras, elaboração de relatórios de gestão.',
-      requisitos:'Licenciatura em Gestão/Contabilidade, experiência em IFRS, domínio de Excel.' },
-    { id:4, titulo:'Gestor de Vendas', dept:'Vendas', cargo:'Manager', nvagas:1,
-      dataLimite:'2026-03-31', estado:'Em Pausa', tipo:'Interno', salario:'500.000 – 700.000 AOA',
-      descricao:'Liderança da equipa comercial e definição de estratégias de crescimento.',
-      requisitos:'5+ anos em vendas B2B, excelentes capacidades de negociação e liderança.' },
-    { id:5, titulo:'Técnico de RH', dept:'RH', cargo:'Especialista', nvagas:2,
-      dataLimite:'2026-06-01', estado:'Aberta', tipo:'Externo', salario:'300.000 – 380.000 AOA',
-      descricao:'Gestão de processos de recrutamento, formação e desenvolvimento de colaboradores.',
-      requisitos:'Licenciatura em Psicologia ou Gestão de Recursos Humanos, experiência mínima de 2 anos.' },
+
+    {% for vaga in vagas%}
+    { id:{{vaga.id}}, titulo:'{{vaga.titulo}}', dept:'{{vaga.departamento}}', cargo:'{{vaga.cargo}}', nvagas:{{vaga.num_vagas}},
+      dataLimite:'{{vaga.data_limite|date:"Y-m-d" }}', estado:'{{vaga.estado}}', tipo:'{{vaga.tipo}}', salario:'{{vaga.salario_oferecido}}',
+      descricao:'{{vaga.descricao|escapejs}}',
+      requisitos:'{{vaga.requisitos|escapejs}}' },
+    {% endfor %}
+   
 ];
 
 let candidatos = {
@@ -1085,9 +1073,7 @@ let candidatos = {
     3:[], 4:[], 5:[],
 };
 
-let vagaAtual = null;
-let candidatoAtual = null;
-let notaEtapa = 0;
+
 
 /* ── Métricas ── */
 function atualizarMetricas() {
