@@ -559,75 +559,80 @@
                 </div>
                 <div class="card-body">
                     <div class="form-grid form-grid-2">
-                        <div class="form-group">
-                            <label>Título da Vaga *</label>
-                            <input class="form-control" id="f-titulo" placeholder="Ex: Desenvolvedor Back-end Sénior">
-                        </div>
-                        <div class="form-group">
-                            <label>Cargo *</label>
-                            <input class="form-control" id="f-cargo" placeholder="Ex: Engenheiro de Software">
-                        </div>
-                        <div class="form-group">
-                            <label>Departamento *</label>
-                            <select class="form-control" id="f-dept">
-                                <option value="">Selecionar...</option>
-                                <option>TI</option>
-                                <option>Marketing</option>
-                                <option>Vendas</option>
-                                <option>Financeiro</option>
-                                <option>RH</option>
-                                <option>Jurídico</option>
-                                <option>Operações</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo de Recrutamento</label>
-                            <select class="form-control" id="f-tipo">
-                                <option>Externo</option>
-                                <option>Interno</option>
-                                <option>Misto</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Nº de Vagas *</label>
-                            <input class="form-control" id="f-nvagas" type="number" min="1" placeholder="1">
-                        </div>
-                        <div class="form-group">
-                            <label>Salário Oferecido (AOA)</label>
-                            <input class="form-control" id="f-salario" placeholder="Ex: 450.000 – 600.000">
-                        </div>
-                        <div class="form-group">
-                            <label>Data Limite *</label>
-                            <input class="form-control" id="f-data" type="date">
-                        </div>
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select class="form-control" id="f-estado">
-                                <option value="Aberta">Aberta</option>
-                                <option value="Em Pausa">Em Pausa</option>
-                                <option value="Encerrada">Encerrada</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="divider"></div>
-                    <div class="form-grid" style="gap:18px">
-                        <div class="form-group">
-                            <label>Descrição da Vaga</label>
-                            <textarea class="form-control" id="f-descricao" rows="4" placeholder="Descreva as responsabilidades e objetivos do cargo..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Requisitos</label>
-                            <textarea class="form-control" id="f-requisitos" rows="4" placeholder="Liste as competências, qualificações e experiência necessárias..."></textarea>
-                        </div>
-                    </div>
-                    <div class="divider"></div>
-                    <div style="display:flex;gap:12px;justify-content:flex-end">
-                        <button class="btn btn-outline" onclick="voltarLista()">
-                            <span class="material-icons-sharp">close</span> Cancelar
-                        </button>
-                        <button class="btn btn-primary" onclick="guardarVaga()">
-                            <span class="material-icons-sharp">save</span> Guardar Vaga
-                        </button>
+
+                        <form action="{% url 'salvarVaga' %}" method="POST">
+                            {% csrf_token %}
+
+                            <div class="form-group">
+                                <label>Título da Vaga *</label>
+                                <input class="form-control" name="titulo" placeholder="Nome Completo da Vaga" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Cargo *</label>
+                                <select class="form-control" name="cargo" required>
+                                    <option value="">Selecionar...</option>
+                                    {% for c in cargos %}
+                                        <option value="{{ c.id_cargo }}">{{ c.nome_cargo }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Departamento *</label>
+                                <select class="form-control" name="departamento" required>
+                                    <option value="">Selecionar...</option>
+                                    {% for d in departamentos %}
+                                        <option value="{{ d.id_dpt }}">{{ d.nome_dpt }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tipo de Recrutamento</label>
+                                <select class="form-control" name="tipo">
+                                    <option value="externo">Selecionar</option>
+                                {% for v,l in tipo %}
+                                    <option value="{{ v }}">{{ l }}</option>
+                                {% endfor %}
+                                    
+                                    
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nº de Vagas *</label>
+                                <input class="form-control" name="num_vagas" type="number" value="1" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nº de Vagas *</label>
+                                <input class="form-control" name="salario_oferecido" type="number" placeholder="Salário Monetário" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Data Limite *</label>
+                                <input class="form-control" name="data_limite" type="date">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Descrição da Vaga</label>
+                                <textarea class="form-control" name="descricao" rows="4"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Requisitos</label>
+                                <textarea class="form-control" name="requisitos" rows="4"></textarea>
+                            </div>
+
+                            <div style="display:flex;gap:12px;justify-content:flex-end">
+                                <button type="button" class="btn btn-outline" onclick="voltarLista()">Cancelar</button>
+                                <!-- Mudei para type="submit" para ele enviar o formulário -->
+                                <button type="submit" class="btn btn-primary">
+                                    <span class="material-icons-sharp">save</span> Guardar Vaga
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -998,6 +1003,15 @@
 "><span class="material-icons-sharp" style="font-size:1.1rem">check_circle</span><span id="toast-msg"></span></div>
 
 {%endblock%}
+
+{% block messages %}
+{% for message in messages %}
+
+<script id="message"> alert("{{ message }}")</script>
+
+{% endfor %}
+
+{% endblock%}
 
 {%block scripts%}
 
