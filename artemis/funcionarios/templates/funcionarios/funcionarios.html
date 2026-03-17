@@ -223,19 +223,17 @@
 
 
 {% block scripts%}
-    <script src="{% static "js/index.js" %}"></script>
-    <script src="{% static "js/artemis-utils.js" %}"></script>   
-
     <script>
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
-    const termo = this.value.toLowerCase();
-    const linhas = document.querySelectorAll('#lista tbody tr');
-
-    linhas.forEach(linha => {
-        const textoLinha = linha.innerText.toLowerCase();
-        linha.style.display = textoLinha.includes(termo) ? '' : 'none';
-    });
+        const termo = this.value.toLowerCase();
+        const filteredFuncionarios = funcionarios.filter(f => 
+            f.nome.toLowerCase().includes(termo) || 
+            f.departamento.toLowerCase().includes(termo) || 
+            f.cargo.toLowerCase().includes(termo) || 
+            f.email.toLowerCase().includes(termo)
+        );
+        renderizarTabela(filteredFuncionarios);
     });
 
         
@@ -247,9 +245,13 @@
         ];
 
         // Renderizar tabela
-        function renderizarTabela() {
+        function renderizarTabela(funcs = funcionarios) {
             const tbody = document.getElementById('employeeTableBody');
-            tbody.innerHTML = funcionarios.map(f => `
+            if (funcs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;"><div class="empty-state"><span class="material-icons-sharp">person_off</span><p>Nenhum Funcionário encontrado</p></div></td></tr>`;
+                return;
+            }
+            tbody.innerHTML = funcs.map(f => `
                 <tr>
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.8rem;">
