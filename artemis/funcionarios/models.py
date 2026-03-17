@@ -105,7 +105,7 @@ class MembrosEquipas(models.Model):
     data_saida = models.DateField(blank=True, null=True)
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'membros_equipas'
         verbose_name='Membro de Equipa'
         verbose_name_plural='Membros de Equipas'

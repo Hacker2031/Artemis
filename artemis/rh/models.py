@@ -45,6 +45,7 @@ class Vaga(models.Model):
     descricao = models.TextField()
     requisitos = models.TextField()
     num_vagas = models.PositiveIntegerField(default=1)
+    num_candidaturas = models.PositiveIntegerField(default=1)
     salario_oferecido = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
     TIPO_CHOICES = [

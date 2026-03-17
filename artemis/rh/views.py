@@ -3,11 +3,34 @@ from django.contrib.auth.decorators import login_required
 from funcionarios.models import Funcionarios
 from .models import Cargos, Departamentos, Vaga
 from django.contrib import messages
+from django.db.models import Sum 
+from django.core.serializers import serialize
+import json
+
 # Create your views here.
 
 @login_required(login_url="loginPage")
 def rhPage(request):
+    
+    vagas = Vaga.objects.all()
 
+    candidatos = {}
+
+    for vaga in vagas:
+        candidatos[vaga.id] = []
+    
+        for candidato in vaga.candidatos.all():
+            candidatos[vaga.id].append({
+                'id': candidato.id,
+                'nome': candidato.nome,
+                'email': candidato.email,
+                'tel': candidato.telefone,
+                'nac': candidato.nacionalidade,
+                'data': str(candidato.data_candidatura),
+                'estado': candidato.estado,
+                'cv': candidato.cv.url if candidato.cv else '',
+                'notas': candidato.notas or '',
+            })
     context = {
         'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=90).order_by('-avaliacao'),
         'cargos': Cargos.objects.filter(ativo=1),
@@ -15,6 +38,8 @@ def rhPage(request):
         'tipo': Vaga.TIPO_CHOICES,
         'vagas': Vaga.objects.all(),
         'num_vagas': Vaga.objects.count(),
+        'total_candidaturas': Vaga.objects.aggregate(total=Sum('num_candidaturas'))['total'],
+        'candidatos': candidatos,
 
     }
 
