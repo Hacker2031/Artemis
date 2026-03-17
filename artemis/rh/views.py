@@ -14,6 +14,7 @@ def rhPage(request):
         'departamentos': Departamentos.objects.filter(ativo=1),
         'tipo': Vaga.TIPO_CHOICES,
         'vagas': Vaga.objects.all(),
+        'num_vagas': Vaga.objects.count(),
 
     }
 
