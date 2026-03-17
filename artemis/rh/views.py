@@ -13,6 +13,7 @@ def rhPage(request):
         'cargos': Cargos.objects.filter(ativo=1),
         'departamentos': Departamentos.objects.filter(ativo=1),
         'tipo': Vaga.TIPO_CHOICES,
+        'vagas': Vaga.objects.all(),
 
     }
 
