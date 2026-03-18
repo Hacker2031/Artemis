@@ -1,5 +1,5 @@
 from django.db import models
-
+from rh.models import Candidatos
 # Create your models here.
 
 class Controlo(models.Model):
@@ -72,11 +72,39 @@ class Funcionarios(models.Model):
     avaliacao = models.FloatField(blank=True, null=True) 
     id_controlo = models.OneToOneField(Controlo, models.DO_NOTHING, db_column='id_controlo', blank=True, null=True)
     contacto = models.CharField(unique=True, max_length=25)
+    foto_perfil = models.FileField(upload_to="rh/foto_perfil_funcionarios")
     contacto_alt = models.CharField(max_length=45, blank=True, null=True)
     naturalidade = models.CharField(max_length=45)
-    nacionalidade = models.CharField(max_length=45)
+    nacionalidade = models.CharField(max_length=45, choices=Candidatos.NACIONALIDADE_CHOICES)
     sexo = models.CharField(max_length=45)
+    cidade = models.CharField(max_length=45)
+    PROVINCIA_CHOICES = [
+    ('luanda', 'Luanda'),
+    ('bengo', 'Bengo'),
+    ('benguela', 'Benguela'),
+    ('bie', 'Bié'),
+    ('cabinda', 'Cabinda'),
+    ('cuando', 'Cuando'),
+    ('cubango', 'Cubango'),
+    ('cuanza_norte', 'Cuanza Norte'),
+    ('cuanza_sul', 'Cuanza Sul'),
+    ('cunene', 'Cunene'),
+    ('huambo', 'Huambo'),
+    ('huila', 'Huíla'),
+    ('lunda_norte', 'Lunda Norte'),
+    ('lunda_sul', 'Lunda Sul'),
+    ('malanje', 'Malanje'),
+    ('moxico', 'Moxico'),
+    ('moxico_leste', 'Moxico-Leste'),
+    ('namibe', 'Namibe'),
+    ('icolo_bengo', 'Icolo e Bengo'),
+    ('uige', 'Uíge'),
+    ('zaire', 'Zaire'),
+]
+    provincia = models.CharField(max_length=45, choices=PROVINCIA_CHOICES, default="luanda")
+    endereco = models.TextField(max_length=120)
     estado_civil = models.CharField(max_length=45)
+    num_bi = models.CharField(max_length=45)
     banco_nome = models.CharField(max_length=45)
     conta_bancaria = models.CharField(unique=True, max_length=45)
     departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
@@ -87,7 +115,7 @@ class Funcionarios(models.Model):
 
     
     class Meta:
-        managed = False
+        managed = True
         db_table = 'funcionarios'
         verbose_name='Funcionario'
         verbose_name_plural='Funcionarios'
