@@ -71,6 +71,7 @@ class Vaga(models.Model):
     criado_por = models.ForeignKey('users.Users', on_delete=models.SET_NULL, null=True)
     
     class Meta:
+        managed = False
         db_table = 'vagas'
         verbose_name = 'Vaga'
         verbose_name_plural = 'Vagas'
@@ -90,6 +91,7 @@ class Candidatos(models.Model):
     cv = models.FileField(upload_to='candidatos/cvs', null=True, blank=True)
 
     vaga = models.ForeignKey(Vaga, on_delete=models.CASCADE, related_name='candidatos')
+    nota = models.IntegerField(default=1)
 
     ESTADO_CHOICES = [
         ('recebido', 'Recebido'),
@@ -103,7 +105,6 @@ class Candidatos(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='recebido')
     
     data_candidatura = models.DateTimeField(auto_now_add=True)
-    notas = models.TextField(blank=True, null=True)
     class Meta:
         db_table = 'candidatos'
         verbose_name = 'Candidato'
@@ -140,11 +141,12 @@ class ProcessoSeletivo(models.Model):
         on_delete=models.SET_NULL, 
         null=True, blank=True
     )
-    nota = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True)
+    nota = models.IntegerField(default=1)
     observacoes = models.TextField(blank=True, null=True)
     data_registo = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        managed = False
         db_table = 'processo_seletivo'
         verbose_name = 'Processo Seletivo'
         verbose_name_plural = 'Processos Seletivos'

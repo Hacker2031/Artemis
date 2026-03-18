@@ -1046,33 +1046,7 @@ let vagas = [
    
 ];
 
-let candidatos = {
-    1: [
-        { id:101, nome:'João Silva', email:'joao@exemplo.com', tel:'+244 923 456 789', nac:'Angolana',
-          data:'2026-02-10', estado:'Entrevista', cv:'joao-silva-cv.pdf', notas:'Perfil muito promissor.',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-10', avaliador:'Sistema', nota:0, obs:'Candidatura recebida via portal.' },
-            { etapa:'Análise de CV', resultado:'Aprovado', data:'2026-02-12', avaliador:'Ana Martins', nota:4, obs:'Excelente percurso académico e experiência relevante.' },
-            { etapa:'Entrevista Telefónica', resultado:'Aprovado', data:'2026-02-18', avaliador:'Carlos Neto', nota:3, obs:'Boa comunicação, disponibilidade imediata.' },
-          ]},
-        { id:102, nome:'Maria Santos', email:'maria@exemplo.com', tel:'+244 912 345 678', nac:'Portuguesa',
-          data:'2026-02-14', estado:'Análise', cv:'maria-santos-cv.pdf', notas:'',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-14', avaliador:'Sistema', nota:0, obs:'' },
-          ]},
-    ],
-    2: [
-        { id:201, nome:'Filipe Costa', email:'filipe@exemplo.com', tel:'+244 934 567 890', nac:'Angolana',
-          data:'2026-02-20', estado:'Teste', cv:'', notas:'',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-20', avaliador:'Sistema', nota:0, obs:'' },
-            { etapa:'Análise de CV', resultado:'Aprovado', data:'2026-02-22', avaliador:'Sónia Lopes', nota:5, obs:'Portfolio impressionante.' },
-            { etapa:'Entrevista Técnica', resultado:'Aprovado', data:'2026-03-01', avaliador:'Pedro Ramos', nota:4, obs:'Domínio excelente de Figma.' },
-          ]},
-    ],
-    3:[], 4:[], 5:[],
-};
-
+let candidatos = {{ candidatos|safe }};
 
 
 /* ── Métricas ── */
@@ -1349,7 +1323,7 @@ function renderCandidatosTabela() {
             </td>
             <td class="text-muted">${c.email}</td>
             <td class="text-muted">${c.tel||'—'}</td>
-            <td>${formatarData(c.data)}</td>
+            <td>${(c.data)}</td>
             <td>${candEstadoBadge(c.estado)}</td>
             <td>
                 <button class="btn btn-sm btn-primary" onclick="verCandidato(${c.id})">

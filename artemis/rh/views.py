@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from funcionarios.models import Funcionarios
-from .models import Cargos, Departamentos, Vaga
+from .models import Cargos, Departamentos, Vaga, Candidatos
 from django.contrib import messages
 from django.db.models import Sum 
 from django.core.serializers import serialize
-import json
 
 # Create your views here.
 
@@ -26,10 +25,10 @@ def rhPage(request):
                 'email': candidato.email,
                 'tel': candidato.telefone,
                 'nac': candidato.nacionalidade,
-                'data': str(candidato.data_candidatura),
+                'data': candidato.data_candidatura.strftime('%d/%m/%Y'),
                 'estado': candidato.estado,
                 'cv': candidato.cv.url if candidato.cv else '',
-                'notas': candidato.notas or '',
+                'notas': candidato.nota or '',
             })
     context = {
         'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=90).order_by('-avaliacao'),
@@ -38,7 +37,7 @@ def rhPage(request):
         'tipo': Vaga.TIPO_CHOICES,
         'vagas': Vaga.objects.all(),
         'num_vagas': Vaga.objects.count(),
-        'total_candidaturas': Vaga.objects.aggregate(total=Sum('num_candidaturas'))['total'],
+        'total_candidaturas': Candidatos.objects.count(),   
         'candidatos': candidatos,
 
     }
