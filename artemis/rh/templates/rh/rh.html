@@ -650,6 +650,9 @@
                 </div>
                 <div class="card-body">
                     <div class="form-grid form-grid-2">
+
+                <form action="{% url 'salvarCandidato' %}" method="POST">
+
                         <div class="form-group">
                             <label>Nome Completo *</label>
                             <input class="form-control" id="nc-nome" placeholder="Ex: João da Silva">
@@ -660,7 +663,7 @@
                         </div>
                         <div class="form-group">
                             <label>Telefone</label>
-                            <input class="form-control" id="nc-tel" placeholder="+244 9xx xxx xxx">
+                            <input class="form-control" id="nc-tel" placeholder="9xx xxx xxx">
                         </div>
                         <div class="form-group">
                             <label>Nacionalidade</label>
@@ -668,9 +671,18 @@
                         </div>
                         <div class="form-group">
                             <label>Vaga Pretendida *</label>
+
                             <select class="form-control" id="nc-vaga">
-                                <option value="">Selecionar vaga...</option>
+                                <option value="">Selecionar vagaa...</option>
+                                
+                                {% for v in vagas%}
+
+                                <option value="{{v.id}}"> {{v.titulo}} </option>
+
+                                {% endfor%}
+
                             </select>
+                            
                         </div>
                         <div class="form-group">
                             <label>Fonte de Recrutamento</label>
@@ -687,7 +699,7 @@
                     <div class="form-grid" style="gap:18px">
                         <div class="form-group">
                             <label>Notas Iniciais</label>
-                            <textarea class="form-control" id="nc-notas" rows="3" placeholder="Observações iniciais sobre o candidato..."></textarea>
+                            <textarea class="form-control" id="nc-notas" name="nota"rows="3" placeholder="Observações iniciais sobre o candidato..."></textarea>
                         </div>
                         <div class="form-group">
                             <label>Curriculum Vitae</label>
@@ -695,19 +707,21 @@
                                 <span class="material-icons-sharp">upload_file</span>
                                 <p id="nc-cv-label">Clique para fazer upload do CV (PDF, DOC)</p>
                             </div>
-                            <input type="file" id="nc-cv-file" style="display:none" accept=".pdf,.doc,.docx" onchange="ncCvSelecionado(this)">
+                            <input type="file" id="nc-cv-file" name="cv" style="display:none" accept=".pdf,.doc,.docx" onchange="ncCvSelecionado(this)">
                         </div>
                     </div>
                     <div class="divider"></div>
                     <div style="display:flex;gap:12px;justify-content:flex-end">
-                        <button class="btn btn-outline" onclick="voltarLista()">
+                        <button class="btn btn-outline" type="button" onclick="voltarLista()">
                             <span class="material-icons-sharp">close</span> Cancelar
                         </button>
-                        <button class="btn btn-primary" onclick="guardarNovoCandidato()">
+                        <button class="btn btn-primary" type="submit">
                             <span class="material-icons-sharp">save</span> Adicionar Candidato
                         </button>
                     </div>
-                </div>
+                    </div>
+                    
+                </form>
             </div>
         </div>
 
@@ -969,27 +983,30 @@
         <div class="modal-body">
             <div class="form-grid" style="gap:14px">
                 <div class="form-grid form-grid-2" style="gap:14px">
-                    <div class="form-group"><label>Nome *</label><input class="form-control" id="mc-nome" placeholder="Nome completo"></div>
-                    <div class="form-group"><label>Email *</label><input class="form-control" id="mc-email" type="email" placeholder="email@exemplo.com"></div>
+
+        
+
+                <div class="form-group"><label>Nome *</label><input class="form-control" id="mc-nome" name="nome" placeholder="Nome completo"></div>
+                <div class="form-group"><label>Email *</label><input class="form-control" id="mc-email" name="email" type="email" placeholder="email@exemplo.com"></div>
                 </div>
                 <div class="form-grid form-grid-2" style="gap:14px">
-                    <div class="form-group"><label>Telefone</label><input class="form-control" id="mc-tel" placeholder="+244 9xx xxx xxx"></div>
-                    <div class="form-group"><label>Nacionalidade</label><input class="form-control" id="mc-nac" placeholder="Ex: Angolana"></div>
+                <div class="form-group"><label>Telefone</label><input class="form-control" id="mc-tel" name="telefone" placeholder="+244 9xx xxx xxx"></div>
+                <div class="form-group"><label>Nacionalidade</label><input class="form-control" id="mc-nac" name="nacionalidade" placeholder="Ex: Angolana"></div>
                 </div>
-                <div class="form-group"><label>Notas</label><textarea class="form-control" id="mc-notas" rows="2" placeholder="Observações iniciais..."></textarea></div>
+                <div class="form-group"><label>Notas</label><textarea class="form-control" id="mc-notas" rows="2" name="nota" placeholder="Observações iniciais..."></textarea></div>
                 <div class="form-group">
-                    <label>Curriculum Vitae</label>
-                    <div class="upload-area" onclick="document.getElementById('mc-cv').click()">
-                        <span class="material-icons-sharp">upload_file</span>
-                        <p id="cv-label">Clique para fazer upload do CV (PDF, DOC)</p>
-                    </div>
-                    <input type="file" id="mc-cv" style="display:none" accept=".pdf,.doc,.docx" onchange="cvSelecionado(this)">
+                <label>Curriculum Vitae</label>
+                <div class="upload-area" onclick="document.getElementById('mc-cv').click()">
+                <span class="material-icons-sharp">upload_file</span>
+                <p id="cv-label" name="cv">Clique para fazer upload do CV (PDF, DOC)</p>
                 </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="fecharModalCandidato()">Cancelar</button>
-            <button class="btn btn-primary" onclick="adicionarCandidato()"><span class="material-icons-sharp">save</span> Adicionar</button>
+                <input type="file" id="mc-cv" style="display:none" accept=".pdf,.doc,.docx" onchange="cvSelecionado(this)">
+                </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button class="btn btn-outline" onclick="fecharModalCandidato()">Cancelar</button>
+                <button class="btn btn-primary" onclick="adicionarCandidato()" type="submit"><span class="material-icons-sharp">save</span> Adicionar</button>
         </div>
     </div>
 </div>
@@ -1212,11 +1229,7 @@ function editarVaga(id) { irParaNovaVaga(id); }
 /* ── Novo Candidato (global, página completa) ── */
 function irParaNovoCandidato() {
     // Popula o select de vagas
-    const sel = document.getElementById('nc-vaga');
-    sel.innerHTML = '<option value="">Selecionar vaga...</option>' +
-        vagas.filter(v=>v.estado==='Aberta').map(v=>`<option value="${v.id}">${v.titulo} — ${v.dept}</option>`).join('');
-    // Limpa campos
-    ['nc-nome','nc-email','nc-tel','nc-nac','nc-notas'].forEach(id=> document.getElementById(id).value='');
+    
     document.getElementById('nc-cv-label').textContent = 'Clique para fazer upload do CV (PDF, DOC)';
     mostrarPg('pg-novo-candidato');
     ocultarBotoesHeader();

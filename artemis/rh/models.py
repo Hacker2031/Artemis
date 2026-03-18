@@ -91,7 +91,7 @@ class Candidatos(models.Model):
     cv = models.FileField(upload_to='candidatos/cvs', null=True, blank=True)
 
     vaga = models.ForeignKey(Vaga, on_delete=models.CASCADE, related_name='candidatos')
-    nota = models.IntegerField(default=1)
+    nota = models.TextField()
 
     ESTADO_CHOICES = [
         ('recebido', 'Recebido'),
