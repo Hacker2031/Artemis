@@ -39,7 +39,10 @@ def rhPage(request):
         'num_vagas': Vaga.objects.count(),
         'total_candidaturas': Candidatos.objects.count(),   
         'candidatos': candidatos,
-        'vagas_abertas': Vaga.objects.all(),
+        'vagas_abertas': Vaga.objects.filter(estado="aberta"),
+        'fonte_recrutamento': Candidatos.FONTE_RECRUTAMENTO_CHOICES,
+        'nacionalidade': Candidatos.NACIONALIDADE_CHOICES,
+        'estado': Candidatos.ESTADO_CHOICES,
 
     }
 
@@ -87,6 +90,7 @@ def salvarCandidato(request):
                 estado = request.POST.get('estado'),
                 vaga_id = request.POST.get('vaga_id'),
                 nota = request.POST.get('nota'),
+                fonte_recrutamento = request.POST.get('fonte_recrutamento')
 
             )
             novo_candidato.save()
