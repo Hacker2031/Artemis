@@ -72,12 +72,12 @@ class Funcionarios(models.Model):
     avaliacao = models.FloatField(blank=True, null=True) 
     id_controlo = models.OneToOneField(Controlo, models.DO_NOTHING, db_column='id_controlo', blank=True, null=True)
     contacto = models.CharField(unique=True, max_length=25)
-    foto_perfil = models.FileField(upload_to="rh/foto_perfil_funcionarios")
+    foto_perfil = models.FileField(upload_to="rh/foto_perfil_funcionarios", null=True)
     contacto_alt = models.CharField(max_length=45, blank=True, null=True)
     naturalidade = models.CharField(max_length=45)
     nacionalidade = models.CharField(max_length=45, choices=Candidatos.NACIONALIDADE_CHOICES)
     sexo = models.CharField(max_length=45)
-    cidade = models.CharField(max_length=45)
+    cidade = models.CharField(max_length=45, blank=True, null=True)
     PROVINCIA_CHOICES = [
     ('luanda', 'Luanda'),
     ('bengo', 'Bengo'),
@@ -102,9 +102,9 @@ class Funcionarios(models.Model):
     ('zaire', 'Zaire'),
 ]
     provincia = models.CharField(max_length=45, choices=PROVINCIA_CHOICES, default="luanda")
-    endereco = models.TextField(max_length=120)
+    endereco = models.TextField(max_length=120, blank=True, null=True)
     estado_civil = models.CharField(max_length=45)
-    num_bi = models.CharField(max_length=45)
+    num_bi = models.CharField(max_length=45, unique=True, null=True)
     banco_nome = models.CharField(max_length=45)
     conta_bancaria = models.CharField(unique=True, max_length=45)
     departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
@@ -115,7 +115,7 @@ class Funcionarios(models.Model):
 
     
     class Meta:
-        managed = True
+        # managed = True
         db_table = 'funcionarios'
         verbose_name='Funcionario'
         verbose_name_plural='Funcionarios'
