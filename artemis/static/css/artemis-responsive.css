@@ -254,7 +254,27 @@
     .table {
         min-width: 600px;
     }
+/* Largura da barra */
+::-webkit-scrollbar {
+  width: 12px;
+}
 
+/* Fundo da barra (trilho) */
+::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-radius: 10px;
+}
+
+/* A parte que desliza (cursor) */
+::-webkit-scrollbar-thumb {
+  background: #888; 
+  border-radius: 10px;
+}
+
+/* Cor ao passar o mouse */
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
     /* Chat */
     .chat-container {
         height: 420px !important;

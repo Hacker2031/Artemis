@@ -563,7 +563,7 @@
         
         <!-- Funcionários -->
         <a href="{% url 'Funcionarios' %}" 
-           class="{% if request.resolver_match.url_name == 'Funcionarios' %}active{% endif %}">
+           class="{% if request.resolver_match.url_name == 'Funcionarios' or request.resolver_match.url_name == 'NovoFuncionario'%}active{% endif %}">
             <span class="material-icons-sharp">person_outline</span>
             <h3>Funcionários</h3>
         </a>
@@ -654,7 +654,7 @@
             this.querySelector('span:nth-child(2)').classList.toggle('active');
         });
     </script>
-
+    
     <script src="{% static "js/artemis-utils.js" %}"></script>
 
 {% block messages %}

@@ -481,7 +481,7 @@
                 </div>
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <div><div class="stat-label">Candidaturas</div><div class="stat-value" id="m-cands">0</div></div>
+                        <div><div class="stat-label">Candidaturas</div><div class="stat-value" id="m-cands">{{total_candidaturas}}</div></div>
                         <div class="stat-icon cyan" style="background:rgba(6,182,212,.15);color:var(--color-cyan)"><span class="material-icons-sharp">contact_mail</span></div>
                     </div>
                 </div>
@@ -606,7 +606,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Nº de Vagas *</label>
+                                <label>Proposta de Salário *</label>
                                 <input class="form-control" name="salario_oferecido" type="number" placeholder="Salário Monetário" required>
                             </div>
 
@@ -650,36 +650,62 @@
                 </div>
                 <div class="card-body">
                     <div class="form-grid form-grid-2">
+
+                <form action="{% url 'salvarCandidato' %}" method="POST">
+                        {% csrf_token %}
                         <div class="form-group">
                             <label>Nome Completo *</label>
-                            <input class="form-control" id="nc-nome" placeholder="Ex: João da Silva">
+                            <input class="form-control" name="nome" id="nc-nome" placeholder="Ex: João da Silva">
                         </div>
                         <div class="form-group">
                             <label>Email *</label>
-                            <input class="form-control" id="nc-email" type="email" placeholder="email@exemplo.com">
+                            <input class="form-control" name="email" id="nc-email" type="email" placeholder="email@exemplo.com">
                         </div>
                         <div class="form-group">
                             <label>Telefone</label>
-                            <input class="form-control" id="nc-tel" placeholder="+244 9xx xxx xxx">
+                            <input class="form-control" name="telefone" id="nc-tel" placeholder="9xx xxx xxx">
                         </div>
                         <div class="form-group">
                             <label>Nacionalidade</label>
-                            <input class="form-control" id="nc-nac" placeholder="Ex: Angolana">
-                        </div>
-                        <div class="form-group">
-                            <label>Vaga Pretendida *</label>
-                            <select class="form-control" id="nc-vaga">
-                                <option value="">Selecionar vaga...</option>
+                            <select class="form-control" id="nc-nac" name="nacionalidade">
+                                {% for n, l in nacionalidade%}
+                                <option value="{{n}}">{{l}}</option>
+                                {% endfor %}
+
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Estado candidatura</label>
+                            <select class="form-control" id="" name="estado">
+                                {% for e, l in estado%}
+                                <option value="{{e}}">{{l}}</option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Vaga Pretendida *</label>
+
+                            <select class="form-control" id="nc-vaga" name="vaga_id">
+                                <option value="">Selecionar vaga...</option>
+                                
+                                {% for v in vagas_abertas%}
+
+                                <option value="{{v.id}}"> {{v.titulo}} </option>
+
+                                {% endfor%}
+
+                            </select>
+                            
+                        </div>
+                        <div class="form-group">
                             <label>Fonte de Recrutamento</label>
-                            <select class="form-control" id="nc-fonte">
-                                <option>LinkedIn</option>
-                                <option>Portal de Emprego</option>
-                                <option>Indicação Interna</option>
-                                <option>Candidatura Espontânea</option>
-                                <option>Outra</option>
+                            <select class="form-control" id="nc-fonte" name="fonte_recrutamento">
+
+                                {% for fv, fn in fonte_recrutamento%}
+                                <option value="{{fv}}">{{fn}}</option>
+                                {% endfor%}
+                                
                             </select>
                         </div>
                     </div>
@@ -687,7 +713,7 @@
                     <div class="form-grid" style="gap:18px">
                         <div class="form-group">
                             <label>Notas Iniciais</label>
-                            <textarea class="form-control" id="nc-notas" rows="3" placeholder="Observações iniciais sobre o candidato..."></textarea>
+                            <textarea class="form-control" id="nc-notas" name="nota"rows="3" placeholder="Observações iniciais sobre o candidato..."></textarea>
                         </div>
                         <div class="form-group">
                             <label>Curriculum Vitae</label>
@@ -695,19 +721,21 @@
                                 <span class="material-icons-sharp">upload_file</span>
                                 <p id="nc-cv-label">Clique para fazer upload do CV (PDF, DOC)</p>
                             </div>
-                            <input type="file" id="nc-cv-file" style="display:none" accept=".pdf,.doc,.docx" onchange="ncCvSelecionado(this)">
+                            <input type="file" id="nc-cv-file" name="cv" style="display:none" accept=".pdf,.doc,.docx" onchange="ncCvSelecionado(this)">
                         </div>
                     </div>
                     <div class="divider"></div>
                     <div style="display:flex;gap:12px;justify-content:flex-end">
-                        <button class="btn btn-outline" onclick="voltarLista()">
+                        <button class="btn btn-outline" type="button" onclick="voltarLista()">
                             <span class="material-icons-sharp">close</span> Cancelar
                         </button>
-                        <button class="btn btn-primary" onclick="guardarNovoCandidato()">
+                        <button class="btn btn-primary" type="submit">
                             <span class="material-icons-sharp">save</span> Adicionar Candidato
                         </button>
                     </div>
-                </div>
+                    </div>
+                    
+                </form>
             </div>
         </div>
 
@@ -969,27 +997,30 @@
         <div class="modal-body">
             <div class="form-grid" style="gap:14px">
                 <div class="form-grid form-grid-2" style="gap:14px">
-                    <div class="form-group"><label>Nome *</label><input class="form-control" id="mc-nome" placeholder="Nome completo"></div>
-                    <div class="form-group"><label>Email *</label><input class="form-control" id="mc-email" type="email" placeholder="email@exemplo.com"></div>
+
+        
+
+                <div class="form-group"><label>Nome *</label><input class="form-control" id="mc-nome" name="nome" placeholder="Nome completo"></div>
+                <div class="form-group"><label>Email *</label><input class="form-control" id="mc-email" name="email" type="email" placeholder="email@exemplo.com"></div>
                 </div>
                 <div class="form-grid form-grid-2" style="gap:14px">
-                    <div class="form-group"><label>Telefone</label><input class="form-control" id="mc-tel" placeholder="+244 9xx xxx xxx"></div>
-                    <div class="form-group"><label>Nacionalidade</label><input class="form-control" id="mc-nac" placeholder="Ex: Angolana"></div>
+                <div class="form-group"><label>Telefone</label><input class="form-control" id="mc-tel" name="telefone" placeholder="+244 9xx xxx xxx"></div>
+                <div class="form-group"><label>Nacionalidade</label><input class="form-control" id="mc-nac" name="nacionalidade" placeholder="Ex: Angolana"></div>
                 </div>
-                <div class="form-group"><label>Notas</label><textarea class="form-control" id="mc-notas" rows="2" placeholder="Observações iniciais..."></textarea></div>
+                <div class="form-group"><label>Notas</label><textarea class="form-control" id="mc-notas" rows="2" name="nota" placeholder="Observações iniciais..."></textarea></div>
                 <div class="form-group">
-                    <label>Curriculum Vitae</label>
-                    <div class="upload-area" onclick="document.getElementById('mc-cv').click()">
-                        <span class="material-icons-sharp">upload_file</span>
-                        <p id="cv-label">Clique para fazer upload do CV (PDF, DOC)</p>
-                    </div>
-                    <input type="file" id="mc-cv" style="display:none" accept=".pdf,.doc,.docx" onchange="cvSelecionado(this)">
+                <label>Curriculum Vitae</label>
+                <div class="upload-area" onclick="document.getElementById('mc-cv').click()">
+                <span class="material-icons-sharp">upload_file</span>
+                <p id="cv-label" name="cv">Clique para fazer upload do CV (PDF, DOC)</p>
                 </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="fecharModalCandidato()">Cancelar</button>
-            <button class="btn btn-primary" onclick="adicionarCandidato()"><span class="material-icons-sharp">save</span> Adicionar</button>
+                <input type="file" id="mc-cv" style="display:none" accept=".pdf,.doc,.docx" onchange="cvSelecionado(this)">
+                </div>
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button class="btn btn-outline" onclick="fecharModalCandidato()">Cancelar</button>
+                <button class="btn btn-primary" onclick="adicionarCandidato()" type="submit"><span class="material-icons-sharp">save</span> Adicionar</button>
         </div>
     </div>
 </div>
@@ -1046,44 +1077,12 @@ let vagas = [
    
 ];
 
-let candidatos = {
-    1: [
-        { id:101, nome:'João Silva', email:'joao@exemplo.com', tel:'+244 923 456 789', nac:'Angolana',
-          data:'2026-02-10', estado:'Entrevista', cv:'joao-silva-cv.pdf', notas:'Perfil muito promissor.',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-10', avaliador:'Sistema', nota:0, obs:'Candidatura recebida via portal.' },
-            { etapa:'Análise de CV', resultado:'Aprovado', data:'2026-02-12', avaliador:'Ana Martins', nota:4, obs:'Excelente percurso académico e experiência relevante.' },
-            { etapa:'Entrevista Telefónica', resultado:'Aprovado', data:'2026-02-18', avaliador:'Carlos Neto', nota:3, obs:'Boa comunicação, disponibilidade imediata.' },
-          ]},
-        { id:102, nome:'Maria Santos', email:'maria@exemplo.com', tel:'+244 912 345 678', nac:'Portuguesa',
-          data:'2026-02-14', estado:'Análise', cv:'maria-santos-cv.pdf', notas:'',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-14', avaliador:'Sistema', nota:0, obs:'' },
-          ]},
-    ],
-    2: [
-        { id:201, nome:'Filipe Costa', email:'filipe@exemplo.com', tel:'+244 934 567 890', nac:'Angolana',
-          data:'2026-02-20', estado:'Teste', cv:'', notas:'',
-          historico:[
-            { etapa:'Receção de Candidatura', resultado:'Aprovado', data:'2026-02-20', avaliador:'Sistema', nota:0, obs:'' },
-            { etapa:'Análise de CV', resultado:'Aprovado', data:'2026-02-22', avaliador:'Sónia Lopes', nota:5, obs:'Portfolio impressionante.' },
-            { etapa:'Entrevista Técnica', resultado:'Aprovado', data:'2026-03-01', avaliador:'Pedro Ramos', nota:4, obs:'Domínio excelente de Figma.' },
-          ]},
-    ],
-    3:[], 4:[], 5:[],
-};
-
+let candidatos = {{ candidatos|safe }};
 
 
 /* ── Métricas ── */
 function atualizarMetricas() {
     const todos = Object.values(candidatos).flat();
-    document.getElementById('m-vagas').textContent       = vagas.filter(v=>v.estado==='Aberta').length;
-    document.getElementById('m-cands').textContent       = todos.length;
-    document.getElementById('m-analise').textContent     = todos.filter(c=>c.estado==='Análise').length;
-    document.getElementById('m-entrevistas').textContent = todos.filter(c=>c.estado==='Entrevista').length;
-    document.getElementById('m-testes').textContent      = todos.filter(c=>c.estado==='Teste').length;
-    document.getElementById('m-ofertas').textContent     = todos.filter(c=>c.estado==='Oferta'||c.estado==='Contratado').length;
     renderPipelineSidebar();
 }
 
@@ -1146,8 +1145,15 @@ function renderPipelineSidebar() {
 
 /* ── Badges ── */
 function estadoBadge(e) {
-    const map = { 'Aberta':'badge-success','Em Pausa':'badge-warning','Encerrada':'badge-gray' };
-    return `<span class="badge ${map[e]||'badge-gray'}">${e}</span>`;
+    const labels = {
+        aberta: 'Aberta',
+        em_analise: 'Em Análise',
+        suspensa: 'Suspensa',
+        encerrada: 'Encerrada',
+    };
+    const label = labels[e] || e;
+    const map = { 'Aberta':'badge-success','Em Análise':'badge-warning','Suspensa':'badge-warning','Encerrada':'badge-gray' };
+    return `<span class="badge ${map[label]||'badge-gray'}">${label}</span>`;
 }
 function candEstadoBadge(e) {
     const map = { 'Análise':'badge-warning','Entrevista':'badge-primary','Teste':'badge-purple','Oferta':'badge-success','Reprovado':'badge-danger','Contratado':'badge-success' };
@@ -1244,11 +1250,7 @@ function editarVaga(id) { irParaNovaVaga(id); }
 /* ── Novo Candidato (global, página completa) ── */
 function irParaNovoCandidato() {
     // Popula o select de vagas
-    const sel = document.getElementById('nc-vaga');
-    sel.innerHTML = '<option value="">Selecionar vaga...</option>' +
-        vagas.filter(v=>v.estado==='Aberta').map(v=>`<option value="${v.id}">${v.titulo} — ${v.dept}</option>`).join('');
-    // Limpa campos
-    ['nc-nome','nc-email','nc-tel','nc-nac','nc-notas'].forEach(id=> document.getElementById(id).value='');
+    
     document.getElementById('nc-cv-label').textContent = 'Clique para fazer upload do CV (PDF, DOC)';
     mostrarPg('pg-novo-candidato');
     ocultarBotoesHeader();
@@ -1355,7 +1357,7 @@ function renderCandidatosTabela() {
             </td>
             <td class="text-muted">${c.email}</td>
             <td class="text-muted">${c.tel||'—'}</td>
-            <td>${formatarData(c.data)}</td>
+            <td>${(c.data)}</td>
             <td>${candEstadoBadge(c.estado)}</td>
             <td>
                 <button class="btn btn-sm btn-primary" onclick="verCandidato(${c.id})">
@@ -1390,13 +1392,13 @@ function renderCandidatoInfo() {
                 ${c.tel?`<div class="cand-meta-item"><span class="material-icons-sharp">phone</span>${c.tel}</div>`:''}
                 ${c.nac?`<div class="cand-meta-item"><span class="material-icons-sharp">flag</span>${c.nac}</div>`:''}
                 <div class="cand-meta-item"><span class="material-icons-sharp">work</span>${vagaAtual.titulo}</div>
-                <div class="cand-meta-item"><span class="material-icons-sharp">calendar_today</span>Candidatura: ${formatarData(c.data)}</div>
+                <div class="cand-meta-item"><span class="material-icons-sharp">calendar_today</span>Candidatura: ${(c.data)}</div>
             </div>
         </div>
         <div style="flex-shrink:0">
-            ${c.cv?`<button class="btn btn-outline" onclick="toast('Download de ${c.cv}')">
+            ${c.cv?`<a class="btn btn-outline" href="${c.cv}" target="_blank" rel="noopener" download onclick="toast('Download de ${c.cv}')">
                 <span class="material-icons-sharp">download</span> Descarregar CV
-            </button>`:`<span class="text-muted fs-sm">Sem CV</span>`}
+            </a>`:`<span class="text-muted fs-sm">Sem CV</span>`}
         </div>`;
 }
 
