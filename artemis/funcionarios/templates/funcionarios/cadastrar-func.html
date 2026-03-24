@@ -1,14 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "layout.html" %}
+{% load static %}
+
+
+{% block extra_links %}
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="artemis-global.css">
-    <link rel="stylesheet" href="artemis-responsive.css">
-    <title>Cadastro de Funcionário | Artemis</title>
-    <style>
+    <link rel="stylesheet" href="{%static "css/artemis-global.css"%}">
+    <link rel="stylesheet" href="{%static "css/artemis-responsive.css"%}">
+{% endblock extra_links %}
+    {% block extra_css %}
         /* ===== VARIÁVEIS MAPEADAS DO CSS GLOBAL ===== */
         :root {
             --surface-2:      var(--color-light);
@@ -33,10 +33,7 @@
         body {
             background-color: var(--color-background);
             display: grid;
-            grid-template-columns: 1fr 22rem;
-            gap: 1.8rem;
-            padding: 1.4rem;
-            min-height: 100vh;
+          
         }
         main { min-width: 0; }
 
@@ -269,11 +266,10 @@
             .tab-btn { padding:1rem 0.8rem; }
             .tab-nav-footer { flex-direction:column; gap:0.8rem; }
         }
-    </style>
-</head>
-<body>
+        {% endblock extra_css %}
 
-<main>
+
+        {% block conteudo %}
     <div class="modulo-header">
         <h1>
             <span class="material-icons-sharp">person_add</span>
@@ -340,56 +336,59 @@
                                     <p><strong>Carregar foto do funcionário</strong></p>
                                     <small>Clique para selecionar (JPG, PNG — máx. 2MB)</small>
                                 </div>
-                                <input type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+                                <input name="foto_perfil" type="file" id="photoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
                             </label>
                         </div>
                         <div class="full-width">
                             <div class="form-group">
                                 <label class="form-label" for="nomeCompleto">Nome Completo <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="text" id="nomeCompleto" placeholder="Ex: João Carlos da Silva" required maxlength="100">
+                                <input name="f_nome" class="form-control" type="text" id="nomeCompleto" placeholder="Ex: João Carlos da Silva" required maxlength="100">
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
-                                <label class="form-label" for="dataNascimento">Data de Nascimento <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="date" id="dataNascimento" required>
+                                <labelclass="form-label" for="dataNascimento">Data de Nascimento <span style="color:var(--color-danger)">*</span></label>
+                                <input  nome="data_nasc" class="form-control" type="date" id="dataNascimento" required>
                                 <small class="text-muted" style="display:block;margin-top:0.3rem;">Idade: <span id="idadeCalc">—</span></small>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="genero">Gênero</label>
-                                <select class="form-control" id="genero">
+                                <select class="form-control" id="genero" name="sexo">
                                     <option value="">Selecione</option>
                                     <option value="M">Masculino</option>
                                     <option value="F">Feminino</option>
-                                    <option value="O">Outro</option>
                                 </select>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="estadoCivil">Estado Civil</label>
-                                <select class="form-control" id="estadoCivil">
+                                <select name="estado_civil" class="form-control" id="estadoCivil">
                                     <option value="">Selecione</option>
-                                    <option value="solteiro">Solteiro(a)</option>
-                                    <option value="casado">Casado(a)</option>
-                                    <option value="divorciado">Divorciado(a)</option>
-                                    <option value="viuvo">Viúvo(a)</option>
-                                    <option value="uniao">União de Facto</option>
+                                    <option value="solteiro">Solteiro</option>
+                                    <option value="solteiro">Solteira</option>
+                                    <option value="casado">Casado</option>
+                                    <option value="casada">Casada</option>
                                 </select>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="nacionalidade">Nacionalidade</label>
-                                <input class="form-control" type="text" id="nacionalidade" placeholder="Ex: Angolana" maxlength="50">
+                               <select name="nacionalidade" class="form-control" id="nacionalidade">
+                                    <option value="">Selecione</option>
+                                    {% for n, l in nacionalidade %}
+                                    <option class="form-control"  id="nacionalidade" value="{{n}}">{{l}}</option>
+                                    {% endfor%}
+                                </select>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="numeroBI">Número de Identificação (BI) <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="text" id="numeroBI" placeholder="Ex: 006543210LA045" required maxlength="20">
+                                <input class="form-control" name="num_bi" type="text" id="numeroBI" placeholder="Ex: 006543210LA045" required maxlength="20">
                             </div>
                         </div>
                     </div>
@@ -407,44 +406,34 @@
                     <div class="form-grid">
                         <div>
                             <div class="form-group">
-                                <label class="form-label" for="emailPessoal">Email Pessoal <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="email" id="emailPessoal" placeholder="joao.silva@email.com" required maxlength="100">
+                                <label class="form-label" for="emailPessoal">Email Principal <span style="color:var(--color-danger)">*</span></label>
+                                <input name="contacto_alt" class="form-control" type="email" id="emailPessoal" placeholder="paulokleiner.exemplo@gmail.com" required maxlength="100">
                             </div>
                         </div>
-                        <div>
-                            <div class="form-group">
-                                <label class="form-label" for="emailAlternativo">Email Alternativo</label>
-                                <input class="form-control" type="email" id="emailAlternativo" placeholder="joao.alt@email.com" maxlength="100">
-                            </div>
-                        </div>
+                       
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="telefonePrincipal">Telefone Principal <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="tel" id="telefonePrincipal" placeholder="+244 923 456 789" required maxlength="20">
+                                <input name="contacto" class="form-control" type="tel" id="telefonePrincipal" placeholder="+244 923 456 789" required maxlength="20">
                             </div>
                         </div>
-                        <div>
-                            <div class="form-group">
-                                <label class="form-label" for="telefoneAlternativo">Telefone Alternativo</label>
-                                <input class="form-control" type="tel" id="telefoneAlternativo" placeholder="+244 912 345 678" maxlength="20">
-                            </div>
-                        </div>
+                       
                         <div class="full-width">
                             <div class="form-group">
                                 <label class="form-label" for="endereco">Endereço Completo <span style="color:var(--color-danger)">*</span></label>
-                                <textarea class="form-control" id="endereco" rows="2" placeholder="Rua, número, bairro, referências..." required></textarea>
+                                <textarea name="endereco" class="form-control" id="endereco" rows="2" placeholder="Rua, número, bairro, referências..." required></textarea>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="cidade">Cidade <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="text" id="cidade" placeholder="Ex: Luanda" required maxlength="50">
+                                <input name="cidade" class="form-control" type="text" id="cidade" placeholder="Ex: Luanda" required maxlength="50">
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="provincia">Província <span style="color:var(--color-danger)">*</span></label>
-                                <select class="form-control" id="provincia" required>
+                                <select name="provincia" class="form-control" id="provincia" required>
                                     <option value="">Selecione</option>
                                     <option>Luanda</option><option>Bengo</option><option>Benguela</option>
                                     <option>Bié</option><option>Cabinda</option><option>Cuando Cubango</option>
@@ -455,12 +444,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div>
-                            <div class="form-group">
-                                <label class="form-label" for="codigoPostal">Código Postal</label>
-                                <input class="form-control" type="text" id="codigoPostal" placeholder="Ex: 1234" maxlength="10">
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -484,29 +468,35 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="dataAdmissao">Data de Admissão <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="date" id="dataAdmissao" required>
+                                <input name="data_contratacao" class="form-control" type="date" id="dataAdmissao" required>
+                                
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="cargo">Cargo/Posição <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="text" id="cargo" placeholder="Ex: Analista de Sistemas" required maxlength="100">
+
+                                 <select name="cargo "class="form-control" placeholder="Seleccione"id="cargo" required maxlength="100"  >
+                                    
+                                    <option value="">Selecione</option>
+
+                                    {% for c in cargos%}
+                                    <option value="{{c.id_cargo}}"class="form-control" type="text" id="cargo" >{{c.nome_cargo}}</option>
+                                    {%endfor%}
+                                </select>
+
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="departamento">Departamento <span style="color:var(--color-danger)">*</span></label>
                                 <select class="form-control" id="departamento" required>
-                                    <option value="">Selecione</option>
-                                    <option value="TI">Tecnologia da Informação</option>
-                                    <option value="RH">Recursos Humanos</option>
-                                    <option value="Financas">Finanças</option>
-                                    <option value="Vendas">Vendas</option>
-                                    <option value="Marketing">Marketing</option>
-                                    <option value="Operacoes">Operações</option>
-                                    <option value="Atendimento">Atendimento ao Cliente</option>
-                                    <option value="Administracao">Administração</option>
-                                    <option value="Juridico">Jurídico</option>
+                                   
+                                     <option value="">Selecione</option>
+                                    
+                                    {% for d in departamento%}
+                                        <option value="{{d.id_dpt}}">{{d.nome_dpt}}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -515,10 +505,9 @@
                                 <label class="form-label" for="tipoContrato">Tipo de Contrato <span style="color:var(--color-danger)">*</span></label>
                                 <select class="form-control" id="tipoContrato" required>
                                     <option value="">Selecione</option>
-                                    <option value="efectivo">Efectivo</option>
-                                    <option value="temporario">Temporário</option>
-                                    <option value="estagio">Estágio</option>
-                                    <option value="freelancer">Freelancer</option>
+                                       {% for t, i in tipo_contracto%}
+                                        <option value="{{t}}">{{i}}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -625,10 +614,7 @@
                         <span class="material-icons-sharp">chevron_left</span>
                         Anterior
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="saveDraft()">
-                        <span class="material-icons-sharp">save</span>
-                        Rascunho
-                    </button>
+                    
                     <button type="button" class="btn btn-primary btn-sm" id="btnNext" onclick="nextTab()">
                         Próximo
                         <span class="material-icons-sharp">chevron_right</span>
@@ -642,8 +628,10 @@
 
         </div><!-- /form-card -->
     </form>
-</main>
+{% endblock conteudo %}
 
+
+{% block painel_direito %}
 <!-- PAINEL DIREITO -->
 <div class="lado-direito">
     
@@ -700,10 +688,7 @@
                 <span class="material-icons-sharp" style="color:#d4a017">warning</span>
                 <small>Verifique os dados bancários cuidadosamente</small>
             </div>
-            <div class="tip-item">
-                <span class="material-icons-sharp" style="color:var(--color-primary)">save</span>
-                <small>Pode salvar como rascunho e continuar depois</small>
-            </div>
+           
         </div>
     </div>
 
@@ -726,8 +711,11 @@
         </div>
     </div>
 </div>
+{% endblock painel_direito %}
 
-<script src="artemis-utils.js"></script>
+{% block scripts %}
+<script src="{% static "js/index.js" %}"></script>
+<script src="{% static "js/artemis-utils.js" %}"></script>
 <script>
     let currentTab = 0;
     const TOTAL = 4;
@@ -878,5 +866,5 @@
         }, 2000);
     });
 </script>
-</body>
-</html>
+
+{% endblock scripts %}

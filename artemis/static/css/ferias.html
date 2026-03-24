@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="artemis-global.css">
+    <link rel="stylesheet" href="artemis-responsive.css">
+    <link rel="stylesheet" href="funcionarios.css">
+    <title>Gestão de Férias | Artemis</title>
+
+    <style>
+        :root {
+            --color-bg:          #0f1923;
+            --color-surface:     #162231;
+            --color-surface-2:   #1c2d3f;
+            --color-surface-3:   #223347;
+            --color-border:      rgba(255,255,255,0.07);
+            --color-primary:     #6C9BCF;
+            --color-primary-light: rgba(108,155,207,0.15);
+            --color-success:     #1B9C85;
+            --color-warning:     #F7D060;
+            --color-danger:      #FF0060;
+            --color-info:        #4DA6E8;
+            --color-text:        #e2eaf3;
+            --color-text-muted:  #7d8da1;
+            --radius:            12px;
+            --radius-sm:         8px;
+            --shadow:            0 4px 24px rgba(0,0,0,0.3);
+            --transition:        0.2s ease;
+
+            /* Cores por tipo de ausência */
+            --ferias-color:      #6C9BCF;
+            --medica-color:      #FF0060;
+            --maternidade-color: #1B9C85;
+            --licenca-color:     #F7D060;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--color-bg);
+            color: var(--color-text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* ── Layout principal ── */
+        .page-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ── Cabeçalho ── */
+        .modulo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .modulo-header h1 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .breadcrumb a { color: var(--color-primary); text-decoration: none; }
+        .breadcrumb .material-icons-sharp { font-size: 0.9rem; }
+
+        /* ── Cards base ── */
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            box-shadow: var(--shadow);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .card-header h3 { font-size: 0.95rem; font-weight: 600; }
+
+        /* ── Stat cards de saldo ── */
+        .saldo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+        .saldo-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 1.1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .saldo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+        }
+        .saldo-card.direito::before   { background: var(--color-primary); }
+        .saldo-card.gozado::before    { background: var(--color-success); }
+        .saldo-card.agendado::before  { background: var(--color-warning); }
+        .saldo-card.restante::before  { background: var(--color-info); }
+
+        .saldo-label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+        .saldo-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+        .saldo-card.direito  .saldo-value { color: var(--color-primary); }
+        .saldo-card.gozado   .saldo-value { color: var(--color-success); }
+        .saldo-card.agendado .saldo-value { color: var(--color-warning); }
+        .saldo-card.restante .saldo-value { color: var(--color-info); }
+        .saldo-sub { font-size: 0.75rem; color: var(--color-text-muted); }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            gap: 0.25rem;
+            background: var(--color-surface-2);
+            border-radius: var(--radius-sm);
+            padding: 0.3rem;
+            margin-bottom: 1.25rem;
+            border: 1px solid var(--color-border);
+            overflow-x: auto;
+        }
+        .tab {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .tab .material-icons-sharp { font-size: 1.1rem; }
+        .tab:hover { color: var(--color-text); background: rgba(255,255,255,0.04); }
+        .tab.active { background: var(--color-primary); color: #fff; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Filtros ── */
+        .filters {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.45rem 0.85rem;
+            flex: 1;
+            min-width: 180px;
+        }
+        .search-bar input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        .search-bar .material-icons-sharp { color: var(--color-text-muted); font-size: 1.1rem; }
+
+        .form-control {
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.45rem 0.85rem;
+            color: var(--color-text);
+            font-size: 0.85rem;
+            outline: none;
+            transition: border-color var(--transition);
+        }
+        .form-control:focus { border-color: var(--color-primary); }
+        select.form-control { cursor: pointer; }
+
+        /* ── Calendário ── */
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .calendar-nav h3 { font-size: 1rem; font-weight: 600; }
+        .calendar-nav-btns { display: flex; gap: 0.4rem; }
+        .cal-nav-btn {
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text);
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex; align-items: center;
+        }
+        .cal-nav-btn:hover { background: var(--color-surface-3); }
+        .cal-nav-btn .material-icons-sharp { font-size: 1.1rem; }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cal-day-header {
+            text-align: center;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            padding: 0.4rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .cal-day {
+            min-height: 52px;
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 0.3rem;
+            position: relative;
+            cursor: pointer;
+            transition: border-color var(--transition);
+        }
+        .cal-day:hover { border-color: var(--color-primary); }
+        .cal-day.empty { background: transparent; border-color: transparent; cursor: default; }
+        .cal-day.today { border-color: var(--color-primary); }
+        .cal-day.today .cal-day-num { color: var(--color-primary); font-weight: 700; }
+        .cal-day.weekend { background: rgba(255,255,255,0.02); }
+        .cal-day.feriado { background: rgba(255,0,96,0.06); }
+        .cal-day-num { font-size: 0.78rem; font-weight: 500; color: var(--color-text-muted); }
+        .cal-day.empty .cal-day-num { display: none; }
+
+        .cal-event {
+            font-size: 0.65rem;
+            border-radius: 3px;
+            padding: 0.1rem 0.3rem;
+            margin-top: 0.2rem;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+        .cal-event.ferias     { background: rgba(108,155,207,0.25); color: var(--ferias-color); }
+        .cal-event.medica     { background: rgba(255,0,96,0.2);     color: var(--medica-color); }
+        .cal-event.maternidade{ background: rgba(27,156,133,0.2);   color: var(--maternidade-color); }
+        .cal-event.licenca    { background: rgba(247,208,96,0.2);   color: var(--licenca-color); }
+
+        /* legenda */
+        .legenda {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+        .legenda-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            color: var(--color-text-muted);
+        }
+        .legenda-dot {
+            width: 10px; height: 10px;
+            border-radius: 3px;
+        }
+
+        /* ── Tabela ── */
+        .table-container { overflow-x: auto; border-radius: var(--radius-sm); }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: var(--color-surface-2);
+            padding: 0.75rem 1rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            text-align: left;
+            white-space: nowrap;
+        }
+        tbody tr {
+            border-bottom: 1px solid var(--color-border);
+            transition: background var(--transition);
+        }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; vertical-align: middle; }
+
+        /* ── Badges ── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-success    { background: rgba(27,156,133,0.15);  color: var(--color-success); }
+        .badge-warning    { background: rgba(247,208,96,0.15);  color: var(--color-warning); }
+        .badge-danger     { background: rgba(255,0,96,0.12);    color: var(--color-danger); }
+        .badge-primary    { background: var(--color-primary-light); color: var(--color-primary); }
+        .badge-info       { background: rgba(77,166,232,0.15);  color: var(--color-info); }
+
+        /* badge por tipo ausência */
+        .badge-ferias      { background: rgba(108,155,207,0.15); color: var(--ferias-color); }
+        .badge-medica      { background: rgba(255,0,96,0.12);    color: var(--medica-color); }
+        .badge-maternidade { background: rgba(27,156,133,0.15);  color: var(--maternidade-color); }
+        .badge-licenca     { background: rgba(247,208,96,0.15);  color: var(--licenca-color); }
+
+        /* ── Avatar ── */
+        .employee-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), #4a7ab5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        /* ── Botões ── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.1rem;
+            border-radius: var(--radius-sm);
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+        .btn .material-icons-sharp { font-size: 1.1rem; }
+        .btn-primary { background: var(--color-primary); color: #fff; }
+        .btn-primary:hover { filter: brightness(1.1); }
+        .btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-outline:hover { background: rgba(255,255,255,0.05); }
+        .btn-success { background: rgba(27,156,133,0.15); color: var(--color-success); border: 1px solid rgba(27,156,133,0.2); }
+        .btn-success:hover { background: rgba(27,156,133,0.25); }
+        .btn-danger  { background: rgba(255,0,96,0.12); color: var(--color-danger); border: 1px solid rgba(255,0,96,0.2); }
+        .btn-danger:hover  { background: rgba(255,0,96,0.22); }
+        .btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+        .btn-icon { padding: 0.35rem; border-radius: 6px; background: transparent; border: 1px solid var(--color-border); color: var(--color-text-muted); cursor: pointer; transition: all var(--transition); display:flex; align-items:center; }
+        .btn-icon:hover { color: var(--color-primary); border-color: var(--color-primary); }
+        .btn-icon .material-icons-sharp { font-size: 1rem; }
+        .actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+        /* ── Barra de progresso ── */
+        .progress-bar {
+            height: 6px;
+            background: var(--color-surface-2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            background: var(--color-primary);
+            transition: width 0.6s ease;
+        }
+        .progress-fill.success { background: var(--color-success); }
+        .progress-fill.warning { background: var(--color-warning); }
+        .progress-fill.danger  { background: var(--color-danger); }
+
+        /* ── Modal ── */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+            width: 100%;
+            max-width: 560px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+        .modal-header h2 { font-size: 1.1rem; font-weight: 600; }
+        .modal-close { cursor: pointer; color: var(--color-text-muted); transition: color var(--transition); }
+        .modal-close:hover { color: var(--color-danger); }
+
+        .form-group { margin-bottom: 1rem; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--color-text-muted); margin-bottom: 0.35rem; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        .saldo-preview {
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.9rem 1rem;
+            margin-top: 0.5rem;
+        }
+        .saldo-preview-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            padding: 0.3rem 0;
+        }
+        .saldo-preview-row.total { font-weight: 700; border-top: 1px solid var(--color-border); margin-top: 0.3rem; padding-top: 0.5rem; }
+        .saldo-preview-row span:last-child { font-weight: 600; }
+        .saldo-ok    span:last-child { color: var(--color-success); }
+        .saldo-warn  span:last-child { color: var(--color-warning); }
+        .saldo-error span:last-child { color: var(--color-danger); }
+
+        .conflito-alert {
+            display: none;
+            background: rgba(247,208,96,0.1);
+            border: 1px solid rgba(247,208,96,0.25);
+            border-radius: var(--radius-sm);
+            padding: 0.7rem 0.9rem;
+            font-size: 0.82rem;
+            color: var(--color-warning);
+            margin-top: 0.75rem;
+            gap: 0.5rem;
+            align-items: flex-start;
+        }
+        .conflito-alert.visible { display: flex; }
+
+        /* ── Detalhe individual (modal) ── */
+        .detalhe-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .detalhe-avatar {
+            width: 52px; height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), #4a7ab5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; font-weight: 700; color: #fff;
+        }
+        .detalhe-nome { font-size: 1.05rem; font-weight: 600; }
+        .detalhe-cargo { font-size: 0.82rem; color: var(--color-text-muted); }
+
+        .detalhe-saldo-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.6rem;
+            margin-bottom: 1rem;
+        }
+        .detalhe-saldo-item {
+            background: var(--color-surface-2);
+            border-radius: var(--radius-sm);
+            padding: 0.7rem 0.8rem;
+            text-align: center;
+        }
+        .detalhe-saldo-item .val { font-size: 1.4rem; font-weight: 700; }
+        .detalhe-saldo-item .lbl { font-size: 0.68rem; color: var(--color-text-muted); margin-top: 0.15rem; }
+
+        .historico-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--color-border);
+            gap: 0.75rem;
+        }
+        .historico-item:last-child { border-bottom: none; }
+        .historico-tipo { font-size: 0.85rem; font-weight: 500; }
+        .historico-periodo { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.1rem; }
+        .historico-dias { font-size: 0.82rem; font-weight: 600; color: var(--color-primary); flex-shrink: 0; }
+
+        /* ── Ano a ano ── */
+        .ano-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .ano-item:last-child { border-bottom: none; }
+        .ano-label { font-size: 0.8rem; font-weight: 600; width: 40px; flex-shrink: 0; }
+        .ano-bar-wrap { flex: 1; }
+        .ano-nums { font-size: 0.75rem; color: var(--color-text-muted); text-align: right; flex-shrink: 0; }
+
+        /* ── Lado direito ── */
+        .lado-direito { display: flex; flex-direction: column; gap: 1.25rem; }
+
+        .ausente-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .ausente-item:last-child { border-bottom: none; }
+        .ausente-info { flex: 1; }
+        .ausente-nome  { font-size: 0.85rem; font-weight: 500; }
+        .ausente-retorno { font-size: 0.73rem; color: var(--color-text-muted); }
+
+        .pendente-item {
+            padding: 0.75rem;
+            background: var(--color-surface-2);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            margin-bottom: 0.5rem;
+        }
+        .pendente-item:last-child { margin-bottom: 0; }
+        .pendente-nome { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.2rem; }
+        .pendente-periodo { font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 0.5rem; }
+        .pendente-acoes { display: flex; gap: 0.4rem; }
+
+        .alerta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem;
+            background: rgba(255,0,96,0.07);
+            border: 1px solid rgba(255,0,96,0.15);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .alerta-item:last-child { margin-bottom: 0; }
+        .alerta-item .material-icons-sharp { color: var(--color-danger); font-size: 1rem; }
+
+        /* ── AI insight ── */
+        .ai-insight {
+            background: linear-gradient(135deg, rgba(108,155,207,0.08), rgba(27,156,133,0.06));
+            border: 1px solid rgba(108,155,207,0.15);
+            border-radius: var(--radius-sm);
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        .ai-insight-header {
+            display: flex; align-items: center; gap: 0.4rem;
+            font-size: 0.8rem; font-weight: 600; color: var(--color-primary);
+            margin-bottom: 0.4rem;
+        }
+        .ai-insight p { font-size: 0.82rem; color: var(--color-text-muted); }
+
+        /* ── Info row ── */
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.83rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:first-child { color: var(--color-text-muted); }
+        .info-row span:last-child { font-weight: 500; }
+
+        /* ── Responsivo ── */
+        @media (max-width: 1100px) {
+            .page-wrapper { grid-template-columns: 1fr; }
+            .saldo-grid { grid-template-columns: repeat(2, 1fr); }
+            .lado-direito { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        }
+        @media (max-width: 680px) {
+            .saldo-grid { grid-template-columns: 1fr 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+            .lado-direito { grid-template-columns: 1fr; }
+            .detalhe-saldo-grid { grid-template-columns: repeat(2,1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<!-- ═══════════════════ COLUNA PRINCIPAL ═══════════════════ -->
+<main>
+
+    <!-- Cabeçalho -->
+    <div class="modulo-header">
+        <div>
+            <div class="breadcrumb">
+                <a href="rh.html"><span class="material-icons-sharp">people</span> RH</a>
+                <span class="material-icons-sharp">chevron_right</span>
+                <span>Férias e Ausências</span>
+            </div>
+            <h1><span class="material-icons-sharp">beach_access</span> Gestão de Férias</h1>
+        </div>
+        <div class="actions">
+            <button class="btn btn-outline" onclick="exportarRelatorio()">
+                <span class="material-icons-sharp">download</span>
+                Exportar
+            </button>
+            <button class="btn btn-primary" onclick="abrirModalAgendamento()">
+                <span class="material-icons-sharp">add</span>
+                Nova Solicitação
+            </button>
+        </div>
+    </div>
+
+    <!-- Cards de Saldo Global -->
+    <div class="saldo-grid">
+        <div class="saldo-card direito">
+            <span class="saldo-label">Total de Funcionários</span>
+            <span class="saldo-value">124</span>
+            <span class="saldo-sub">na empresa</span>
+        </div>
+        <div class="saldo-card gozado">
+            <span class="saldo-label">Ausentes Hoje</span>
+            <span class="saldo-value">8</span>
+            <span class="saldo-sub">6 férias · 2 baixas</span>
+        </div>
+        <div class="saldo-card agendado">
+            <span class="saldo-label">Pendentes Aprovação</span>
+            <span class="saldo-value">3</span>
+            <span class="saldo-sub">aguardando resposta</span>
+        </div>
+        <div class="saldo-card restante">
+            <span class="saldo-label">Médias Dias Restantes</span>
+            <span class="saldo-value">11</span>
+            <span class="saldo-sub">por funcionário em 2025</span>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="mudarTab('calendario', this)">
+            <span class="material-icons-sharp">calendar_month</span>
+            Calendário
+        </button>
+        <button class="tab" onclick="mudarTab('solicitacoes', this)">
+            <span class="material-icons-sharp">list_alt</span>
+            Solicitações
+        </button>
+        <button class="tab" onclick="mudarTab('saldos', this)">
+            <span class="material-icons-sharp">account_balance_wallet</span>
+            Saldos por Funcionário
+        </button>
+    </div>
+
+    <!-- ── TAB: Calendário ── -->
+    <div class="tab-content active" id="calendario">
+        <div class="card">
+            <div class="calendar-nav">
+                <div style="display:flex;gap:0.6rem;align-items:center;">
+                    <button class="cal-nav-btn" onclick="navegarMes(-1)"><span class="material-icons-sharp">chevron_left</span></button>
+                    <h3 id="calMesAno">Março 2025</h3>
+                    <button class="cal-nav-btn" onclick="navegarMes(1)"><span class="material-icons-sharp">chevron_right</span></button>
+                </div>
+                <div style="display:flex;gap:0.6rem;align-items:center;">
+                    <select class="form-control" id="calFiltroDepto" onchange="renderizarCalendario()" style="max-width:180px;">
+                        <option value="todos">Todos Departamentos</option>
+                        <option value="Vendas">Vendas</option>
+                        <option value="TI">TI</option>
+                        <option value="RH">RH</option>
+                        <option value="Financeiro">Financeiro</option>
+                        <option value="Operações">Operações</option>
+                    </select>
+                    <button class="cal-nav-btn" onclick="irHoje()">Hoje</button>
+                </div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Gerado por JS -->
+            </div>
+
+            <div class="legenda">
+                <div class="legenda-item">
+                    <div class="legenda-dot" style="background:var(--ferias-color);"></div>
+                    <span>Férias Anuais</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-dot" style="background:var(--medica-color);"></div>
+                    <span>Baixa Médica</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-dot" style="background:var(--maternidade-color);"></div>
+                    <span>Licença Maternidade/Paternidade</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-dot" style="background:var(--licenca-color);"></div>
+                    <span>Licença sem Vencimento</span>
+                </div>
+                <div class="legenda-item">
+                    <div class="legenda-dot" style="background:var(--color-danger);opacity:0.4;"></div>
+                    <span>Feriado</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB: Solicitações ── -->
+    <div class="tab-content" id="solicitacoes">
+        <div class="filters">
+            <div class="search-bar">
+                <span class="material-icons-sharp">search</span>
+                <input type="text" placeholder="Buscar funcionário..." id="searchSolic" oninput="filtrarSolicitacoes()">
+            </div>
+            <select class="form-control" id="filtroStatus" onchange="filtrarSolicitacoes()">
+                <option value="todos">Todos os Status</option>
+                <option value="pendente">Pendente</option>
+                <option value="aprovado">Aprovado</option>
+                <option value="rejeitado">Rejeitado</option>
+            </select>
+            <select class="form-control" id="filtroTipo" onchange="filtrarSolicitacoes()">
+                <option value="todos">Todos os Tipos</option>
+                <option value="Férias Anuais">Férias Anuais</option>
+                <option value="Baixa Médica">Baixa Médica</option>
+                <option value="Maternidade/Paternidade">Maternidade/Paternidade</option>
+                <option value="Licença s/ Vencimento">Licença s/ Vencimento</option>
+            </select>
+        </div>
+        <div class="card">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Tipo</th>
+                            <th>Período</th>
+                            <th>Dias Úteis</th>
+                            <th>Solicitado em</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="solicitacoesBody">
+                        <!-- Gerado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── TAB: Saldos ── -->
+    <div class="tab-content" id="saldos">
+        <div class="filters">
+            <div class="search-bar">
+                <span class="material-icons-sharp">search</span>
+                <input type="text" placeholder="Buscar funcionário..." id="searchSaldo" oninput="filtrarSaldos()">
+            </div>
+            <select class="form-control" id="filtroDeptoSaldo" onchange="filtrarSaldos()">
+                <option value="todos">Todos Departamentos</option>
+                <option value="Vendas">Vendas</option>
+                <option value="TI">TI</option>
+                <option value="RH">RH</option>
+                <option value="Financeiro">Financeiro</option>
+                <option value="Operações">Operações</option>
+            </select>
+            <select class="form-control" id="ordenarSaldo" onchange="filtrarSaldos()">
+                <option value="nome">Ordenar por Nome</option>
+                <option value="restante-asc">Menos Saldo Primeiro</option>
+                <option value="restante-desc">Mais Saldo Primeiro</option>
+                <option value="gozado-desc">Mais Gozado</option>
+            </select>
+        </div>
+        <div class="card">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Admissão</th>
+                            <th>Direito</th>
+                            <th>Gozado</th>
+                            <th>Agendado</th>
+                            <th>Restante</th>
+                            <th>Progresso</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="saldosBody">
+                        <!-- Gerado por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ═══════════════════ LADO DIREITO ═══════════════════ -->
+<div class="lado-direito">
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Ausentes Hoje</h3>
+            <span class="badge badge-danger">8</span>
+        </div>
+        <div id="ausentesHoje">
+            <!-- Gerado por JS -->
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3>Pendentes de Aprovação</h3>
+            <span class="badge badge-warning">3</span>
+        </div>
+        <div id="pendentesList">
+            <!-- Gerado por JS -->
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3><span class="material-icons-sharp" style="font-size:1rem;vertical-align:middle;color:var(--color-danger);">warning</span> Alertas</h3>
+        </div>
+        <div class="alerta-item">
+            <span class="material-icons-sharp">event_busy</span>
+            <span><b>Daniel Santos</b> tem 17 dias a vencer em Dez/2025</span>
+        </div>
+        <div class="alerta-item">
+            <span class="material-icons-sharp">event_busy</span>
+            <span><b>Ana Silva</b> tem 12 dias a vencer em Dez/2025</span>
+        </div>
+        <div class="alerta-item">
+            <span class="material-icons-sharp">event_busy</span>
+            <span><b>Carlos Mendes</b> tem 9 dias a vencer em Dez/2025</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom:0.75rem;">Insights de IA</h3>
+        <div class="ai-insight">
+            <div class="ai-insight-header">
+                <span class="material-symbols-outlined">lightbulb</span>
+                Recomendação
+            </div>
+            <p>Julho e Agosto concentram 42% das férias. Recomenda-se planear cobertura adicional no dep. de Operações para esse período.</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom:0.75rem;">Feriados em 2025</h3>
+        <div class="info-row"><span>1 Jan</span><span>Ano Novo</span></div>
+        <div class="info-row"><span>4 Fev</span><span>Dia do Combatente</span></div>
+        <div class="info-row"><span>8 Mar</span><span>Dia da Mulher</span></div>
+        <div class="info-row"><span>4 Abr</span><span>Dia da Paz</span></div>
+        <div class="info-row"><span>1 Mai</span><span>Dia do Trabalhador</span></div>
+        <div class="info-row"><span>25 Mai</span><span>Dia de África</span></div>
+        <div class="info-row"><span>1 Ago</span><span>Dia dos Heróis</span></div>
+        <div class="info-row"><span>17 Set</span><span>Dia da Fundação do MPLA</span></div>
+        <div class="info-row"><span>2 Nov</span><span>Dia dos Finados</span></div>
+        <div class="info-row"><span>11 Nov</span><span>Dia da Independência</span></div>
+        <div class="info-row"><span>25 Dez</span><span>Natal</span></div>
+    </div>
+
+</div>
+</div>
+
+<!-- ═══════════ MODAL: Nova Solicitação ═══════════ -->
+<div class="modal" id="modalAgendamento">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nova Solicitação de Ausência</h2>
+            <span class="material-icons-sharp modal-close" onclick="fecharModal('modalAgendamento')">close</span>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Funcionário</label>
+            <select class="form-control" id="selFuncionario" onchange="atualizarSaldoPreview()" style="width:100%;">
+                <option value="">Selecione o funcionário...</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Tipo de Ausência</label>
+            <select class="form-control" id="selTipo" onchange="atualizarSaldoPreview()" style="width:100%;">
+                <option value="Férias Anuais">Férias Anuais</option>
+                <option value="Baixa Médica">Baixa Médica</option>
+                <option value="Maternidade/Paternidade">Licença Maternidade/Paternidade</option>
+                <option value="Licença s/ Vencimento">Licença sem Vencimento</option>
+            </select>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Data de Início</label>
+                <input type="date" class="form-control" id="dataInicio" onchange="atualizarSaldoPreview()" style="width:100%;">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Data de Fim</label>
+                <input type="date" class="form-control" id="dataFim" onchange="atualizarSaldoPreview()" style="width:100%;">
+            </div>
+        </div>
+
+        <!-- Preview de saldo calculado -->
+        <div class="saldo-preview" id="saldoPreview" style="display:none;">
+            <div style="font-size:0.78rem; font-weight:600; color:var(--color-text-muted); margin-bottom:0.4rem; text-transform:uppercase; letter-spacing:0.05em;">Resumo do Saldo</div>
+            <div class="saldo-preview-row"><span>Direito anual:</span><span id="prev-direito">—</span></div>
+            <div class="saldo-preview-row"><span>Já gozado:</span><span id="prev-gozado">—</span></div>
+            <div class="saldo-preview-row"><span>Agendado:</span><span id="prev-agendado">—</span></div>
+            <div class="saldo-preview-row"><span>Dias desta solicitação:</span><span id="prev-solicitacao">—</span></div>
+            <div class="saldo-preview-row total" id="prev-restante-row"><span>Saldo após aprovação:</span><span id="prev-restante">—</span></div>
+        </div>
+
+        <!-- Alerta de conflito -->
+        <div class="conflito-alert" id="conflitoAlert">
+            <span class="material-icons-sharp" style="font-size:1.1rem;flex-shrink:0;">warning</span>
+            <span id="conflitoMsg">Há colegas do mesmo departamento de férias neste período.</span>
+        </div>
+
+        <div class="form-group" style="margin-top:1rem;">
+            <label class="form-label">Observações (opcional)</label>
+            <textarea class="form-control" id="obsAgendamento" rows="2" style="width:100%; resize:vertical;"></textarea>
+        </div>
+
+        <div style="display:flex;gap:0.6rem;margin-top:1rem;">
+            <button class="btn btn-outline" onclick="fecharModal('modalAgendamento')">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarSolicitacao()">
+                <span class="material-icons-sharp">check</span>
+                Salvar Solicitação
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════ MODAL: Detalhes do Funcionário ═══════════ -->
+<div class="modal" id="modalDetalhe">
+    <div class="modal-content" style="max-width:620px;">
+        <div class="modal-header">
+            <h2>Detalhe de Férias</h2>
+            <span class="material-icons-sharp modal-close" onclick="fecharModal('modalDetalhe')">close</span>
+        </div>
+        <div id="detalheConteudo"><!-- Gerado por JS --></div>
+    </div>
+</div>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+// ──────────────────────────────────────────────────────────
+// DADOS
+// ──────────────────────────────────────────────────────────
+const FERIADOS_2025 = [
+    '2025-01-01','2025-02-04','2025-03-08','2025-04-04',
+    '2025-05-01','2025-05-25','2025-08-01','2025-09-17',
+    '2025-11-02','2025-11-11','2025-12-25'
+];
+
+const funcionarios = [
+    { id:1,  nome:'Ana Silva',       depto:'Vendas',    cargo:'Gerente de Vendas',     admissao:'2020-03-15', direito:24, gozado:10, agendado:0  },
+    { id:2,  nome:'Carlos Mendes',   depto:'TI',        cargo:'Dev. Senior',           admissao:'2019-07-22', direito:24, gozado:15, agendado:0  },
+    { id:3,  nome:'Beatriz Costa',   depto:'RH',        cargo:'Analista de RH',        admissao:'2021-01-10', direito:22, gozado:8,  agendado:5  },
+    { id:4,  nome:'Daniel Santos',   depto:'Financeiro',cargo:'Contador',              admissao:'2018-11-05', direito:24, gozado:5,  agendado:2  },
+    { id:5,  nome:'Elena Rodrigues', depto:'Operações', cargo:'Coordenadora',          admissao:'2022-02-28', direito:22, gozado:18, agendado:0  },
+    { id:6,  nome:'Fernando Lima',   depto:'Vendas',    cargo:'Consultor de Vendas',   admissao:'2023-06-01', direito:22, gozado:6,  agendado:0  },
+    { id:7,  nome:'Graça Neto',      depto:'TI',        cargo:'UX Designer',           admissao:'2021-09-15', direito:22, gozado:12, agendado:0  },
+    { id:8,  nome:'Hugo Pereira',    depto:'Operações', cargo:'Supervisor',            admissao:'2020-04-20', direito:24, gozado:20, agendado:0  },
+];
+
+const solicitacoes = [
+    { id:1,  funcId:1, tipo:'Férias Anuais',          inicio:'2025-01-10', fim:'2025-01-20', diasUteis:8,  solicitadoEm:'2024-12-20', status:'aprovado',  obs:'' },
+    { id:2,  funcId:2, tipo:'Férias Anuais',          inicio:'2025-02-03', fim:'2025-02-14', diasUteis:10, solicitadoEm:'2025-01-15', status:'aprovado',  obs:'' },
+    { id:3,  funcId:3, tipo:'Férias Anuais',          inicio:'2025-03-17', fim:'2025-03-21', diasUteis:5,  solicitadoEm:'2025-03-01', status:'pendente',  obs:'' },
+    { id:4,  funcId:4, tipo:'Baixa Médica',           inicio:'2025-03-05', fim:'2025-03-07', diasUteis:3,  solicitadoEm:'2025-03-05', status:'aprovado',  obs:'Atestado médico apresentado' },
+    { id:5,  funcId:5, tipo:'Férias Anuais',          inicio:'2025-04-07', fim:'2025-04-25', diasUteis:15, solicitadoEm:'2025-03-10', status:'pendente',  obs:'' },
+    { id:6,  funcId:6, tipo:'Férias Anuais',          inicio:'2025-07-07', fim:'2025-07-18', diasUteis:10, solicitadoEm:'2025-03-12', status:'pendente',  obs:'' },
+    { id:7,  funcId:7, tipo:'Maternidade/Paternidade',inicio:'2025-02-01', fim:'2025-05-01', diasUteis:60, solicitadoEm:'2025-01-10', status:'aprovado',  obs:'Licença maternidade' },
+    { id:8,  funcId:8, tipo:'Licença s/ Vencimento',  inicio:'2025-05-05', fim:'2025-05-09', diasUteis:5,  solicitadoEm:'2025-04-20', status:'rejeitado', obs:'Período não aprovado pela gestão' },
+];
+
+// Ausenetes hoje (simulado para Março 2025)
+const ausentesHoje = [
+    { nome:'Graça Neto',      tipo:'Maternidade', retorno:'01/05/2025', depto:'TI' },
+    { nome:'Daniel Santos',   tipo:'Baixa Médica', retorno:'07/03/2025', depto:'Financeiro' },
+    { nome:'Carlos Mendes',   tipo:'Férias',       retorno:'14/02/2025', depto:'TI' },
+];
+
+// ──────────────────────────────────────────────────────────
+// UTILITÁRIOS
+// ──────────────────────────────────────────────────────────
+function diasUteis(ini, fim) {
+    let count = 0;
+    let cur = new Date(ini);
+    const end = new Date(fim);
+    while (cur <= end) {
+        const dow = cur.getDay();
+        const iso = cur.toISOString().slice(0,10);
+        if (dow !== 0 && dow !== 6 && !FERIADOS_2025.includes(iso)) count++;
+        cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+}
+
+function nomeMes(m) {
+    return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+            'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][m];
+}
+
+function iniciais(nome) {
+    return nome.split(' ').map(n => n[0]).join('').slice(0,2);
+}
+
+function tipoBadge(tipo) {
+    const map = {
+        'Férias Anuais':'ferias',
+        'Baixa Médica':'medica',
+        'Maternidade/Paternidade':'maternidade',
+        'Licença s/ Vencimento':'licenca'
+    };
+    return map[tipo] || 'primary';
+}
+
+function statusBadge(st) {
+    const map = { pendente:'warning', aprovado:'success', rejeitado:'danger' };
+    return map[st] || 'primary';
+}
+
+function statusLabel(st) {
+    return { pendente:'Pendente', aprovado:'Aprovado', rejeitado:'Rejeitado' }[st] || st;
+}
+
+function formatarData(iso) {
+    if (!iso) return '—';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function getFuncionario(id) { return funcionarios.find(f => f.id === id); }
+
+// ──────────────────────────────────────────────────────────
+// CALENDÁRIO
+// ──────────────────────────────────────────────────────────
+let calAno = 2025, calMes = 2; // Março = índice 2
+
+function navegarMes(dir) {
+    calMes += dir;
+    if (calMes > 11) { calMes = 0; calAno++; }
+    if (calMes < 0)  { calMes = 11; calAno--; }
+    renderizarCalendario();
+}
+
+function irHoje() {
+    const hoje = new Date();
+    calAno = hoje.getFullYear();
+    calMes = hoje.getMonth();
+    renderizarCalendario();
+}
+
+function renderizarCalendario() {
+    document.getElementById('calMesAno').textContent = `${nomeMes(calMes)} ${calAno}`;
+    const filtroDepto = document.getElementById('calFiltroDepto').value;
+
+    const grid = document.getElementById('calendarGrid');
+    grid.innerHTML = '';
+
+    // Cabeçalho dias da semana
+    ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].forEach(d => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-header';
+        el.textContent = d;
+        grid.appendChild(el);
+    });
+
+    const primeiroDia = new Date(calAno, calMes, 1).getDay();
+    const totalDias   = new Date(calAno, calMes + 1, 0).getDate();
+    const hoje = new Date();
+    const hojeDia = hoje.getDate(), hojeMes = hoje.getMonth(), hojeAno = hoje.getFullYear();
+
+    // Células vazias iniciais
+    for (let i = 0; i < primeiroDia; i++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day empty';
+        grid.appendChild(el);
+    }
+
+    for (let dia = 1; dia <= totalDias; dia++) {
+        const isoDate = `${calAno}-${String(calMes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+        const dow = new Date(calAno, calMes, dia).getDay();
+        const isHoje  = dia === hojeDia && calMes === hojeMes && calAno === hojeAno;
+        const isFeriado = FERIADOS_2025.includes(isoDate);
+        const isWeekend = dow === 0 || dow === 6;
+
+        const cell = document.createElement('div');
+        cell.className = 'cal-day' +
+            (isWeekend ? ' weekend' : '') +
+            (isHoje    ? ' today'   : '') +
+            (isFeriado ? ' feriado' : '');
+        cell.title = isFeriado ? 'Feriado' : '';
+
+        const numEl = document.createElement('div');
+        numEl.className = 'cal-day-num';
+        numEl.textContent = dia;
+        cell.appendChild(numEl);
+
+        // Eventos do dia
+        solicitacoes.forEach(s => {
+            if (s.status === 'rejeitado') return;
+            const func = getFuncionario(s.funcId);
+            if (!func) return;
+            if (filtroDepto !== 'todos' && func.depto !== filtroDepto) return;
+            if (isoDate >= s.inicio && isoDate <= s.fim) {
+                const ev = document.createElement('div');
+                ev.className = `cal-event ${tipoBadge(s.tipo)}`;
+                ev.textContent = iniciais(func.nome) + ' ' + func.nome.split(' ')[0];
+                ev.title = `${func.nome} — ${s.tipo}`;
+                ev.onclick = (e) => { e.stopPropagation(); verDetalheFuncionario(func.id); };
+                cell.appendChild(ev);
+            }
+        });
+
+        grid.appendChild(cell);
+    }
+}
+
+// ──────────────────────────────────────────────────────────
+// TABELA DE SOLICITAÇÕES
+// ──────────────────────────────────────────────────────────
+function renderizarSolicitacoes(lista) {
+    const tbody = document.getElementById('solicitacoesBody');
+    if (!lista) lista = solicitacoes;
+    tbody.innerHTML = lista.map(s => {
+        const f = getFuncionario(s.funcId);
+        if (!f) return '';
+        return `
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.65rem;">
+                    <div class="employee-avatar">${iniciais(f.nome)}</div>
+                    <div>
+                        <div style="font-weight:500;">${f.nome}</div>
+                        <small style="color:var(--color-text-muted);">${f.depto}</small>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge badge-${tipoBadge(s.tipo)}">${s.tipo}</span></td>
+            <td>
+                <div style="font-size:0.83rem;">${formatarData(s.inicio)} → ${formatarData(s.fim)}</div>
+            </td>
+            <td style="font-weight:600;">${s.diasUteis} dias</td>
+            <td style="color:var(--color-text-muted);font-size:0.82rem;">${formatarData(s.solicitadoEm)}</td>
+            <td><span class="badge badge-${statusBadge(s.status)}">${statusLabel(s.status)}</span></td>
+            <td>
+                <div style="display:flex;gap:0.35rem;align-items:center;">
+                    <button class="btn-icon" title="Ver detalhe" onclick="verDetalheFuncionario(${f.id})">
+                        <span class="material-icons-sharp">visibility</span>
+                    </button>
+                    ${s.status === 'pendente' ? `
+                    <button class="btn-icon" title="Aprovar" style="color:var(--color-success);border-color:rgba(27,156,133,0.3);" onclick="aprovar(${s.id})">
+                        <span class="material-icons-sharp">check</span>
+                    </button>
+                    <button class="btn-icon" title="Rejeitar" style="color:var(--color-danger);border-color:rgba(255,0,96,0.3);" onclick="rejeitar(${s.id})">
+                        <span class="material-icons-sharp">close</span>
+                    </button>` : ''}
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarSolicitacoes() {
+    const q      = document.getElementById('searchSolic').value.toLowerCase();
+    const status = document.getElementById('filtroStatus').value;
+    const tipo   = document.getElementById('filtroTipo').value;
+    const lista  = solicitacoes.filter(s => {
+        const f = getFuncionario(s.funcId);
+        const nomeMatch = f && f.nome.toLowerCase().includes(q);
+        const statusMatch = status === 'todos' || s.status === status;
+        const tipoMatch   = tipo   === 'todos' || s.tipo   === tipo;
+        return nomeMatch && statusMatch && tipoMatch;
+    });
+    renderizarSolicitacoes(lista);
+}
+
+function aprovar(id) {
+    const s = solicitacoes.find(x => x.id === id);
+    if (s) { s.status = 'aprovado'; renderizarSolicitacoes(); renderizarPendentes(); }
+}
+function rejeitar(id) {
+    const s = solicitacoes.find(x => x.id === id);
+    if (s) { s.status = 'rejeitado'; renderizarSolicitacoes(); renderizarPendentes(); }
+}
+
+// ──────────────────────────────────────────────────────────
+// TABELA DE SALDOS
+// ──────────────────────────────────────────────────────────
+function renderizarSaldos(lista) {
+    const tbody = document.getElementById('saldosBody');
+    if (!lista) lista = funcionarios;
+    tbody.innerHTML = lista.map(f => {
+        const restante = f.direito - f.gozado - f.agendado;
+        const pct = Math.round((f.gozado / f.direito) * 100);
+        const corRestante = restante <= 3 ? 'danger' : restante <= 7 ? 'warning' : 'success';
+        return `
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:0.65rem;">
+                    <div class="employee-avatar">${iniciais(f.nome)}</div>
+                    <div>
+                        <div style="font-weight:500;">${f.nome}</div>
+                        <small style="color:var(--color-text-muted);">${f.cargo}</small>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge badge-primary">${f.depto}</span></td>
+            <td style="color:var(--color-text-muted);font-size:0.82rem;">${formatarData(f.admissao)}</td>
+            <td style="font-weight:600;">${f.direito}</td>
+            <td style="color:var(--color-success);font-weight:600;">${f.gozado}</td>
+            <td style="color:var(--color-warning);font-weight:600;">${f.agendado}</td>
+            <td>
+                <span style="font-weight:700;color:var(--color-${corRestante});">${restante}</span>
+            </td>
+            <td style="min-width:100px;">
+                <div class="progress-bar" style="margin-bottom:0.2rem;">
+                    <div class="progress-fill ${pct>=80?'success':pct>=50?'':'warning'}" style="width:${pct}%"></div>
+                </div>
+                <small style="color:var(--color-text-muted);">${pct}% utilizado</small>
+            </td>
+            <td>
+                <div style="display:flex;gap:0.35rem;">
+                    <button class="btn-icon" title="Ver detalhes" onclick="verDetalheFuncionario(${f.id})">
+                        <span class="material-icons-sharp">visibility</span>
+                    </button>
+                    <button class="btn-icon" title="Agendar férias" onclick="abrirModalComFuncionario(${f.id})">
+                        <span class="material-icons-sharp">add</span>
+                    </button>
+                </div>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function filtrarSaldos() {
+    const q     = document.getElementById('searchSaldo').value.toLowerCase();
+    const depto = document.getElementById('filtroDeptoSaldo').value;
+    const ordem = document.getElementById('ordenarSaldo').value;
+    let lista   = funcionarios.filter(f => {
+        return f.nome.toLowerCase().includes(q) && (depto === 'todos' || f.depto === depto);
+    });
+    if (ordem === 'nome')           lista.sort((a,b) => a.nome.localeCompare(b.nome));
+    if (ordem === 'restante-asc')   lista.sort((a,b) => (a.direito-a.gozado-a.agendado) - (b.direito-b.gozado-b.agendado));
+    if (ordem === 'restante-desc')  lista.sort((a,b) => (b.direito-b.gozado-b.agendado) - (a.direito-a.gozado-a.agendado));
+    if (ordem === 'gozado-desc')    lista.sort((a,b) => b.gozado - a.gozado);
+    renderizarSaldos(lista);
+}
+
+// ──────────────────────────────────────────────────────────
+// LADO DIREITO
+// ──────────────────────────────────────────────────────────
+function renderizarAusentesHoje() {
+    const cont = document.getElementById('ausentesHoje');
+    if (!ausentesHoje.length) { cont.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.83rem;">Nenhum ausente hoje.</p>'; return; }
+    cont.innerHTML = ausentesHoje.map(a => `
+        <div class="ausente-item">
+            <div class="employee-avatar">${iniciais(a.nome)}</div>
+            <div class="ausente-info">
+                <div class="ausente-nome">${a.nome}</div>
+                <div class="ausente-retorno">
+                    <span class="badge badge-${tipoBadge(a.tipo==='Férias'?'Férias Anuais':a.tipo==='Maternidade'?'Maternidade/Paternidade':'Baixa Médica')}" style="font-size:0.68rem;padding:0.1rem 0.45rem;">${a.tipo}</span>
+                    · retorno ${a.retorno}
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+function renderizarPendentes() {
+    const cont = document.getElementById('pendentesList');
+    const pend = solicitacoes.filter(s => s.status === 'pendente');
+    if (!pend.length) { cont.innerHTML = '<p style="color:var(--color-text-muted);font-size:0.83rem;">Nenhuma pendente.</p>'; return; }
+    cont.innerHTML = pend.map(s => {
+        const f = getFuncionario(s.funcId);
+        if (!f) return '';
+        return `
+        <div class="pendente-item">
+            <div class="pendente-nome">${f.nome} <span style="color:var(--color-text-muted);font-weight:400;">— ${f.depto}</span></div>
+            <div class="pendente-periodo">${s.tipo} · ${formatarData(s.inicio)} → ${formatarData(s.fim)} (${s.diasUteis} dias)</div>
+            <div class="pendente-acoes">
+                <button class="btn btn-sm btn-success" onclick="aprovar(${s.id})">
+                    <span class="material-icons-sharp" style="font-size:0.9rem;">check</span> Aprovar
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="rejeitar(${s.id})">
+                    <span class="material-icons-sharp" style="font-size:0.9rem;">close</span> Rejeitar
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+// ──────────────────────────────────────────────────────────
+// MODAL: NOVA SOLICITAÇÃO
+// ──────────────────────────────────────────────────────────
+function preencherSelectFuncionarios(selecionadoId) {
+    const sel = document.getElementById('selFuncionario');
+    sel.innerHTML = '<option value="">Selecione o funcionário...</option>' +
+        funcionarios.map(f => `<option value="${f.id}" ${f.id==selecionadoId?'selected':''}>${f.nome} — ${f.depto}</option>`).join('');
+}
+
+function abrirModalAgendamento() {
+    preencherSelectFuncionarios(null);
+    document.getElementById('dataInicio').value = '';
+    document.getElementById('dataFim').value    = '';
+    document.getElementById('obsAgendamento').value = '';
+    document.getElementById('saldoPreview').style.display = 'none';
+    document.getElementById('conflitoAlert').classList.remove('visible');
+    document.getElementById('modalAgendamento').classList.add('active');
+}
+
+function abrirModalComFuncionario(id) {
+    abrirModalAgendamento();
+    preencherSelectFuncionarios(id);
+    atualizarSaldoPreview();
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function atualizarSaldoPreview() {
+    const funcId  = parseInt(document.getElementById('selFuncionario').value);
+    const ini     = document.getElementById('dataInicio').value;
+    const fim     = document.getElementById('dataFim').value;
+    const tipo    = document.getElementById('selTipo').value;
+
+    const preview = document.getElementById('saldoPreview');
+    const alerta  = document.getElementById('conflitoAlert');
+    alerta.classList.remove('visible');
+
+    if (!funcId || !ini || !fim || ini > fim) { preview.style.display = 'none'; return; }
+
+    const f = getFuncionario(funcId);
+    if (!f) return;
+
+    const dias = diasUteis(ini, fim);
+    const restante = f.direito - f.gozado - f.agendado - (tipo === 'Férias Anuais' ? dias : 0);
+    const rowEl = document.getElementById('prev-restante-row');
+
+    document.getElementById('prev-direito').textContent    = f.direito + ' dias';
+    document.getElementById('prev-gozado').textContent     = f.gozado  + ' dias';
+    document.getElementById('prev-agendado').textContent   = f.agendado + ' dias';
+    document.getElementById('prev-solicitacao').textContent = dias + ' dias úteis';
+    document.getElementById('prev-restante').textContent   = tipo === 'Férias Anuais' ? restante + ' dias' : '— (não deduz saldo)';
+
+    rowEl.className = 'saldo-preview-row total ' + (tipo !== 'Férias Anuais' ? '' : restante < 0 ? 'saldo-error' : restante <= 3 ? 'saldo-warn' : 'saldo-ok');
+    preview.style.display = 'block';
+
+    // Verificar conflito no departamento
+    const conflitos = solicitacoes.filter(s => {
+        if (s.status === 'rejeitado') return false;
+        const fc = getFuncionario(s.funcId);
+        if (!fc || fc.depto !== f.depto || s.funcId === funcId) return false;
+        return !(fim < s.inicio || ini > s.fim);
+    });
+    if (conflitos.length > 0) {
+        const nomes = conflitos.map(s => getFuncionario(s.funcId)?.nome).filter(Boolean).join(', ');
+        document.getElementById('conflitoMsg').textContent =
+            `Conflito com colegas do mesmo departamento no período: ${nomes}.`;
+        alerta.classList.add('visible');
+    }
+}
+
+function salvarSolicitacao() {
+    const funcId = parseInt(document.getElementById('selFuncionario').value);
+    const ini    = document.getElementById('dataInicio').value;
+    const fim    = document.getElementById('dataFim').value;
+    const tipo   = document.getElementById('selTipo').value;
+    const obs    = document.getElementById('obsAgendamento').value;
+
+    if (!funcId || !ini || !fim) { alert('Preencha todos os campos obrigatórios.'); return; }
+    if (ini > fim) { alert('A data de início deve ser anterior à data de fim.'); return; }
+
+    const dias = diasUteis(ini, fim);
+    const novaId = Math.max(...solicitacoes.map(s => s.id)) + 1;
+    solicitacoes.push({
+        id: novaId, funcId, tipo, inicio: ini, fim, diasUteis: dias,
+        solicitadoEm: new Date().toISOString().slice(0,10),
+        status: 'pendente', obs
+    });
+
+    fecharModal('modalAgendamento');
+    renderizarSolicitacoes();
+    renderizarSaldos();
+    renderizarPendentes();
+    renderizarCalendario();
+    alert(`Solicitação criada com sucesso! (${dias} dias úteis)`);
+}
+
+// ──────────────────────────────────────────────────────────
+// MODAL: DETALHE DO FUNCIONÁRIO
+// ──────────────────────────────────────────────────────────
+function verDetalheFuncionario(id) {
+    const f = getFuncionario(id);
+    if (!f) return;
+
+    const restante = f.direito - f.gozado - f.agendado;
+    const meusSolic = solicitacoes.filter(s => s.funcId === id);
+
+    // Anos de casa
+    const admDate = new Date(f.admissao);
+    const anos = Math.floor((new Date() - admDate) / (365.25 * 24 * 3600 * 1000));
+
+    // Saldo histórico simulado
+    const historico = [
+        { ano: 2025, direito: f.direito, gozado: f.gozado, agendado: f.agendado },
+        { ano: 2024, direito: f.direito, gozado: f.direito - 2, agendado: 0 },
+        { ano: 2023, direito: f.direito, gozado: f.direito,     agendado: 0 },
+    ];
+
+    const html = `
+    <div class="detalhe-header">
+        <div class="detalhe-avatar">${iniciais(f.nome)}</div>
+        <div>
+            <div class="detalhe-nome">${f.nome}</div>
+            <div class="detalhe-cargo">${f.cargo} · ${f.depto}</div>
+            <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:0.2rem;">
+                Admissão: ${formatarData(f.admissao)} · ${anos} ano${anos!==1?'s':''} de casa
+            </div>
+        </div>
+    </div>
+
+    <div class="detalhe-saldo-grid">
+        <div class="detalhe-saldo-item">
+            <div class="val" style="color:var(--color-primary);">${f.direito}</div>
+            <div class="lbl">Direito Anual</div>
+        </div>
+        <div class="detalhe-saldo-item">
+            <div class="val" style="color:var(--color-success);">${f.gozado}</div>
+            <div class="lbl">Gozado</div>
+        </div>
+        <div class="detalhe-saldo-item">
+            <div class="val" style="color:var(--color-warning);">${f.agendado}</div>
+            <div class="lbl">Agendado</div>
+        </div>
+        <div class="detalhe-saldo-item">
+            <div class="val" style="color:${restante<=3?'var(--color-danger)':restante<=7?'var(--color-warning)':'var(--color-info)'};">${restante}</div>
+            <div class="lbl">Restante</div>
+        </div>
+    </div>
+
+    <div style="margin-bottom:1rem;">
+        <div style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:0.35rem;">Utilização em 2025</div>
+        <div class="progress-bar" style="height:8px;">
+            <div class="progress-fill success" style="width:${Math.round(f.gozado/f.direito*100)}%;"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--color-text-muted);margin-top:0.25rem;">
+            <span>${Math.round(f.gozado/f.direito*100)}% gozado</span>
+            <span>${f.gozado} de ${f.direito} dias</span>
+        </div>
+    </div>
+
+    <h4 style="font-size:0.85rem;font-weight:600;margin-bottom:0.75rem;">Histórico ano a ano</h4>
+    ${historico.map(h => {
+        const r = h.direito - h.gozado - h.agendado;
+        const p = Math.round(h.gozado / h.direito * 100);
+        return `
+        <div class="ano-item">
+            <span class="ano-label">${h.ano}</span>
+            <div class="ano-bar-wrap">
+                <div class="progress-bar">
+                    <div class="progress-fill ${p>=90?'success':p>=60?'':'warning'}" style="width:${p}%;"></div>
+                </div>
+            </div>
+            <span class="ano-nums">${h.gozado}/${h.direito} dias · <b>${r>=0?r+' rest.':'excedeu'}</b></span>
+        </div>`;
+    }).join('')}
+
+    <h4 style="font-size:0.85rem;font-weight:600;margin:1rem 0 0.75rem;">Solicitações</h4>
+    ${meusSolic.length === 0
+        ? '<p style="color:var(--color-text-muted);font-size:0.83rem;">Nenhuma solicitação registada.</p>'
+        : meusSolic.map(s => `
+        <div class="historico-item">
+            <div>
+                <div class="historico-tipo">${s.tipo}</div>
+                <div class="historico-periodo">${formatarData(s.inicio)} → ${formatarData(s.fim)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+                <span class="historico-dias">${s.diasUteis} dias</span>
+                <span class="badge badge-${statusBadge(s.status)}">${statusLabel(s.status)}</span>
+            </div>
+        </div>`).join('')
+    }
+
+    <div style="margin-top:1.25rem;display:flex;gap:0.6rem;">
+        <button class="btn btn-primary" onclick="fecharModal('modalDetalhe');abrirModalComFuncionario(${f.id})">
+            <span class="material-icons-sharp">add</span>
+            Nova Solicitação
+        </button>
+        <button class="btn btn-outline" onclick="fecharModal('modalDetalhe')">Fechar</button>
+    </div>`;
+
+    document.getElementById('detalheConteudo').innerHTML = html;
+    document.getElementById('modalDetalhe').classList.add('active');
+}
+
+// ──────────────────────────────────────────────────────────
+// TABS
+// ──────────────────────────────────────────────────────────
+function mudarTab(nome, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(nome).classList.add('active');
+}
+
+// ──────────────────────────────────────────────────────────
+// INIT
+// ──────────────────────────────────────────────────────────
+function exportarRelatorio() { alert('Exportando relatório de férias...'); }
+
+renderizarCalendario();
+renderizarSolicitacoes();
+renderizarSaldos();
+renderizarAusentesHoje();
+renderizarPendentes();
+</script>
+<script src="artemis-utils.js"></script>
+</body>
+</html>

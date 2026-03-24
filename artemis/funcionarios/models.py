@@ -61,7 +61,7 @@ class Funcionarios(models.Model):
 ]
     EVENTUAL_CHOICES=[
     ('efetivo', 'Efetivo'),
-    ('em_formacao', 'Em Formação'),
+    ('em formação', 'Em Formação'),
     ('eventual', 'Eventual'),
 ]
     f_id = models.AutoField(primary_key=True)

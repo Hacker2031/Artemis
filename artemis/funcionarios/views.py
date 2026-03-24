@@ -40,9 +40,10 @@ context_nv = {
     'cargos': Cargos.objects.all(),
     'departamento': Departamentos.objects.all(),
     'provincia': Funcionarios.PROVINCIA_CHOICES,
+    'tipo_contracto': Funcionarios.EVENTUAL_CHOICES,
 }
 def NovoFuncionario(request):
-    return render(request, "funcionarios/cadastro-funcionario.html", context_nv)
+    return render(request, "funcionarios/cadastrar-func.html", context_nv)
 
 
 # def salvarFuncionario(request):
