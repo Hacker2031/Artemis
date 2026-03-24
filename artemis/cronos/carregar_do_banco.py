@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+
 # Adicionar ao path o diretório pai do projeto Django
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_DIR)
@@ -70,6 +72,7 @@ def extrair_dados_funcionarios():
         f.naturalidade,
         f.nacionalidade,
         f.sexo,
+        f.email,
         f.estado_civil,
         f.banco_nome,
         f.conta_bancaria
@@ -192,19 +195,26 @@ def criar_documentos_para_rag():
         # Criar documentos de funcionários
         for _, row in df_func.iterrows():
             texto = f"""
-            FUNCIONÁRIO: {row['f_nome']}
-            CARGO: {row['cargo']}
-            DEPARTAMENTO: {row['departamento']}
-            CONTATO: {row['contacto']}
-            EMAIL: {row['email']}
-            ESTADO: {row['estado']}
-            AVALIAÇÃO: {row['avaliacao']}
-            NATURALIDADE: {row['naturalidade']}
-            NACIONALIDADE: {row['nacionalidade']}
-            SEXO: {row['sexo']}
-            ESTADO CIVIL: {row['estado_civil']}
-            BANCO: {row['banco_nome']}
-            CONTA: {row['conta_bancaria']}
+            {row['f_nome']} é um funcionário da empresa.
+
+            Ele trabalha no departamento {row['departamento']}.
+
+            O cargo de {row['f_nome']} é {row['cargo']}.
+
+            O contacto registado é {row['contacto']} e o email é {row['email']}.
+
+            Estado do funcionário: {row['estado']}.
+
+            Avaliação de desempenho: {row['avaliacao']}.
+
+            Naturalidade: {row['naturalidade']}.
+            Nacionalidade: {row['nacionalidade']}.
+
+            Sexo: {row['sexo']}.
+            Estado civil: {row['estado_civil']}.
+
+            Banco associado: {row['banco_nome']}.
+            Conta bancária: {row['conta_bancaria']}.
             """
             documentos.append({
                 'page_content': texto,
@@ -220,13 +230,18 @@ def criar_documentos_para_rag():
         # Criar documentos de cargos
         for _, row in df_cargos.iterrows():
             texto = f"""
-            CARGO: {row['nome_cargo']}
-            DESCRIÇÃO: {row['descricao']}
-            REQUISITOS: {row['requisitos']}
-            SALÁRIO MÍNIMO: {row['sal_min']}
-            SALÁRIO BASE: {row['sal_base']}
-            SALÁRIO MÁXIMO: {row['sal_max']}
-            DATA CRIAÇÃO: {row['data_criacao']}
+            O cargo {row['nome_cargo']} existe na empresa.
+
+            Descrição do cargo: {row['descricao']}.
+
+            Requisitos necessários: {row['requisitos']}.
+
+            Faixa salarial do cargo:
+            mínimo {row['sal_min']},
+            salário base {row['sal_base']},
+            máximo {row['sal_max']}.
+
+            Este cargo foi criado em {row['data_criacao']}.
             """
             documentos.append({
                 'page_content': texto,
@@ -281,13 +296,21 @@ def criar_indice_faiss():
     ]
     
     
+    # Substituir o split_documents por:
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=100
+        chunk_size=1200,  
+        chunk_overlap=200
     )
-    chunks = text_splitter.split_documents(documentos)
-    print(f"{len(documentos)} documentos divididos em {len(chunks)} chunks")
-    
+    chunks = []
+    for doc in documentos:
+        if doc.metadata['tipo'] == 'funcionario':
+            chunks.append(doc)  # não divide, usa o documento inteiro
+        else:
+            chunks.extend(text_splitter.split_documents([doc]))
+        
+        chunks = text_splitter.split_documents(documentos)
+        print(f"{len(documentos)} documentos divididos em {len(chunks)} chunks")
+        
     # Criar embeddings
     print("Inicializando embeddings...")
     embeddings = HuggingFaceEmbeddings(
@@ -316,47 +339,10 @@ def criar_indice_faiss():
     
     return True
 
-def testar_consulta():
-    """Testa se o índice foi criado corretamente"""
-    print("\n" + "=" * 50)
-    print("TESTANDO CONSULTA")
-    print("=" * 50)
-    
-    embeddings = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
-    )
-    
-    try:
-        vectorstore = FAISS.load_local(
-            INDICE_FAISS,
-            embeddings,
-            allow_dangerous_deserialization=True
-        )
-        
-        # Testar busca
-        perguntas_teste = [
-            "Quem são os funcionários do departamento de Vendas?",
-            "Quais são os cargos disponíveis?",
-            "Informações sobre o departamento de RH",
-            "Funcionários com cargo de Gerente"
-        ]
-        
-        for pergunta in perguntas_teste:
-            print(f"\n Pergunta: {pergunta}")
-            docs = vectorstore.similarity_search(pergunta, k=2)
-            print(f"   Encontrados: {len(docs)} documentos")
-            for i, doc in enumerate(docs, 1):
-                print(f"   {i}. {doc.metadata['tipo']}: {doc.metadata.get('nome', '')[:50]}")
-        
-        return True
-        
-    except Exception as e:
-        print(f" Erro ao testar: {e}")
-        return False
 
 if __name__ == "__main__":
     if criar_indice_faiss():
         print("\nÍndice FAISS criado com sucesso!")
-        testar_consulta()
+             
     else:
         print("\n Falha ao criar índice FAISS")
