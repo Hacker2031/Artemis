@@ -52,7 +52,7 @@ def salvarFuncionario(request):
         try:
             foto = request.FILES.get('foto_perfil')
             
-            novo_funcionario = Candidatos(
+            novo_funcionario = Funcionarios(
                 f_nome=request.POST.get('f_nome'),
                 data_nasc=request.POST.get('data_nasc'),
                 sexo=request.POST.get('sexo'),
@@ -77,6 +77,8 @@ def salvarFuncionario(request):
                 conta_bancaria=request.POST.get('conta_bancaria'),
                 iban=request.POST.get('iban'),
                 titular=request.POST.get('titular'),
+                banco_nome=request.POST.get('banco_nome'),  # <- adicionar
+                supervisor=request.POST.get('supervisor')
             )
 
             if foto:
@@ -84,8 +86,8 @@ def salvarFuncionario(request):
 
             novo_funcionario.save()
 
-            messages.success(request, "Candidato Criado com Sucesso")
+            messages.success(request, "Funcionário Criado com Sucesso")
         except Exception as e:
-            messages.error(request, f"Erro ao salvar o Candidato: {e}")
+            messages.error(request, f"Erro ao salvar o Funcionário: {e}")
 
     return redirect('Funcionarios')

@@ -283,7 +283,7 @@
         </div>
     </div>
 
-    <form id="funcionarioForm" method="POST" action="{% url 'salvarFuncionario' %}">
+    <form id="funcionarioForm" method="POST" action="{% url 'salvarFuncionario' %}" enctype="multipart/form-data">
         {% csrf_token%}
         <div class="form-card">
 
@@ -538,7 +538,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="nomeBanco">Nome do Banco <span style="color:var(--color-danger)">*</span></label>
-                                <select name="banco_name" class="form-control" id="nomeBanco" required>
+                                <select name="banco_nome" class="form-control" id="nomeBanco" required>
                                     <option value="">Selecione</option>
                                     <option value="BAI">BAI — Banco Angolano de Investimentos</option>
                                     <option value="BFA">BFA — Banco de Fomento Angola</option>
@@ -590,7 +590,7 @@
                         Próximo
                         <span class="material-icons-sharp">chevron_right</span>
                     </button>
-                    <button type="submit" class="btn btn-primary btn-sm" id="btnSubmit" style="display:none">
+                    <button type="submit" class="btn btn-primary btn-sm" >
                         <span class="material-icons-sharp">check_circle</span>
                         Cadastrar
                     </button>
@@ -684,13 +684,6 @@
 </div>
 {% endblock%}
 
-{% block messages %}
-{% for message in messages %}
-
-    <script id="message"> alert("{{ message }}")</script>
-
-{% endfor %}
-{% endblock %}
 
 {% block scripts %}
 <script src="{% static "js/index.js" %}"></script>
@@ -715,7 +708,6 @@
 
         const isLast = currentTab === TOTAL - 1;
         document.getElementById('btnNext').style.display   = isLast ? 'none' : '';
-        document.getElementById('btnSubmit').style.display = isLast ? ''     : 'none';
 
         document.querySelector('.form-card').scrollIntoView({ behavior:'smooth', block:'start' });
     }
@@ -773,7 +765,6 @@
         };
         reader.readAsDataURL(file);
     }
-
     // Sincronizar titular
     document.getElementById('nomeCompleto').addEventListener('blur', function () {
         const t = document.getElementById('titularConta');
@@ -808,21 +799,7 @@
         this.querySelectorAll('span').forEach(s => s.classList.toggle('active'));
     });
 
-    // Submit
-    document.getElementById('funcionarioForm').addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (!this.checkValidity()) { alert('Preencha todos os campos obrigatórios (*)'); return; }
-        const num = `FUNC${new Date().getFullYear()}${Math.floor(Math.random()*9000)+1000}`;
-        document.getElementById('numeroFuncionario').value = num;
-        const btn = document.getElementById('btnSubmit');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-icons-sharp" style="animation:spin .8s linear infinite">sync</span> A cadastrar...';
-        setTimeout(() => {
-            localStorage.removeItem('funcionario_draft');
-            alert('✓ Funcionário cadastrado!\n\nNúmero: ' + num);
-            window.location.href = 'funcionarios.html';
-        }, 2000);
-    });
+    
 </script>
 
 {% endblock scripts %}

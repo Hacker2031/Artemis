@@ -238,12 +238,20 @@
     });
 
         
-        const funcionarios = [
-
-        {% for funcionario in funcionarios_filtro%}
-            { id: {{funcionario.f_id}}, nome: "{{funcionario.f_nome}}", departamento: '{{funcionario.departamento}}', cargo: '{{funcionario.cargo}}', admissao: '{{funcionario.data_contratacao|date:"d/m/Y"|default:"Não informada"}}', performance: {{funcionario.avaliacao}}, status: '{{funcionario.ativo}}', email: '{{funcionario.contacto_alt}}' },
-        {% endfor%} 
-        ];
+       const funcionarios = [
+    {% for funcionario in funcionarios_filtro %}
+        { 
+            id: {{funcionario.f_id}}, 
+            nome: "{{funcionario.f_nome|escapejs}}",
+            departamento: "{{funcionario.departamento|default:'Sem departamento'}}",
+            cargo: "{{funcionario.cargo|default:'Sem cargo'}}",
+            admissao: "{{funcionario.data_contratacao|date:'d/m/Y'|default:'Não informada'}}", 
+            performance: {{funcionario.avaliacao|default:0}}, 
+            status: "{{funcionario.ativo|default:'ativo'}}", 
+            email: "{{funcionario.contacto_alt|escapejs|default:''}}",
+        },
+    {% endfor %} 
+];
 
         // Renderizar tabela
         function renderizarTabela(funcs = funcionarios) {
