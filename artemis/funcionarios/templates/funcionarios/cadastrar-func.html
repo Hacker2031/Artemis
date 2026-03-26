@@ -280,14 +280,11 @@
                 <span class="material-icons-sharp">close</span>
                 Cancelar
             </button>
-            <button class="btn btn-outline btn-sm" onclick="previewData()">
-                <span class="material-icons-sharp">visibility</span>
-                Pré-visualizar
-            </button>
         </div>
     </div>
 
-    <form id="funcionarioForm" novalidate>
+    <form id="funcionarioForm" method="POST" action="{% url 'salvarFuncionario' %}">
+        {% csrf_token%}
         <div class="form-card">
 
             <!-- BARRA DE ABAS -->
@@ -348,7 +345,7 @@
                         <div>
                             <div class="form-group">
                                 <labelclass="form-label" for="dataNascimento">Data de Nascimento <span style="color:var(--color-danger)">*</span></label>
-                                <input  nome="data_nasc" class="form-control" type="date" id="dataNascimento" required>
+                                <input  name="data_nasc" class="form-control" type="date" id="dataNascimento" required>
                                 <small class="text-muted" style="display:block;margin-top:0.3rem;">Idade: <span id="idadeCalc">—</span></small>
                             </div>
                         </div>
@@ -476,7 +473,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="cargo">Cargo/Posição <span style="color:var(--color-danger)">*</span></label>
 
-                                 <select name="cargo "class="form-control" placeholder="Seleccione"id="cargo" required maxlength="100"  >
+                                 <select name="cargo" class="form-control" placeholder="Seleccione"id="cargo" required maxlength="100"  >
                                     
                                     <option value="">Selecione</option>
 
@@ -490,7 +487,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="departamento">Departamento <span style="color:var(--color-danger)">*</span></label>
-                                <select class="form-control" id="departamento" required>
+                                <select name="departamento" class="form-control" id="departamento" required>
                                    
                                      <option value="">Selecione</option>
                                     
@@ -503,7 +500,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="tipoContrato">Tipo de Contrato <span style="color:var(--color-danger)">*</span></label>
-                                <select class="form-control" id="tipoContrato" required>
+                                <select name="estado" class="form-control" id="tipoContrato" required>
                                     <option value="">Selecione</option>
                                        {% for t, i in tipo_contracto%}
                                         <option value="{{t}}">{{i}}</option>
@@ -514,25 +511,14 @@
                        
                         <div>
                             <div class="form-group">
-                                <label class="form-label" for="nivelAcesso">Nível de Acesso</label>
-                                <select class="form-control" id="nivelAcesso">
-                                    <option value="">Selecione</option>
-                                    <option value="admin">Administrador</option>
-                                    <option value="gestor">Gestor</option>
-                                    <option value="usuario">Utilizador</option>
-                                    <option value="leitura">Apenas Leitura</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="form-group">
                                 <label class="form-label" for="supervisor">Gestor/Supervisor</label>
-                                <select class="form-control" id="supervisor">
+                                
+                                <select name="supervisor" class="form-control" id="supervisor">
                                     <option value="">Selecione</option>
-                                    <option value="1">Ana Silva — Directora de TI</option>
-                                    <option value="2">Carlos Mendes — Gerente de RH</option>
-                                    <option value="3">Beatriz Costa — Directora Financeira</option>
-                                    <option value="4">Daniel Santos — Director de Vendas</option>
+                                   
+                                    {% for d in departamento%}
+                                    <option value="{{d.responsavel.id}}">{{d.responsavel.f_nome}} - {{d.nome_dpt}}</option>
+                                    {%endfor%}
                                 </select>
                             </div>
                         </div>
@@ -552,7 +538,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="nomeBanco">Nome do Banco <span style="color:var(--color-danger)">*</span></label>
-                                <select class="form-control" id="nomeBanco" required>
+                                <select name="banco_name" class="form-control" id="nomeBanco" required>
                                     <option value="">Selecione</option>
                                     <option value="BAI">BAI — Banco Angolano de Investimentos</option>
                                     <option value="BFA">BFA — Banco de Fomento Angola</option>
@@ -569,33 +555,23 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="numeroConta">Número da Conta <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" type="text" id="numeroConta" placeholder="Ex: 0040123456789" required maxlength="30">
+                                <input name="conta_bancaria" class="form-control" type="text" id="numeroConta" placeholder="Ex: 0040123456789" required maxlength="30">
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="iban">IBAN</label>
-                                <input class="form-control" type="text" id="iban" placeholder="AO06004000123456789012345" maxlength="34" style="text-transform:uppercase">
+                                <input name="iban" class="form-control" type="text" id="iban" placeholder="AO06004000123456789012345" maxlength="34" style="text-transform:uppercase">
                                 <small class="text-muted" style="display:block;margin-top:0.3rem;">Apenas se disponível</small>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="titularConta">Titular da Conta</label>
-                                <input class="form-control" type="text" id="titularConta" placeholder="Nome igual ao BI" maxlength="100">
+                                <input name="titular"class="form-control" type="text" id="titularConta" placeholder="Nome igual ao BI" maxlength="100">
                             </div>
                         </div>
-                        <div>
-                            <div class="form-group">
-                                <label class="form-label" for="tipoConta">Tipo de Conta</label>
-                                <select class="form-control" id="tipoConta">
-                                    <option value="">Selecione</option>
-                                    <option value="ordem">Conta à Ordem</option>
-                                    <option value="poupanca">Conta Poupança</option>
-                                    <option value="salario">Conta Salário</option>
-                                </select>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
@@ -706,7 +682,15 @@
         </div>
     </div>
 </div>
-{% endblock painel_direito %}
+{% endblock%}
+
+{% block messages %}
+{% for message in messages %}
+
+    <script id="message"> alert("{{ message }}")</script>
+
+{% endfor %}
+{% endblock %}
 
 {% block scripts %}
 <script src="{% static "js/index.js" %}"></script>
@@ -805,30 +789,9 @@
         document.getElementById('idadeCalc').textContent = age + ' anos';
     });
 
-    // Pré-visualizar
-    function previewData() {
-        const g = id => document.getElementById(id).value;
-        alert('Pré-visualização:\n\n' +
-            `Nome: ${g('nomeCompleto') || '(vazio)'}\n` +
-            `Email: ${g('emailPessoal') || '(vazio)'}\n` +
-            `Cargo: ${g('cargo') || '(vazio)'}\n` +
-            `Departamento: ${g('departamento') || '(vazio)'}\n` +
-            `Salário: ${g('salarioBase') ? g('salarioBase') + ' Kz' : '(vazio)'}`
-        );
-    }
+    
 
-    // Rascunho
-    function saveDraft() {
-        const data = {};
-        document.querySelectorAll('#funcionarioForm [id]').forEach(el => { if (el.id) data[el.id] = el.value; });
-        localStorage.setItem('funcionario_draft', JSON.stringify(data));
-        const a = document.createElement('div');
-        a.className = 'alert alert-success';
-        a.innerHTML = '<span class="material-icons-sharp">check_circle</span> Rascunho salvo com sucesso!';
-        a.style.cssText = 'position:fixed;top:2rem;right:2rem;z-index:9999;animation:fadeIn .3s ease;border-radius:var(--border-radius-1)';
-        document.body.appendChild(a);
-        setTimeout(() => a.remove(), 3000);
-    }
+   
 
     window.addEventListener('load', () => {
         const draft = localStorage.getItem('funcionario_draft');

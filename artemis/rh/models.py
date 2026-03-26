@@ -7,7 +7,7 @@ class Departamentos(models.Model):
     nome_dpt = models.CharField(unique=True, max_length=45)
     descricao_dpt = models.TextField()
     dpt_pai = models.ForeignKey('self', models.DO_NOTHING, db_column='dpt_pai', blank=True, null=True)
-    responsavel_id = models.ForeignKey('funcionarios.Funcionarios', models.DO_NOTHING)
+    responsavel = models.ForeignKey('funcionarios.Funcionarios',  models.DO_NOTHING,db_column='responsavel_id', null=True, blank=True)
     ativo = models.IntegerField()
 
     class Meta:

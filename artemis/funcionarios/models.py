@@ -66,7 +66,7 @@ class Funcionarios(models.Model):
 ]
     f_id = models.AutoField(primary_key=True)
     f_nome = models.CharField(max_length=45)
-    cargo = models.ForeignKey('rh.Cargos', models.DO_NOTHING, db_column='cargo', blank=True, null=True)
+    cargo = models.ForeignKey('rh.Cargos', on_delete= models.DO_NOTHING, db_column='cargo', blank=True, null=True)
     id_docs = models.IntegerField(unique=True, blank=True, null=True)
     estado = models.CharField(max_length=45, choices=EVENTUAL_CHOICES, default='efetivo')
     avaliacao = models.FloatField(blank=True, null=True) 
@@ -107,15 +107,17 @@ class Funcionarios(models.Model):
     num_bi = models.CharField(max_length=45, unique=True, null=True)
     banco_nome = models.CharField(max_length=45)
     conta_bancaria = models.CharField(unique=True, max_length=45)
-    departamento = models.ForeignKey('rh.Departamentos', models.DO_NOTHING, blank=True, null=True)
+    departamento = models.ForeignKey('rh.Departamentos', on_delete = models.DO_NOTHING, blank=True, null=True)
     ativo = models.CharField(max_length=15, choices= ATIVO_CHOICES, default='ativo')
     data_contratacao = models.DateField(null=True, blank=True)
     data_nasc = models.DateField(null=True, blank=True)
-
-
+    supervisor = models.ForeignKey('self', on_delete = models.DO_NOTHING, blank=True, null=True)
+    iban = models.CharField(max_length=45, null=True, blank= True)
+    titular = models.CharField(max_length=45, null=True, blank= True)
+    
     
     class Meta:
-        # managed = True
+        managed = True
         db_table = 'funcionarios'
         verbose_name='Funcionario'
         verbose_name_plural='Funcionarios'
