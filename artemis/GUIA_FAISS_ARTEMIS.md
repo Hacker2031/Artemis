@@ -1,4 +1,4 @@
-# 🤖 Guia de Integração FAISS com Artemis
+#  Guia de Integração FAISS com Artemis
 
 ## ✅ Status Atual
 - **FAISS Vector Index**: ✅ Criado e Funcional
@@ -6,7 +6,7 @@
 - **Frontend Chat**: ✅ Interface HTML pronta
 - **API Endpoint**: ✅ `/cronos/perguntar/` funcional
 
-## 🚀 Próximos Passos
+##  Próximos Passos
 
 ### 1. Configurar GOOGLE_API_KEY
 Edite o arquivo `.env` na raiz do projeto e adicione sua chave:
@@ -37,7 +37,7 @@ O script `cronos/refresh.py` está configurado para executar diariamente às 02:
 python cronos/carregar_do_banco.py
 ```
 
-## 📊 Arquitetura
+##  Arquitetura
 
 ```
 ┌─────────────────┐
@@ -67,7 +67,7 @@ python cronos/carregar_do_banco.py
                     └────────────┘
 ```
 
-## 🔧 Componentes Integrados
+##  Componentes Integrados
 
 ### Views.py
 - `cronosPage()`: Renderiza a página do chat
@@ -88,10 +88,10 @@ POST /cronos/perguntar/    → perguntar (processa pergunta)
 ### Dados Disponíveis no FAISS
 
 O índice contém informações sobre:
-- 📋 **Cargos**: 10 documentos
-- 🏢 **Departamentos**: 20 documentos
-- 👥 **Usuários**: 5 documentos
-- 💼 **Funcionários**: 0 documentos (nenhum registro ativo)
+- **Cargos**: 10 documentos
+-  **Departamentos**: 20 documentos
+-  **Usuários**: 5 documentos
+-  **Funcionários**: 0 documentos (nenhum registro ativo)
 
 **Total**: 30 documentos embedados
 
