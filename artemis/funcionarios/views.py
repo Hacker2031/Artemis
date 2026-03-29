@@ -58,14 +58,18 @@ def FuncionariosPage(request):
     age_labels = list(age_bins.keys())
     age_data = list(age_bins.values())
 
-    # Department performance
+    # Department performance and count
     dept_performance = {}
+    dept_count = {}
     for dept in Departamentos.objects.all():
         avg_perf = f_funcionarios.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
+        count = f_funcionarios.filter(departamento=dept).count()
         dept_performance[dept.nome_dpt] = round(avg_perf, 1)
+        dept_count[dept.nome_dpt] = count
 
     dept_labels = list(dept_performance.keys())
     dept_data = list(dept_performance.values())
+    dept_counts = list(dept_count.values())
 
    
     growth_labels = []
@@ -85,6 +89,7 @@ def FuncionariosPage(request):
         'age_data_json': json.dumps(age_data),
         'dept_labels_json': json.dumps(dept_labels),
         'dept_data_json': json.dumps(dept_data),
+        'dept_counts_json': json.dumps(dept_counts),
         'growth_labels_json': json.dumps(growth_labels),
         'growth_data_json': json.dumps(growth_data),
         
@@ -293,6 +298,17 @@ def export_pdf(request):
 
 
 @login_required(login_url='loginPage')
+def DetalhesFuncionario(request, id):
+    try:
+        funcionario = Funcionarios.objects.get(f_id=id)
+    except Funcionarios.DoesNotExist:
+        messages.error(request, "Funcionário não encontrado")
+        return redirect('Funcionarios')
+    context = {'funcionario': funcionario}
+    return render(request, "funcionarios/funcionario-detalhes.html", context)
+
+
+@login_required(login_url='loginPage')
 def deletarFuncionario(request, id):
     try:
         funcionario = Funcionarios.objects.get(f_id=id)
@@ -305,3 +321,4 @@ def deletarFuncionario(request, id):
         messages.error(request, f"Erro ao deletar funcionário: {str(e)}")
         logger.error(f"Erro ao deletar funcionário: {str(e)}", exc_info=True)
     return redirect('Funcionarios')
+

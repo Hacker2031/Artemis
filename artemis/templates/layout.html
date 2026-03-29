@@ -563,7 +563,7 @@
         
         <!-- Funcionários -->
         <a href="{% url 'Funcionarios' %}" 
-           class="{% if request.resolver_match.url_name == 'Funcionarios' or request.resolver_match.url_name == 'NovoFuncionario'%}active{% endif %}">
+           class="{% if request.resolver_match.url_name == 'Funcionarios' or request.resolver_match.url_name == 'NovoFuncionario' or request.resolver_match.url_name == 'EditarFuncionario' or request.resolver_match.url_name == 'DetalhesFuncionario'%}active{% endif %}">
             <span class="material-icons-sharp">person_outline</span>
             <h3>Funcionários</h3>
         </a>

@@ -35,26 +35,9 @@
                         <div class="department-count">{{funcionarios.count}}</div>
                         <p>Total</p>
                     </div>
-                    <div class="department-card" onclick="filtrarPorDepartamento('vendas')">
-                        <div class="department-count">32</div>
-                        <p>Vendas</p>
-                    </div>
-                    <div class="department-card" onclick="filtrarPorDepartamento('ti')">
-                        <div class="department-count">18</div>
-                        <p>TI</p>
-                    </div>
-                    <div class="department-card" onclick="filtrarPorDepartamento('rh')">
-                        <div class="department-count">12</div>
-                        <p>RH</p>
-                    </div>
-                    <div class="department-card" onclick="filtrarPorDepartamento('financeiro')">
-                        <div class="department-count">15</div>
-                        <p>Financeiro</p>
-                    </div>
-                    <div class="department-card" onclick="filtrarPorDepartamento('operacoes')">
-                        <div class="department-count">47</div>
-                        <p>Operações</p>
-                    </div>
+                    {% for dept in dept_labels_json %}
+                        <!-- Populated by JavaScript -->
+                    {% endfor %}
                 </div>
 
                 <!-- Filtros e Busca -->
@@ -250,10 +233,30 @@
 
         const deptLabels = {{ dept_labels_json|safe }};
         const deptData = {{ dept_data_json|safe }};
+        const deptCounts = {{ dept_counts_json|safe }};
         const ageLabels = {{ age_labels_json|safe }};
         const ageData = {{ age_data_json|safe }};
         const growthLabels = {{ growth_labels_json|safe }};
         const growthData = {{ growth_data_json|safe }};
+
+        // Renderizar cards de departamentos
+        function renderizarDepartamentos() {
+            const container = document.querySelector('.department-grid');
+            const deptCardsHTML = deptLabels.map((dept, index) => `
+                <div class="department-card" onclick="filtrarPorDepartamento('${dept.toLowerCase().replace(/\\s+/g, '_')}')">
+                    <div class="department-count">${deptCounts[index]}</div>
+                    <p>${dept}</p>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="department-card" onclick="filtrarPorDepartamento('todos')">
+                    <div class="department-count">${funcionarios.length}</div>
+                    <p>Total</p>
+                </div>
+                ${deptCardsHTML}
+            `;
+        }
 
         // Renderizar tabela
         function renderizarTabela(funcs = funcionarios) {
@@ -451,7 +454,7 @@
         }
 
         function verDetalhes(id) {
-            alert('Ver detalhes do funcionário #' + id);
+            window.location.href = '/funcionarios/detalhes/' + id + '/';
         }
 
         function editarFuncionario(id) {
@@ -465,6 +468,7 @@
         }
 
         // Inicialização
+        renderizarDepartamentos();
         renderizarTabela();
         renderizarCards();
     </script>

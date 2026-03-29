@@ -1,0 +1,238 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block extra_links %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{%static "css/artemis-global.css"%}">
+    <link rel="stylesheet" href="{%static "css/artemis-responsive.css"%}">
+{% endblock extra_links %}
+
+{% block extra_css %}
+    :root {
+        --surface-2: var(--color-light);
+        --border: var(--color-light);
+        --text: var(--color-dark);
+        --text-muted: var(--color-dark-variant);
+        --text-faint: var(--color-info-dark);
+        --ease: var(--transition-all);
+        --primary-light: rgba(108,155,207,0.15);
+        --danger-light: rgba(255,0,96,0.12);
+        --success-light: rgba(27,156,133,0.12);
+        --warning-light: rgba(247,208,96,0.15);
+        --info-light: rgba(108,155,207,0.12);
+        --shadow-sm: var(--box-shadow-sm);
+        --shadow-md: var(--box-shadow);
+        --radius-xl: var(--card-border-radius);
+        --radius-lg: var(--border-radius-2);
+        --radius-md: var(--border-radius-3);
+        --radius-sm: var(--border-radius-1);
+    }
+
+    body {
+        background-color: var(--color-background);
+    }
+
+    .detail-card {
+        background: var(--color-white);
+        border-radius: var(--radius-xl);
+        padding: 2rem;
+        box-shadow: var(--shadow-md);
+        margin-bottom: 2rem;
+    }
+
+    .detail-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .detail-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--color-primary), var(--color-success));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+        font-weight: 700;
+    }
+
+    .detail-title h1 {
+        margin: 0;
+        color: var(--text);
+    }
+
+    .detail-subtitle {
+        color: var(--text-muted);
+        margin: 0.5rem 0 0 0;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: var(--text);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        font-size: 1rem;
+        color: var(--text);
+        padding: 0.75rem;
+        background: var(--surface-2);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+    }
+
+    .actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+{% endblock %}
+
+{% block conteudo %}
+<div class="modulo-container">
+    <div class="modulo-header">
+        <h1>
+            <span class="material-icons-sharp">person</span>
+            Detalhes do Funcionário
+        </h1>
+        <div class="actions">
+            <button class="btn btn-secondary" onclick="window.history.back()">
+                <span class="material-icons-sharp">arrow_back</span>
+                Voltar
+            </button>
+            <button class="btn btn-primary" onclick="window.location.href='{% url 'EditarFuncionario' funcionario.f_id %}'">
+                <span class="material-icons-sharp">edit</span>
+                Editar
+            </button>
+        </div>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <div class="detail-avatar">
+                {{ funcionario.f_nome|slice:":2"|upper }}
+            </div>
+            <div class="detail-title">
+                <h1>{{ funcionario.f_nome }}</h1>
+                <p class="detail-subtitle">{{ funcionario.cargo.nome_cargo|default:'Cargo não definido' }} - {{ funcionario.departamento.nome_dpt|default:'Departamento não definido' }}</p>
+            </div>
+        </div>
+
+        <div class="detail-grid">
+            <!-- Informações Pessoais -->
+            <div class="detail-item">
+                <span class="detail-label">Nome Completo</span>
+                <div class="detail-value">{{ funcionario.f_nome|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Data de Nascimento</span>
+                <div class="detail-value">{{ funcionario.data_nasc|date:'d/m/Y'|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Gênero</span>
+                <div class="detail-value">{{ funcionario.get_sexo_display|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Estado Civil</span>
+                <div class="detail-value">{{ funcionario.estado_civil|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Nacionalidade</span>
+                <div class="detail-value">{{ funcionario.get_nacionalidade_display|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Número de BI</span>
+                <div class="detail-value">{{ funcionario.num_bi|default:'N/A' }}</div>
+            </div>
+
+            <!-- Contactos -->
+            <div class="detail-item">
+                <span class="detail-label">Email</span>
+                <div class="detail-value">{{ funcionario.contacto_alt|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Telefone</span>
+                <div class="detail-value">{{ funcionario.contacto|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Endereço</span>
+                <div class="detail-value">{{ funcionario.endereco|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Cidade</span>
+                <div class="detail-value">{{ funcionario.cidade|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Província</span>
+                <div class="detail-value">{{ funcionario.provincia|default:'N/A' }}</div>
+            </div>
+
+            <!-- Corporativas -->
+            <div class="detail-item">
+                <span class="detail-label">Data de Contratação</span>
+                <div class="detail-value">{{ funcionario.data_contratacao|date:'d/m/Y'|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Cargo</span>
+                <div class="detail-value">{{ funcionario.cargo.nome_cargo|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Departamento</span>
+                <div class="detail-value">{{ funcionario.departamento.nome_dpt|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Tipo de Contrato</span>
+                <div class="detail-value">{{ funcionario.get_estado_display|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Supervisor</span>
+                <div class="detail-value">{{ funcionario.supervisor.f_nome|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <div class="detail-value">{{ funcionario.get_ativo_display|default:'N/A' }}</div>
+            </div>
+
+            <!-- Bancárias -->
+            <div class="detail-item">
+                <span class="detail-label">Banco</span>
+                <div class="detail-value">{{ funcionario.banco_nome|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Número da Conta</span>
+                <div class="detail-value">{{ funcionario.conta_bancaria|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">IBAN</span>
+                <div class="detail-value">{{ funcionario.iban|default:'N/A' }}</div>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">Titular da Conta</span>
+                <div class="detail-value">{{ funcionario.titular|default:'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
