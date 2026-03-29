@@ -285,6 +285,7 @@
 
     <form id="funcionarioForm" method="POST" action="{% url 'salvarFuncionario' %}" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" name="id" value="{{ funcionario.f_id|default:'' }}">
         <div class="form-card">
 
             <!-- BARRA DE ABAS -->
@@ -339,13 +340,13 @@
                         <div class="full-width">
                             <div class="form-group">
                                 <label class="form-label" for="nomeCompleto">Nome Completo <span style="color:var(--color-danger)">*</span></label>
-                                <input name="f_nome" class="form-control" type="text" id="nomeCompleto" placeholder="Ex: João Carlos da Silva" required maxlength="100">
+                                <input name="f_nome" class="form-control" type="text" id="nomeCompleto" placeholder="Ex: João Carlos da Silva" required maxlength="100" value="{{ funcionario.f_nome|default:'' }}">
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <labelclass="form-label" for="dataNascimento">Data de Nascimento <span style="color:var(--color-danger)">*</span></label>
-                                <input  name="data_nasc" class="form-control" type="date" id="dataNascimento" required>
+                                <input  name="data_nasc" class="form-control" type="date" id="dataNascimento" required value="{{ funcionario.data_nasc|date:'Y-m-d'|default:'' }}">
                                 <small class="text-muted" style="display:block;margin-top:0.3rem;">Idade: <span id="idadeCalc">—</span></small>
                             </div>
                         </div>
@@ -354,8 +355,8 @@
                                 <label class="form-label" for="genero">Gênero</label>
                                 <select class="form-control" id="genero" name="sexo">
                                     <option value="">Selecione</option>
-                                    <option value="M">Masculino</option>
-                                    <option value="F">Feminino</option>
+                                    <option value="M" {% if funcionario.sexo == 'M' %}selected{% endif %}>Masculino</option>
+                                    <option value="F" {% if funcionario.sexo == 'F' %}selected{% endif %}>Feminino</option>
                                 </select>
                             </div>
                         </div>
@@ -364,10 +365,10 @@
                                 <label class="form-label" for="estadoCivil">Estado Civil</label>
                                 <select name="estado_civil" class="form-control" id="estadoCivil">
                                     <option value="">Selecione</option>
-                                    <option value="solteiro">Solteiro</option>
-                                    <option value="solteiro">Solteira</option>
-                                    <option value="casado">Casado</option>
-                                    <option value="casada">Casada</option>
+                                    <option value="solteiro" {% if funcionario.estado_civil == 'solteiro' %}selected{% endif %}>Solteiro</option>
+                                    <option value="solteira" {% if funcionario.estado_civil == 'solteira' %}selected{% endif %}>Solteira</option>
+                                    <option value="casado" {% if funcionario.estado_civil == 'casado' %}selected{% endif %}>Casado</option>
+                                    <option value="casada" {% if funcionario.estado_civil == 'casada' %}selected{% endif %}>Casada</option>
                                 </select>
                             </div>
                         </div>
@@ -377,7 +378,7 @@
                                <select name="nacionalidade" class="form-control" id="nacionalidade">
                                     <option value="">Selecione</option>
                                     {% for n, l in nacionalidade %}
-                                    <option class="form-control"  id="nacionalidade" value="{{n}}">{{l}}</option>
+                                    <option class="form-control"  id="nacionalidade" value="{{n}}" {% if funcionario.nacionalidade == n %}selected{% endif %}>{{l}}</option>
                                     {% endfor%}
                                 </select>
                             </div>
@@ -385,7 +386,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="numeroBI">Número de Identificação (BI) <span style="color:var(--color-danger)">*</span></label>
-                                <input class="form-control" name="num_bi" type="text" id="numeroBI" placeholder="Ex: 006543210LA045" required maxlength="20">
+                                <input class="form-control" name="num_bi" type="text" id="numeroBI" placeholder="Ex: 006543210LA045" required maxlength="20" value="{{ funcionario.num_bi|default:'' }}">
                             </div>
                         </div>
                     </div>
@@ -404,27 +405,27 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="emailPessoal">Email Principal <span style="color:var(--color-danger)">*</span></label>
-                                <input name="contacto_alt" class="form-control" type="email" id="emailPessoal" placeholder="paulokleiner.exemplo@gmail.com" required maxlength="100">
+                                <input name="contacto_alt" class="form-control" type="email" id="emailPessoal" placeholder="paulokleiner.exemplo@gmail.com" required maxlength="100" value="{{ funcionario.contacto_alt|default:'' }}">
                             </div>
                         </div>
                        
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="telefonePrincipal">Telefone Principal <span style="color:var(--color-danger)">*</span></label>
-                                <input name="contacto" class="form-control" type="tel" id="telefonePrincipal" placeholder="+244 923 456 789" required maxlength="20">
+                                <input name="contacto" class="form-control" type="tel" id="telefonePrincipal" placeholder="+244 923 456 789" required maxlength="20" value="{{ funcionario.contacto|default:'' }}">
                             </div>
                         </div>
                        
                         <div class="full-width">
                             <div class="form-group">
                                 <label class="form-label" for="endereco">Endereço Completo <span style="color:var(--color-danger)">*</span></label>
-                                <textarea name="endereco" class="form-control" id="endereco" rows="2" placeholder="Rua, número, bairro, referências..." required></textarea>
+                                <textarea name="endereco" class="form-control" id="endereco" rows="2" placeholder="Rua, número, bairro, referências..." required>{{ funcionario.endereco|default:'' }}</textarea>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="cidade">Cidade <span style="color:var(--color-danger)">*</span></label>
-                                <input name="cidade" class="form-control" type="text" id="cidade" placeholder="Ex: Luanda" required maxlength="50">
+                                <input name="cidade" class="form-control" type="text" id="cidade" placeholder="Ex: Luanda" required maxlength="50" value="{{ funcionario.cidade|default:'' }}">
                             </div>
                         </div>
                         <div>
@@ -432,12 +433,12 @@
                                 <label class="form-label" for="provincia">Província <span style="color:var(--color-danger)">*</span></label>
                                 <select name="provincia" class="form-control" id="provincia" required>
                                     <option value="">Selecione</option>
-                                    <option>Luanda</option><option>Bengo</option><option>Benguela</option>
-                                    <option>Bié</option><option>Cabinda</option><option>Cuando Cubango</option>
-                                    <option>Cuanza Norte</option><option>Cuanza Sul</option><option>Cunene</option>
-                                    <option>Huambo</option><option>Huíla</option><option>Lunda Norte</option>
-                                    <option>Lunda Sul</option><option>Malanje</option><option>Moxico</option>
-                                    <option>Namibe</option><option>Uíge</option><option>Zaire</option>
+                                    <option {% if funcionario.provincia == 'Luanda' %}selected{% endif %}>Luanda</option><option {% if funcionario.provincia == 'Bengo' %}selected{% endif %}>Bengo</option><option {% if funcionario.provincia == 'Benguela' %}selected{% endif %}>Benguela</option>
+                                    <option {% if funcionario.provincia == 'Bié' %}selected{% endif %}>Bié</option><option {% if funcionario.provincia == 'Cabinda' %}selected{% endif %}>Cabinda</option><option {% if funcionario.provincia == 'Cuando Cubango' %}selected{% endif %}>Cuando Cubango</option>
+                                    <option {% if funcionario.provincia == 'Cuanza Norte' %}selected{% endif %}>Cuanza Norte</option><option {% if funcionario.provincia == 'Cuanza Sul' %}selected{% endif %}>Cuanza Sul</option><option {% if funcionario.provincia == 'Cunene' %}selected{% endif %}>Cunene</option>
+                                    <option {% if funcionario.provincia == 'Huambo' %}selected{% endif %}>Huambo</option><option {% if funcionario.provincia == 'Huíla' %}selected{% endif %}>Huíla</option><option {% if funcionario.provincia == 'Lunda Norte' %}selected{% endif %}>Lunda Norte</option>
+                                    <option {% if funcionario.provincia == 'Lunda Sul' %}selected{% endif %}>Lunda Sul</option><option {% if funcionario.provincia == 'Malanje' %}selected{% endif %}>Malanje</option><option {% if funcionario.provincia == 'Moxico' %}selected{% endif %}>Moxico</option>
+                                    <option {% if funcionario.provincia == 'Namibe' %}selected{% endif %}>Namibe</option><option {% if funcionario.provincia == 'Uíge' %}selected{% endif %}>Uíge</option><option {% if funcionario.provincia == 'Zaire' %}selected{% endif %}>Zaire</option>
                                 </select>
                             </div>
                         </div>
@@ -465,7 +466,7 @@
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="dataAdmissao">Data de Admissão <span style="color:var(--color-danger)">*</span></label>
-                                <input name="data_contratacao" class="form-control" type="date" id="dataAdmissao" required>
+                                <input name="data_contratacao" class="form-control" type="date" id="dataAdmissao" required value="{{ funcionario.data_contratacao|date:'Y-m-d'|default:'' }}">
                                 
                             </div>
                         </div>
@@ -478,7 +479,7 @@
                                     <option value="">Selecione</option>
 
                                     {% for c in cargos%}
-                                    <option value="{{c.id_cargo}}"class="form-control" type="text" id="cargo" >{{c.nome_cargo}}</option>
+                                    <option value="{{c.id_cargo}}"class="form-control" type="text" id="cargo" {% if funcionario.cargo_id == c.id_cargo %}selected{% endif %} >{{c.nome_cargo}}</option>
                                     {%endfor%}
                                 </select>
 
@@ -492,7 +493,7 @@
                                      <option value="">Selecione</option>
                                     
                                     {% for d in departamento%}
-                                        <option value="{{d.id_dpt}}">{{d.nome_dpt}}</option>
+                                        <option value="{{d.id_dpt}}" {% if funcionario.departamento_id == d.id_dpt %}selected{% endif %} >{{d.nome_dpt}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -503,7 +504,7 @@
                                 <select name="estado" class="form-control" id="tipoContrato" required>
                                     <option value="">Selecione</option>
                                        {% for t, i in tipo_contracto%}
-                                        <option value="{{t}}">{{i}}</option>
+                                        <option value="{{t}}" {% if funcionario.estado == t %}selected{% endif %}>{{i}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -517,7 +518,7 @@
                                     <option value="">Selecione</option>
                                    
                                     {% for d in departamento%}
-                                    <option value="{{d.responsavel.id}}">{{d.responsavel.f_nome}} - {{d.nome_dpt}}</option>
+                                    <option value="{{d.responsavel.id}}" {% if funcionario.supervisor_id == d.responsavel.id %}selected{% endif %}>{{d.responsavel.f_nome}} - {{d.nome_dpt}}</option>
                                     {%endfor%}
                                 </select>
                             </div>
@@ -540,35 +541,35 @@
                                 <label class="form-label" for="nomeBanco">Nome do Banco <span style="color:var(--color-danger)">*</span></label>
                                 <select name="banco_nome" class="form-control" id="nomeBanco" required>
                                     <option value="">Selecione</option>
-                                    <option value="BAI">BAI — Banco Angolano de Investimentos</option>
-                                    <option value="BFA">BFA — Banco de Fomento Angola</option>
-                                    <option value="BPC">BPC — Banco de Poupança e Crédito</option>
-                                    <option value="BCI">BCI — Banco Comercial e de Investimentos</option>
-                                    <option value="Atlantico">Banco Atlântico</option>
-                                    <option value="SOL">Banco SOL</option>
-                                    <option value="Millennium">Banco Millennium Atlântico</option>
-                                    <option value="Economico">Banco Económico</option>
-                                    <option value="Outro">Outro</option>
+                                    <option value="BAI" {% if funcionario.banco_nome == 'BAI' %}selected{% endif %}>BAI — Banco Angolano de Investimentos</option>
+                                    <option value="BFA" {% if funcionario.banco_nome == 'BFA' %}selected{% endif %}>BFA — Banco de Fomento Angola</option>
+                                    <option value="BPC" {% if funcionario.banco_nome == 'BPC' %}selected{% endif %}>BPC — Banco de Poupança e Crédito</option>
+                                    <option value="BCI" {% if funcionario.banco_nome == 'BCI' %}selected{% endif %}>BCI — Banco Comercial e de Investimentos</option>
+                                    <option value="Atlantico" {% if funcionario.banco_nome == 'Atlantico' %}selected{% endif %}>Banco Atlântico</option>
+                                    <option value="SOL" {% if funcionario.banco_nome == 'SOL' %}selected{% endif %}>Banco SOL</option>
+                                    <option value="Millennium" {% if funcionario.banco_nome == 'Millennium' %}selected{% endif %}>Banco Millennium Atlântico</option>
+                                    <option value="Economico" {% if funcionario.banco_nome == 'Economico' %}selected{% endif %}>Banco Económico</option>
+                                    <option value="Outro" {% if funcionario.banco_nome == 'Outro' %}selected{% endif %}>Outro</option>
                                 </select>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="numeroConta">Número da Conta <span style="color:var(--color-danger)">*</span></label>
-                                <input name="conta_bancaria" class="form-control" type="text" id="numeroConta" placeholder="Ex: 0040123456789" required maxlength="30">
+                                <input name="conta_bancaria" class="form-control" type="text" id="numeroConta" placeholder="Ex: 0040123456789" required maxlength="30" value="{{ funcionario.conta_bancaria|default:'' }}">
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="iban">IBAN</label>
-                                <input name="iban" class="form-control" type="text" id="iban" placeholder="AO06004000123456789012345" maxlength="34" style="text-transform:uppercase">
+                                <input name="iban" class="form-control" type="text" id="iban" placeholder="AO06004000123456789012345" maxlength="34" style="text-transform:uppercase" value="{{ funcionario.iban|default:'' }}">
                                 <small class="text-muted" style="display:block;margin-top:0.3rem;">Apenas se disponível</small>
                             </div>
                         </div>
                         <div>
                             <div class="form-group">
                                 <label class="form-label" for="titularConta">Titular da Conta</label>
-                                <input name="titular"class="form-control" type="text" id="titularConta" placeholder="Nome igual ao BI" maxlength="100">
+                                <input name="titular"class="form-control" type="text" id="titularConta" placeholder="Nome igual ao BI" maxlength="100" value="{{ funcionario.titular|default:'' }}">
                             </div>
                         </div>
                         
@@ -592,7 +593,7 @@
                     </button>
                     <button type="submit" class="btn btn-primary btn-sm" >
                         <span class="material-icons-sharp">check_circle</span>
-                        Cadastrar
+                        {{ button_text }}
                     </button>
                 </div>
             </div>

@@ -18,7 +18,7 @@
                         Gestão de Funcionários
                     </h1>
                     <div class="actions">
-                        <button class="btn btn-outline" onclick="exportarDados()">
+                        <button class="btn btn-outline" onclick="window.location.href='{% url 'export_pdf' %}'">
                             <span class="material-icons-sharp">download</span>
                             Exportar
                         </button>
@@ -146,12 +146,7 @@
                             </div>
                             <canvas id="ageChart"></canvas>
                         </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <h3>Taxa de Rotatividade</h3>
-                            </div>
-                            <canvas id="turnoverChart"></canvas>
-                        </div>
+                        
                         <div class="card">
                             <div class="card-header">
                                 <h3>Crescimento da Equipe</h3>
@@ -253,6 +248,13 @@
     {% endfor %} 
 ];
 
+        const deptLabels = {{ dept_labels_json|safe }};
+        const deptData = {{ dept_data_json|safe }};
+        const ageLabels = {{ age_labels_json|safe }};
+        const ageData = {{ age_data_json|safe }};
+        const growthLabels = {{ growth_labels_json|safe }};
+        const growthData = {{ growth_data_json|safe }};
+
         // Renderizar tabela
         function renderizarTabela(funcs = funcionarios) {
             const tbody = document.getElementById('employeeTableBody');
@@ -295,6 +297,9 @@
                             </button>
                             <button class="btn btn-sm btn-secondary" onclick="editarFuncionario(${f.id})">
                                 <span class="material-icons-sharp">edit</span>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deletarFuncionario(${f.id})">
+                                <span class="material-icons-sharp">delete</span>
                             </button>
                         </div>
                     </td>
@@ -347,10 +352,10 @@
         new Chart(document.getElementById('performanceChart'), {
                 type: 'bar',
                 data: {
-                    labels: ['Vendas', 'TI', 'RH', 'Financeiro', 'Operações'],
+                    labels: deptLabels,
                     datasets: [{
                         label: 'Performance Média (%)',
-                        data: [85, 92, 88, 78, 82],
+                        data: deptData,
                         backgroundColor: 'rgba(108, 155, 207, 0.8)'
                     }]
                 },
@@ -365,9 +370,9 @@
             new Chart(document.getElementById('ageChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['18-25', '26-35', '36-45', '46-55', '56+'],
+                    labels: ageLabels,
                     datasets: [{
-                        data: [15, 45, 32, 18, 10],
+                        data: ageData,
                         backgroundColor: ['#6C9BCF', '#1B9C85', '#F7D060', '#FF0060', '#7d8da1']
                     }]
                 },
@@ -377,32 +382,15 @@
                 }
             });
 
-            // Taxa de Rotatividade
-            new Chart(document.getElementById('turnoverChart'), {
-                type: 'line',
-                data: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                    datasets: [{
-                        label: 'Taxa de Rotatividade (%)',
-                        data: [3.2, 2.8, 3.5, 2.1, 2.9, 2.5],
-                        borderColor: '#FF0060',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-
+         
             // Crescimento da Equipe
             new Chart(document.getElementById('growthChart'), {
                 type: 'line',
                 data: {
-                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    labels: growthLabels,
                     datasets: [{
                         label: 'Total de Funcionários',
-                        data: [110, 115, 118, 120, 122, 124],
+                        data: growthData,
                         borderColor: '#1B9C85',
                         backgroundColor: 'rgba(27, 156, 133, 0.1)',
                         fill: true,
@@ -459,7 +447,7 @@
         }
 
         function exportarDados() {
-            alert('Exportando dados...');
+            // Removido - agora redireciona para export PDF
         }
 
         function verDetalhes(id) {
@@ -467,7 +455,13 @@
         }
 
         function editarFuncionario(id) {
-            alert('Editar funcionário #' + id);
+            window.location.href = '/funcionarios/editar/' + id + '/';
+        }
+
+        function deletarFuncionario(id) {
+            if (confirm('Tem certeza que deseja deletar este funcionário? Esta ação não pode ser desfeita.')) {
+                window.location.href = '/funcionarios/delete/' + id + '/';
+            }
         }
 
         // Inicialização
