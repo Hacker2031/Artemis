@@ -6,4 +6,6 @@ urlpatterns = [
     path('perguntar/', views.perguntar, name='perguntar'),        # ← era cronos_perguntar
     path('limpar/', views.limpar_historico, name='cronos_limpar'),
     path('exportar/', views.exportar_docx, name='cronos_exportar'),
+    path('conversas/', views.listar_conversas, name='cronos_conversas'),
+    path('conversas/<int:conversa_id>/', views.obter_conversa, name='cronos_conversa'),
 ]
