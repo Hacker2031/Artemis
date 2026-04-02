@@ -437,7 +437,7 @@ select.form-control { cursor: pointer; }
                 <label class="form-label">Funcionário</label>
                 <select class="form-control" name="funcionario_id" required>
                     <option value="">Selecione...</option>
-                    {% for func in todos_funcionarios %}
+                    {% for func in funcionarios_para_solicitar %}
                     <option value="{{ func.f_id }}">{{ func.f_nome }} - {{ func.departamento.nome_dpt }}</option>
                     {% endfor %}
                 </select>

@@ -1901,7 +1901,7 @@ voltarLista();
                 <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Funcionário</label>
                 <select class="form-control" id="ferias-funcionario" name="funcionario_id" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:.875rem;transition:border-color 0.2s">
                     <option value="">Selecione um funcionário...</option>
-                    {% for func in todos_funcionarios %}
+                    {% for func in funcionarios_para_solicitar %}
                         {% if func.ativo == 'ativo' %}
                         <option value="{{ func.f_id }}">{{ func.f_nome }} - {{ func.cargo.nome_cargo}}</option>
                         {% endif %}

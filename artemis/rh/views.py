@@ -34,6 +34,29 @@ def rhPage(request):
                 'cv': candidato.cv.url if candidato.cv else '',
                 'notas': candidato.nota or '',
             })
+    sincronizar_saldos_ferias()
+
+    todos_funcionarios = Funcionarios.objects.all()
+
+    funcionarios_para_solicitar = []
+    for func in todos_funcionarios:
+        esta_em_ferias = PlanamentFerias.objects.filter(
+            funcionario=func,
+            tipo_ausencia='ferias',
+            status='aprovado',
+            data_inicio__lte=date.today(),
+            data_fim__gte=date.today()
+        ).exists()
+
+        try:
+            controlo = Controlo.objects.get(fun_id=func)
+            restante = controlo.ferias_restantes
+        except Controlo.DoesNotExist:
+            restante = 0
+
+        if not esta_em_ferias and restante <= 22:
+            funcionarios_para_solicitar.append(func)
+
     context = {
         'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=90).order_by('-avaliacao'),
         'cargos': Cargos.objects.filter(ativo=1),
@@ -47,7 +70,8 @@ def rhPage(request):
         'fonte_recrutamento': Candidatos.FONTE_RECRUTAMENTO_CHOICES,
         'nacionalidade': Candidatos.NACIONALIDADE_CHOICES,
         'estado': Candidatos.ESTADO_CHOICES,
-        'todos_funcionarios': Funcionarios.objects.all(),
+        'todos_funcionarios': todos_funcionarios,
+        'funcionarios_para_solicitar': funcionarios_para_solicitar,
         
         # Dados de férias
         'solicitacoes': PlanamentFerias.objects.all().order_by('-data_inicio'),
@@ -147,12 +171,49 @@ def calcular_dias_uteis(data_inicio, data_fim):
     return dias_uteis
 
 
+def sincronizar_saldos_ferias():
+    """Atualiza ferias_gozadas, ferias_agendadas e ferias_restantes em Controlo"""
+    hoje = date.today()
+    for controlo in Controlo.objects.select_related('fun_id').all():
+        funcionario = controlo.fun_id
+        if not funcionario:
+            continue
+
+        aprovadas = PlanamentFerias.objects.filter(
+            funcionario=funcionario,
+            tipo_ausencia='ferias',
+            status='aprovado'
+        )
+
+        total_gozadas = 0
+        total_agendadas = 0
+
+        for ferias in aprovadas:
+            if ferias.data_inicio > hoje:
+                total_agendadas += ferias.dias_uteis
+            elif ferias.data_fim < hoje:
+                total_gozadas += ferias.dias_uteis
+            else:
+                # em curso
+                dias_atual = calcular_dias_uteis(ferias.data_inicio, min(ferias.data_fim, hoje))
+                if dias_atual > ferias.dias_uteis:
+                    dias_atual = ferias.dias_uteis
+                total_gozadas += dias_atual
+                total_agendadas += max(ferias.dias_uteis - dias_atual, 0)
+
+        controlo.ferias_gozadas = total_gozadas
+        controlo.ferias_agendadas = total_agendadas
+        controlo.ferias_restantes = max(controlo.direito_ferias_anual - total_gozadas - total_agendadas, 0)
+        controlo.save()
+
+
 @login_required(login_url="loginPage")
 @require_http_methods(["GET", "POST"])
 def solicitarFerias(request):
     """Criar nova solicitação de férias"""
     if request.method == "POST":
         try:
+            sincronizar_saldos_ferias()
             # Se for AJAX, pegar o funcionário (do usuário logado ou especificado)
             funcionario_id = request.POST.get('funcionario_id')
 
@@ -190,6 +251,22 @@ def solicitarFerias(request):
             if tipo_ausencia == 'ferias':
                 try:
                     controlo = Controlo.objects.get(fun_id=funcionario)
+
+                    # não permitir solicitação se já estiver em férias hoje
+                    em_ferias_hoje = PlanamentFerias.objects.filter(
+                        funcionario=funcionario,
+                        tipo_ausencia='ferias',
+                        status='aprovado',
+                        data_inicio__lte=date.today(),
+                        data_fim__gte=date.today()
+                    ).exists()
+                    if em_ferias_hoje:
+                        return JsonResponse({'sucesso': False, 'erro': 'Funcionário já está de férias hoje'}, status=400)
+
+                    # regra adicional: só solicita se restante <= 22
+                    if controlo.ferias_restantes > 22:
+                        return JsonResponse({'sucesso': False, 'erro': 'Funcionário não está elegível para solicitar férias (restante superior a 22 dias)'}, status=400)
+
                     if controlo.ferias_restantes < dias_uteis:
                         return JsonResponse({'sucesso': False, 'erro': f'Funcionário tem apenas {controlo.ferias_restantes} dias disponíveis'}, status=400)
                 except Controlo.DoesNotExist:
@@ -225,13 +302,18 @@ def aprovarFerias(request, solicitacao_id):
     try:
         solicitacao = PlanamentFerias.objects.get(id_solicitacao=solicitacao_id)
         
+        # Atualizar o controlo do funcionário para qualquer ausência de férias
         if solicitacao.tipo_ausencia == 'ferias':
-            # Atualizar o controlo do funcionário
             controlo = Controlo.objects.get(fun_id=solicitacao.funcionario)
             controlo.ferias_agendadas += solicitacao.dias_uteis
             controlo.ferias_restantes -= solicitacao.dias_uteis
             controlo.save()
-        
+
+        # Mudar estado do funcionário para 'ferias' quando o pedido for aprovado
+        funcionario = solicitacao.funcionario
+        funcionario.ativo = 'ferias'
+        funcionario.save()
+
         solicitacao.status = 'aprovado'
         # Usar o funcionário associado ao usuário, se existir
         solicitacao.aprovado_por = getattr(request.user, 'f_id', 'Desenvolvedor')
@@ -295,6 +377,7 @@ def obterSolicitacoesFerias(request):
 def obterFuncionariosComFerias(request):
     """API para obter funcionários com seus saldos de férias"""
     try:
+        sincronizar_saldos_ferias()
         funcionarios = Funcionarios.objects.all()
         dados = []
         
@@ -341,13 +424,34 @@ def obterFuncionariosComFerias(request):
 def paginaFerias(request):
     """Página de gestão de férias"""
     try:
-        # Obter dados para a página
+        # Atualiza saldos e obtém dados para a página
+        sincronizar_saldos_ferias()
         todos_funcionarios = Funcionarios.objects.all()
         solicitacoes = PlanamentFerias.objects.all().order_by('-data_inicio')
         
         # Contar solicitações por status
         pendentes = solicitacoes.filter(status='pendente').count()
         aprovadas = solicitacoes.filter(status='aprovado').count()
+
+        funcionarios_para_solicitar = []
+        for func in todos_funcionarios:
+            esta_em_ferias = PlanamentFerias.objects.filter(
+                funcionario=func,
+                tipo_ausencia='ferias',
+                status='aprovado',
+                data_inicio__lte=date.today(),
+                data_fim__gte=date.today()
+            ).exists()
+
+            try:
+                controlo = Controlo.objects.get(fun_id=func)
+                restante = controlo.ferias_restantes
+            except Controlo.DoesNotExist:
+                restante = 0
+
+            if not esta_em_ferias and restante <= 22:
+                funcionarios_para_solicitar.append(func)
+
         
         # Funcionários em férias hoje
         hoje = date.today()
@@ -359,6 +463,7 @@ def paginaFerias(request):
         
         context = {
             'todos_funcionarios': todos_funcionarios,
+            'funcionarios_para_solicitar': funcionarios_para_solicitar,
             'solicitacoes': solicitacoes,
             'pendentes_count': pendentes,
             'aprovadas_count': aprovadas,
