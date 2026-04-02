@@ -95,6 +95,7 @@
                                     <th>Departamento</th>
                                     <th>Cargo</th>
                                     <th>Admissão</th>
+                                    <th>Demissão</th>
                                     <th>Performance</th>
                                     <th>Status</th>
                                     <th>Ações</th>
@@ -230,6 +231,7 @@
             departamento: "{{funcionario.departamento|default:'Sem departamento'}}",
             cargo: "{{funcionario.cargo|default:'Sem cargo'}}",
             admissao: "{{funcionario.data_contratacao|date:'d/m/Y'|default:'Não informada'}}", 
+            demissao: "{{funcionario.data_demissao|date:'d/m/Y'|default:''}}",
             performance: {{funcionario.avaliacao|default:0}}, 
             status: "{{funcionario.ativo|default:'ativo'}}", 
             email: "{{funcionario.contacto_alt|escapejs|default:''}}",
@@ -287,6 +289,7 @@
                     <td>${f.departamento}</td>
                     <td>${f.cargo}</td>
                     <td>${f.admissao}</td>
+                    <td>${f.demissao ? f.demissao : '-'}</td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress-fill ${f.performance >= 90 ? 'success' : f.performance  >= 70 ? '' : 'warning'}" 
@@ -468,8 +471,15 @@
         }
 
         function deletarFuncionario(id) {
-            if (confirm('Tem certeza que deseja deletar este funcionário? Esta ação não pode ser desfeita.')) {
-                window.location.href = '/funcionarios/delete/' + id + '/';
+            const opcao = confirm('Selecione:\n\n✓ OK - Demitir (mantém dados na BD)\n✗ Cancelar - Eliminar (apaga definitivamente)\n\nCancelar = Eliminar?\nOK = Demitir?');
+            if (opcao === true) {
+                // Demitir
+                window.location.href = '/funcionarios/demitir/' + id + '/';
+            } else if (opcao === false) {
+                // Eliminar
+                if (confirm('Tem certeza que deseja ELIMINAR este funcionário? Esta ação não pode ser desfeita!')) {
+                    window.location.href = '/funcionarios/delete/' + id + '/';
+                }
             }
         }
 

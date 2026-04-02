@@ -2,9 +2,16 @@ from django.contrib import admin
 from .models import Funcionarios, Controlo, Equipas, FDocuments, MembrosEquipas, PlanamentFerias
 
 # Register your models here.
+class ControloInline(admin.TabularInline):
+    model = Controlo
+
+class FDocumentsInline(admin.TabularInline):
+    model = FDocuments
 
 @admin.register(Funcionarios)
 class FuncionariosAdmin(admin.ModelAdmin):
+    
+    inlines = [ControloInline, FDocumentsInline]
     # 1. Campos que vão aparecer na lista (tabela) principal de funcionários
     list_display = ('f_nome', 'cargo','departamento', 'estado', 'contacto', 'ativo')
     
@@ -17,13 +24,13 @@ class FuncionariosAdmin(admin.ModelAdmin):
     # 4. Organização visual dos campos na tela de CADASTRO e EDIÇÃO. Yeah, Alcides? Não adiciones nada aqui bro
     fieldsets = (
         ('Informações Pessoais', {
-            'fields': ('f_nome', 'naturalidade', 'nacionalidade', 'sexo', 'estado_civil'),
+            'fields': ('f_nome', 'naturalidade', 'nacionalidade', 'sexo', 'estado_civil', 'data_nasc'),
         }),
         ('Contactos', {
             'fields': ('contacto', 'contacto_alt')
         }),
         ('Informações Corporativas', {
-            'fields': ('cargo', 'departamento', 'estado', 'ativo', 'id_docs', 'id_controlo')
+            'fields': ('cargo', 'departamento', 'estado', 'ativo')
         }),
         ('Informações Bancárias', {
             'fields': ('banco_nome', 'conta_bancaria')
@@ -39,6 +46,7 @@ admin.site.register(Controlo)
 admin.site.register(FDocuments)
 admin.site.register(Equipas, list_display = ['nome_equipa','responsavel_equipa','departamento','tipo_equipa','data_inicio','data_fim'])
 admin.site.register(MembrosEquipas, list_display = ['f','id_equipas', 'papel'])
+
 
 
 @admin.register(PlanamentFerias)

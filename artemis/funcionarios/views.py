@@ -333,3 +333,23 @@ def deletarFuncionario(request, id):
         logger.error(f"Erro ao Eliminar funcionário: {str(e)}", exc_info=True)
     return redirect('Funcionarios')
 
+
+@login_required(login_url='loginPage')
+def demitirFuncionario(request, id):
+    """Marcar funcionário como demitido em vez de deletar"""
+    try:
+        from datetime import date
+        funcionario = Funcionarios.objects.get(f_id=id)
+        funcionario.ativo = 'demitido'
+        funcionario.data_demissao = date.today()
+        funcionario.save()
+        messages.success(request, f"Funcionário {funcionario.f_nome} marcado como demitido")
+        logger.info(f"Funcionário Demitido: {funcionario.f_nome}")
+    except Funcionarios.DoesNotExist:
+        messages.error(request, "Funcionário não encontrado")
+    except Exception as e:
+        messages.error(request, f"Erro ao demitir funcionário: {str(e)}")
+        logger.error(f"Erro ao demitir funcionário: {str(e)}", exc_info=True)
+    return redirect('Funcionarios')
+
+

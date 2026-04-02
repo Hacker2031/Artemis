@@ -35,6 +35,7 @@ def rhPage(request):
                 'notas': candidato.nota or '',
             })
     sincronizar_saldos_ferias()
+    atualizar_estado_funcionarios()
 
     todos_funcionarios = Funcionarios.objects.all()
 
@@ -207,6 +208,29 @@ def sincronizar_saldos_ferias():
         controlo.save()
 
 
+def atualizar_estado_funcionarios():
+    """Atualiza o estado dos funcionários baseado nas férias ativas ou aprovadas"""
+    hoje = date.today()
+
+    # Primeiro, marcar como 'ativo' todos os funcionários que não têm férias aprovadas
+    Funcionarios.objects.filter(
+        ativo='ferias'
+    ).exclude(
+        solicitacoes_ferias__status='aprovado',
+        solicitacoes_ferias__tipo_ausencia='ferias'
+    ).update(ativo='ativo')
+
+    # Depois, marcar como 'ferias' os que têm férias aprovadas (ativas ou futuras)
+    funcionarios_com_ferias_aprovadas = PlanamentFerias.objects.filter(
+        status='aprovado',
+        tipo_ausencia='ferias'
+    ).values_list('funcionario', flat=True).distinct()
+
+    Funcionarios.objects.filter(
+        f_id__in=funcionarios_com_ferias_aprovadas
+    ).update(ativo='ferias')
+
+
 @login_required(login_url="loginPage")
 @require_http_methods(["GET", "POST"])
 def solicitarFerias(request):
@@ -214,6 +238,7 @@ def solicitarFerias(request):
     if request.method == "POST":
         try:
             sincronizar_saldos_ferias()
+            atualizar_estado_funcionarios()
             # Se for AJAX, pegar o funcionário (do usuário logado ou especificado)
             funcionario_id = request.POST.get('funcionario_id')
 
@@ -338,6 +363,15 @@ def rejeitarFerias(request, solicitacao_id):
         solicitacao = PlanamentFerias.objects.get(id_solicitacao=solicitacao_id)
         solicitacao.status = 'rejeitado'
         solicitacao.save()
+
+        # Reajustar status do funcionário após rejeição
+        funcionario = solicitacao.funcionario
+        funcionario.ativo = 'ativo'
+        funcionario.save()
+
+        # Sincronizar estados globais após rejeição
+        sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         
         messages.success(request, "Solicitação rejeitada!")
         
@@ -378,6 +412,7 @@ def obterFuncionariosComFerias(request):
     """API para obter funcionários com seus saldos de férias"""
     try:
         sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         funcionarios = Funcionarios.objects.all()
         dados = []
         
@@ -426,6 +461,7 @@ def paginaFerias(request):
     try:
         # Atualiza saldos e obtém dados para a página
         sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         todos_funcionarios = Funcionarios.objects.all()
         solicitacoes = PlanamentFerias.objects.all().order_by('-data_inicio')
         

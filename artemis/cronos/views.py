@@ -15,8 +15,8 @@ load_dotenv()
 
 # ─── Configuração do BD ───────────────────────────────────────────────────────
 DB_CONFIG = {
-    'user':     os.getenv('DB_USER', 'alcides'),
-    'password': os.getenv('DB_PASSWORD', '1234'),
+    'user':     os.getenv('DB_USER', 'root'),
+    'password': os.getenv('DB_PASSWORD', 'Artemis2025!'),
     'host':     os.getenv('DB_HOST', 'localhost'),
     'database': os.getenv('DB_NAME', 'artemis_db'),
 }

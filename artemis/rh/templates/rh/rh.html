@@ -1017,10 +1017,14 @@
 
         <!-- Tabela de Saldos -->
         <div class="card mt-3">
-            <div class="card-header">
-                <h3><span class="material-icons-sharp">account_balance_wallet</span> Saldos por Funcionário</h3>
+            <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                <h3 style="margin:0;"><span class="material-icons-sharp">account_balance_wallet</span> Saldos por Funcionário</h3>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <button class="btn btn-sm btn-outline" id="btn-toggle-saldos" onclick="toggleSaldosTabela()" style="padding:.35rem .75rem;">Ocultar</button>
+                    <input type="search" id="input-filter-saldos" oninput="filtrarSaldosPorNome()" placeholder="Pesquisar nome..." style="padding:.35rem .75rem;border:1px solid var(--border);border-radius:8px;min-width:220px;">
+                </div>
             </div>
-            <div class="table-wrap">
+            <div class="table-wrap" id="container-saldos" style="transition:height .25s ease, opacity .25s ease;">
                 <table id="tabela-saldos" class="data-table">
                     <thead>
                         <tr>
@@ -1994,11 +1998,41 @@ function carregarSaldosFuncionarios() {
                 `;
                 tbody.insertAdjacentHTML('beforeend', rowHTML);
             });
+            filtrarSaldosPorNome(); // aplicar filtro caso já tenha texto digitado
         })
         .catch(error => {
             console.error('Erro ao carregar saldos:', error);
         });
 }
+
+function toggleSaldosTabela() {
+    const container = document.getElementById('container-saldos');
+    const btn = document.getElementById('btn-toggle-saldos');
+
+    if (!container || !btn) return;
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        btn.textContent = 'Ocultar';
+    } else {
+        container.style.display = 'none';
+        btn.textContent = 'Exibir';
+    }
+}
+
+function filtrarSaldosPorNome() {
+    const query = document.getElementById('input-filter-saldos')?.value?.trim().toLowerCase() || '';
+    const rows = document.querySelectorAll('#tabela-saldos tbody tr');
+
+    rows.forEach(row => {
+        const nome = row.querySelector('td:nth-child(1) div div:last-child')?.textContent?.toLowerCase() || '';
+        if (!query || nome.includes(query)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
 </script>
 
 {%endblock%}

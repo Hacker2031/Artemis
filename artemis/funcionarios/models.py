@@ -121,6 +121,7 @@ class Funcionarios(models.Model):
     ('ativo', 'Ativo'),
     ('ferias', 'Férias'),
     ('afastado', 'Afastado'),
+    ('demitido', 'Demitido'),
 ]
     EVENTUAL_CHOICES=[
     ('efetivo', 'Efetivo'),
@@ -172,6 +173,7 @@ class Funcionarios(models.Model):
     ativo = models.CharField(max_length=15, choices= ATIVO_CHOICES, default='ativo')
     data_contratacao = models.DateField(null=True, blank=True)
     data_nasc = models.DateField(null=True, blank=True)
+    data_demissao = models.DateField(null=True, blank=True, help_text="Data de demissão ou desligamento")
     supervisor = models.ForeignKey('self', on_delete = models.DO_NOTHING, blank=True, null=True)
     iban = models.CharField(max_length=45, null=True, blank= True)
     titular = models.CharField(max_length=45, null=True, blank= True)
