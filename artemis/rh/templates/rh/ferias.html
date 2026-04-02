@@ -1,16 +1,13 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "layout.html" %}
+{% load static %}
+
+
+{% block extra_links %}
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-    <link rel="stylesheet" href="artemis-global.css">
-    <link rel="stylesheet" href="artemis-responsive.css">
     <link rel="stylesheet" href="funcionarios.css">
-    <title>Gestão de Férias | Artemis</title>
-
-    <style>
+{% endblock extra_links %}
+{% block extra_css %}
         :root {
             --color-bg:          #0f1923;
             --color-surface:     #162231;
@@ -613,14 +610,13 @@
             .lado-direito { grid-template-columns: 1fr; }
             .detalhe-saldo-grid { grid-template-columns: repeat(2,1fr); }
         }
-    </style>
-</head>
-<body>
+
+{% endblock extra_css %}
+
 
 <div class="page-wrapper">
 
-<!-- ═══════════════════ COLUNA PRINCIPAL ═══════════════════ -->
-<main>
+{% block conteudo %}
 
     <!-- Cabeçalho -->
     <div class="modulo-header">
@@ -824,76 +820,78 @@
         </div>
     </div>
 
-</main>
+{% endblock conteudo %}
 
-<!-- ═══════════════════ LADO DIREITO ═══════════════════ -->
-<div class="lado-direito">
 
-    <div class="card">
-        <div class="card-header">
-            <h3>Ausentes Hoje</h3>
-            <span class="badge badge-danger">8</span>
-        </div>
-        <div id="ausentesHoje">
-            <!-- Gerado por JS -->
-        </div>
-    </div>
+{% block painel_direito %}
+    <div class="lado-direito">
 
-    <div class="card">
-        <div class="card-header">
-            <h3>Pendentes de Aprovação</h3>
-            <span class="badge badge-warning">3</span>
-        </div>
-        <div id="pendentesList">
-            <!-- Gerado por JS -->
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">
-            <h3><span class="material-icons-sharp" style="font-size:1rem;vertical-align:middle;color:var(--color-danger);">warning</span> Alertas</h3>
-        </div>
-        <div class="alerta-item">
-            <span class="material-icons-sharp">event_busy</span>
-            <span><b>Daniel Santos</b> tem 17 dias a vencer em Dez/2025</span>
-        </div>
-        <div class="alerta-item">
-            <span class="material-icons-sharp">event_busy</span>
-            <span><b>Ana Silva</b> tem 12 dias a vencer em Dez/2025</span>
-        </div>
-        <div class="alerta-item">
-            <span class="material-icons-sharp">event_busy</span>
-            <span><b>Carlos Mendes</b> tem 9 dias a vencer em Dez/2025</span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3 style="margin-bottom:0.75rem;">Insights de IA</h3>
-        <div class="ai-insight">
-            <div class="ai-insight-header">
-                <span class="material-symbols-outlined">lightbulb</span>
-                Recomendação
+        <div class="card">
+            <div class="card-header">
+                <h3>Ausentes Hoje</h3>
+                <span class="badge badge-danger">8</span>
             </div>
-            <p>Julho e Agosto concentram 42% das férias. Recomenda-se planear cobertura adicional no dep. de Operações para esse período.</p>
+            <div id="ausentesHoje">
+                <!-- Gerado por JS -->
+            </div>
         </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3>Pendentes de Aprovação</h3>
+                <span class="badge badge-warning">3</span>
+            </div>
+            <div id="pendentesList">
+                <!-- Gerado por JS -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3><span class="material-icons-sharp" style="font-size:1rem;vertical-align:middle;color:var(--color-danger);">warning</span> Alertas</h3>
+            </div>
+            <div class="alerta-item">
+                <span class="material-icons-sharp">event_busy</span>
+                <span><b>Daniel Santos</b> tem 17 dias a vencer em Dez/2025</span>
+            </div>
+            <div class="alerta-item">
+                <span class="material-icons-sharp">event_busy</span>
+                <span><b>Ana Silva</b> tem 12 dias a vencer em Dez/2025</span>
+            </div>
+            <div class="alerta-item">
+                <span class="material-icons-sharp">event_busy</span>
+                <span><b>Carlos Mendes</b> tem 9 dias a vencer em Dez/2025</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:0.75rem;">Insights de IA</h3>
+            <div class="ai-insight">
+                <div class="ai-insight-header">
+                    <span class="material-symbols-outlined">lightbulb</span>
+                    Recomendação
+                </div>
+                <p>Julho e Agosto concentram 42% das férias. Recomenda-se planear cobertura adicional no dep. de Operações para esse período.</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-bottom:0.75rem;">Feriados em 2025</h3>
+            <div class="info-row"><span>1 Jan</span><span>Ano Novo</span></div>
+            <div class="info-row"><span>4 Fev</span><span>Dia do Combatente</span></div>
+            <div class="info-row"><span>8 Mar</span><span>Dia da Mulher</span></div>
+            <div class="info-row"><span>4 Abr</span><span>Dia da Paz</span></div>
+            <div class="info-row"><span>1 Mai</span><span>Dia do Trabalhador</span></div>
+            <div class="info-row"><span>25 Mai</span><span>Dia de África</span></div>
+            <div class="info-row"><span>1 Ago</span><span>Dia dos Heróis</span></div>
+            <div class="info-row"><span>17 Set</span><span>Dia da Fundação do MPLA</span></div>
+            <div class="info-row"><span>2 Nov</span><span>Dia dos Finados</span></div>
+            <div class="info-row"><span>11 Nov</span><span>Dia da Independência</span></div>
+            <div class="info-row"><span>25 Dez</span><span>Natal</span></div>
+        </div>
+
     </div>
 
-    <div class="card">
-        <h3 style="margin-bottom:0.75rem;">Feriados em 2025</h3>
-        <div class="info-row"><span>1 Jan</span><span>Ano Novo</span></div>
-        <div class="info-row"><span>4 Fev</span><span>Dia do Combatente</span></div>
-        <div class="info-row"><span>8 Mar</span><span>Dia da Mulher</span></div>
-        <div class="info-row"><span>4 Abr</span><span>Dia da Paz</span></div>
-        <div class="info-row"><span>1 Mai</span><span>Dia do Trabalhador</span></div>
-        <div class="info-row"><span>25 Mai</span><span>Dia de África</span></div>
-        <div class="info-row"><span>1 Ago</span><span>Dia dos Heróis</span></div>
-        <div class="info-row"><span>17 Set</span><span>Dia da Fundação do MPLA</span></div>
-        <div class="info-row"><span>2 Nov</span><span>Dia dos Finados</span></div>
-        <div class="info-row"><span>11 Nov</span><span>Dia da Independência</span></div>
-        <div class="info-row"><span>25 Dez</span><span>Natal</span></div>
-    </div>
-
-</div>
 </div>
 
 <!-- ═══════════ MODAL: Nova Solicitação ═══════════ -->
@@ -973,12 +971,12 @@
         <div id="detalheConteudo"><!-- Gerado por JS --></div>
     </div>
 </div>
+{% endblock painel_direito %}
 
-<!-- ═══════════ SCRIPTS ═══════════ -->
+
+{% block scripts %}
 <script>
-// ──────────────────────────────────────────────────────────
-// DADOS
-// ──────────────────────────────────────────────────────────
+
 const FERIADOS_2025 = [
     '2025-01-01','2025-02-04','2025-03-08','2025-04-04',
     '2025-05-01','2025-05-25','2025-08-01','2025-09-17',
@@ -1550,6 +1548,6 @@ renderizarSaldos();
 renderizarAusentesHoje();
 renderizarPendentes();
 </script>
-<script src="artemis-utils.js"></script>
-</body>
-</html>
+<script src="{% static 'js/artemis-utils.js' %}"></script>
+
+{% endblock scripts %}

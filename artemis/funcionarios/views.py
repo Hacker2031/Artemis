@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required #para restringir o login
-from .models import Funcionarios
+from .models import Funcionarios, Controlo
 from django.db.models.functions import ExtractMonth
 from datetime import datetime, date, timedelta
 from django.contrib import messages
@@ -248,7 +248,18 @@ def salvarFuncionario(request):
                 novo_funcionario.foto_perfil = foto
 
             novo_funcionario.save()
-
+            if not id:
+                controlo = Controlo(
+                    fun_id=novo_funcionario,
+                    numero_faltas=0,
+                    numero_presencas=0,
+                    inicio_carreira=novo_funcionario.data_contratacao,
+                    fim_carreira=None,  # ou uma data futura
+                    dias_acomulados=0,  # calcular baseado na data de contratação
+                    dias_disponiveis=22,  # padrão inicial
+                    dias_ferias=22  # padrão
+                )
+                controlo.save()
             messages.success(request, f"Funcionário {'atualizado' if id else 'cadastrado'}: {f_nome}")
             
         except Exception as e:
@@ -313,12 +324,12 @@ def deletarFuncionario(request, id):
     try:
         funcionario = Funcionarios.objects.get(f_id=id)
         funcionario.delete()
-        messages.success(request, "Funcionário deletado com sucesso")
-        logger.info(f"Funcionário deletado: {funcionario.f_nome}")
+        messages.success(request, "Funcionário Eliminado com sucesso")
+        logger.info(f"Funcionário Eliminado: {funcionario.f_nome}")
     except Funcionarios.DoesNotExist:
         messages.error(request, "Funcionário não encontrado")
     except Exception as e:
         messages.error(request, f"Erro ao deletar funcionário: {str(e)}")
-        logger.error(f"Erro ao deletar funcionário: {str(e)}", exc_info=True)
+        logger.error(f"Erro ao Eliminar funcionário: {str(e)}", exc_info=True)
     return redirect('Funcionarios')
 

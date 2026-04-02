@@ -1,0 +1,510 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block extra_links %}
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/ferias.css' %}">
+{% endblock extra_links %}
+
+{% block extra_css %}
+:root {
+    --color-bg:          #0f1923;
+    --color-surface:     #162231;
+    --color-surface-2:   #1c2d3f;
+    --color-surface-3:   #223347;
+    --color-border:      rgba(255,255,255,0.07);
+    --color-primary:     #6C9BCF;
+    --color-primary-light: rgba(108,155,207,0.15);
+    --color-success:     #1B9C85;
+    --color-warning:     #F7D060;
+    --color-danger:      #FF0060;
+    --color-info:        #4DA6E8;
+    --color-text:        #e2eaf3;
+    --color-text-muted:  #7d8da1;
+    --radius:            12px;
+    --radius-sm:         8px;
+    --shadow:            0 4px 24px rgba(0,0,0,0.3);
+    --transition:        0.2s ease;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+}
+
+.page-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.modulo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+}
+
+.modulo-header h1 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.actions { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+}
+
+.btn .material-icons-sharp { font-size: 1.1rem; }
+
+.btn-primary { background: var(--color-primary); color: #fff; }
+.btn-primary:hover { filter: brightness(1.1); }
+.btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
+.btn-outline:hover { background: rgba(255,255,255,0.05);  }
+
+.card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.card-header h3 { font-size: 0.95rem; font-weight: 600; }
+
+.saldo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    grid-column: 1 / -1;
+}
+
+.saldo-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.saldo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+}
+
+.saldo-card.direito::before   { background: var(--color-primary); }
+.saldo-card.gozado::before    { background: var(--color-success); }
+.saldo-card.agendado::before  { background: var(--color-warning); }
+.saldo-card.restante::before  { background: var(--color-info); }
+
+.saldo-label { font-size: 0.75rem; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.saldo-value { font-size: 2rem; font-weight: 700; line-height: 1.1; }
+.saldo-card.direito  .saldo-value { color: var(--color-primary); }
+.saldo-card.gozado   .saldo-value { color: var(--color-success); }
+.saldo-card.agendado .saldo-value { color: var(--color-warning); }
+.saldo-card.restante .saldo-value { color: var(--color-info); }
+
+.table-container { overflow-x: auto; border-radius: var(--radius-sm); }
+
+table { width: 100%; border-collapse: collapse; }
+
+thead th {
+    background: var(--color-surface-2);
+    padding: 0.75rem 1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    white-space: nowrap;
+}
+
+tbody tr {
+    border-bottom: 1px solid var(--color-border);
+    transition: background var(--transition);
+}
+
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+tbody td { padding: 0.75rem 1rem; font-size: 0.85rem; vertical-align: middle; }
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.badge-success { background: rgba(27,156,133,0.15);  color: var(--color-success); }
+.badge-warning { background: rgba(247,208,96,0.15);  color: var(--color-warning); }
+.badge-danger  { background: rgba(255,0,96,0.12);    color: var(--color-danger); }
+
+.employee-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), #4a7ab5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.modal-header h2 { font-size: 1.1rem; font-weight: 600; }
+.modal-close { cursor: pointer; color: var(--color-text-muted); transition: color var(--transition); }
+.modal-close:hover { color: var(--color-danger); }
+
+.form-group { margin-bottom: 1rem; }
+.form-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--color-text-muted); margin-bottom: 0.35rem; }
+
+.form-control {
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.85rem;
+    color: var(--color-text);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color var(--transition);
+    width: 100%;
+}
+
+.form-control:focus { border-color: var(--color-primary); }
+select.form-control { cursor: pointer; }
+
+.lado-direito { display: flex; flex-direction: column; gap: 1.25rem; }
+
+@media (max-width: 1100px) {
+    .page-wrapper { grid-template-columns: 1fr; }
+    .saldo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 680px) {
+    .saldo-grid { grid-template-columns: 1fr 1fr; }
+}
+
+{% endblock extra_css %}
+
+{% block conteudo %}
+
+<div class="page-wrapper">
+
+    <!-- Cabeçalho -->
+    <div class="modulo-header">
+        <div>
+            <h1><span class="material-icons-sharp">beach_access</span> Gestão de Férias</h1>
+        </div>
+        <div class="actions">
+            <button class="btn btn-outline" onclick="exportarRelatorio()">
+                <span class="material-icons-sharp">download</span>
+                Exportar
+            </button>
+            <button class="btn btn-primary" onclick="abrirModalAgendamento()">
+                <span class="material-icons-sharp">add</span>
+                Nova Solicitação
+            </button>
+        </div>
+    </div>
+
+    <!-- Cards de Saldo Global -->
+    <div class="saldo-grid">
+        <div class="saldo-card direito">
+            <span class="saldo-label">Total Solicitações</span>
+            <span class="saldo-value" id="total-solicitacoes">0</span>
+            <span class="saldo-sub" style="font-size:0.75rem;color:var(--color-text-muted);">todas</span>
+        </div>
+        <div class="saldo-card gozado">
+            <span class="saldo-label">Aprovadas</span>
+            <span class="saldo-value" id="total-aprovadas">0</span>
+            <span class="saldo-sub" style="font-size:0.75rem;color:var(--color-text-muted);">processadas</span>
+        </div>
+        <div class="saldo-card agendado">
+            <span class="saldo-label">Pendentes</span>
+            <span class="saldo-value" id="total-pendentes">{{ pendentes_count }}</span>
+            <span class="saldo-sub" style="font-size:0.75rem;color:var(--color-text-muted);">awaiting</span>
+        </div>
+        <div class="saldo-card restante">
+            <span class="saldo-label">Em Férias Hoje</span>
+            <span class="saldo-value" id="em-ferias-hoje">{{ em_ferias_hoje }}</span>
+            <span class="saldo-sub" style="font-size:0.75rem;color:var(--color-text-muted);">ausentes</span>
+        </div>
+    </div>
+
+    <!-- Tabela de Solicitações -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Solicitações de Férias</h3>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Tipo</th>
+                        <th>Período</th>
+                        <th>Dias</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="solicitacoesTable">
+                    {% for sol in solicitacoes %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.65rem;">
+                                <div class="employee-avatar">{{ sol.funcionario.f_nome|first }}</div>
+                                <div>
+                                    <div style="font-weight:500;">{{ sol.funcionario.f_nome }}</div>
+                                    <small style="color:var(--color-text-muted);">{{ sol.funcionario.departamento.nome_dpt }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-warning">{{ sol.get_tipo_ausencia_display }}</span></td>
+                        <td>{{ sol.data_inicio|date:"d/m/Y" }} → {{ sol.data_fim|date:"d/m/Y" }}</td>
+                        <td style="font-weight:600;">{{ sol.dias_uteis }} dias</td>
+                        <td>
+                            <span class="badge {% if sol.status == 'aprovado' %}badge-success{% elif sol.status == 'rejeitado' %}badge-danger{% else %}badge-warning{% endif %}">
+                                {{ sol.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if sol.status == 'pendente' %}
+                            <form style="display:flex;gap:0.3rem;" method="POST" action="{% url 'aprovarFerias' sol.id_solicitacao %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm" style="background:rgba(27,156,133,0.15);color:var(--color-success);border:1px solid rgba(27,156,133,0.2);padding:0.3rem 0.65rem;font-size:0.78rem;">
+                                    <span class="material-icons-sharp" style="font-size:0.9rem;">check</span>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tabela de Saldos -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Saldos por Funcionário</h3>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Departamento</th>
+                        <th>Direito</th>
+                        <th>Gozado</th>
+                        <th>Agendado</th>
+                        <th>Restante</th>
+                    </tr>
+                </thead>
+                <tbody id="saldosTable">
+                    {% for func in todos_funcionarios %}
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:0.65rem;">
+                                <div class="employee-avatar">{{ func.f_nome|first }}</div>
+                                <div style="font-weight:500;">{{ func.f_nome }}</div>
+                            </div>
+                        </td>
+                        <td>{{ func.departamento.nome_dpt|default:"N/A" }}</td>
+                        <td style="font-weight:600;">22</td>
+                        <td style="color:var(--color-success);">0</td>
+                        <td style="color:var(--color-warning);">0</td>
+                        <td style="color:var(--color-info);font-weight:700;">22</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+{% endblock conteudo %}
+
+{% block painel_direito %}
+
+<div class="lado-direito">
+    <div class="card">
+        <div class="card-header">
+            <h3>Informação Rápida</h3>
+        </div>
+        <div style="padding:1rem;font-size:0.85rem;color:var(--color-text-muted);line-height:1.6;">
+            <p><strong>Feriados 2026:</strong></p>
+            <ul style="margin-left:1rem;margin-top:0.5rem;">
+                <li>1 Jan - Ano Novo</li>
+                <li>4 Fev - Dia do Combatente</li>
+                <li>8 Mar - Dia da Mulher</li>
+                <li>1 Mai - Dia do Trabalhador</li>
+                <li>25 Dez - Natal</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock painel_direito %}
+
+<!-- ═══════════ MODAL: Nova Solicitação ═══════════ -->
+<div class="modal" id="modalAgendamento">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nova Solicitação de Ausência</h2>
+            <span class="material-icons-sharp modal-close" onclick="fecharModal('modalAgendamento')">close</span>
+        </div>
+
+        <form method="POST" action="{% url 'solicitarFerias' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Funcionário</label>
+                <select class="form-control" name="funcionario_id" required>
+                    <option value="">Selecione...</option>
+                    {% for func in todos_funcionarios %}
+                    <option value="{{ func.f_id }}">{{ func.f_nome }} - {{ func.departamento.nome_dpt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Tipo de Ausência</label>
+                <select class="form-control" name="tipo_ausencia" required>
+                    <option value="ferias">Férias Anuais</option>
+                    <option value="medica">Baixa Médica</option>
+                    <option value="maternidade">Licença Maternidade/Paternidade</option>
+                    <option value="sem_vencimento">Licença sem Vencimento</option>
+                </select>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label class="form-label">Data de Início</label>
+                    <input type="date" class="form-control" name="data_inicio" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data de Fim</label>
+                    <input type="date" class="form-control" name="data_fim" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Observações (opcional)</label>
+                <textarea class="form-control" name="observacoes" rows="2" style="resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex;gap:0.6rem;margin-top:1rem;">
+                <button type="button" class="btn btn-outline" onclick="fecharModal('modalAgendamento')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <span class="material-icons-sharp">check</span>
+                    Salvar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+function abrirModalAgendamento() {
+    document.getElementById('modalAgendamento').classList.add('active');
+}
+
+function fecharModal(id) {
+    document.getElementById(id).classList.remove('active');
+}
+
+function exportarRelatorio() {
+    alert('Exportando relatório de férias...');
+}
+
+// Atualizar contadores ao carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Contar solicitações
+    const rows = document.querySelectorAll('#solicitacoesTable tr');
+    document.getElementById('total-solicitacoes').textContent = rows.length;
+    
+    let aprovadas = 0;
+    rows.forEach(row => {
+        if (row.textContent.includes('Aprovado')) aprovadas++;
+    });
+    document.getElementById('total-aprovadas').textContent = aprovadas;
+});
+</script>
+{% endblock scripts %}

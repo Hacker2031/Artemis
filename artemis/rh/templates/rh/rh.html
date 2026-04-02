@@ -415,6 +415,18 @@
         .nota-display .star-s { font-size: .9rem; color: var(--text-muted); }
         .nota-display .star-s.on { color: var(--color-warning); }
 
+        /* ── Modal Animations ── */
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
 {%endblock%}
 
 {% block conteudo %}
@@ -454,10 +466,6 @@
         <button class="tab" onclick="mudarTab('treinamento', event)">
             <span class="material-icons-sharp">school</span>
             Treinamento
-        </button>
-        <button class="tab" onclick="mudarTab('bem-estar', event)">
-            <span class="material-icons-sharp">favorite</span>
-            Bem-Estar
         </button>
         <button class="tab" onclick="mudarTab('ferias', event)">
             <span class="material-icons-sharp">beach_access</span>
@@ -513,7 +521,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="material-icons-sharp">list_alt</span> Vagas Abertas</h3>
+                    <h3><span class="material-icons-sharp">list_alt</span>Vagas</h3>
                     <div style="display:flex;gap:8px">
                         <input class="form-control btn-sm" style="width:200px" placeholder="Pesquisar vaga..." id="searchVaga" oninput="filtrarVagas()">
                     </div>
@@ -531,7 +539,9 @@
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="vagasTableBody"></tbody>
+                        <tbody id="vagasTableBody">
+                            
+                        </tbody>
                     </table>
                 </div>
             </div>
@@ -889,61 +899,166 @@
         </div>
     </div>
 
-    <!-- ══ TAB: BEM-ESTAR ══ -->
-    <div class="tab-content" id="bem-estar">
-        <div class="card"><div class="card-body" style="display:grid;grid-template-columns:repeat(4,1fr);gap:20px;text-align:center">
-            <div><div style="font-size:2rem;font-weight:800;color:var(--color-success)">8.5/10</div><div class="text-muted fs-sm">Satisfação Geral</div></div>
-            <div><div style="font-size:2rem;font-weight:800;color:var(--color-primary)">72%</div><div class="text-muted fs-sm">Adesão Wellness</div></div>
-            <div><div style="font-size:2rem;font-weight:800;color:var(--color-warning)">4.2h</div><div class="text-muted fs-sm">Média Esporte/Semana</div></div>
-            <div><div style="font-size:2rem;font-weight:800;color:var(--color-danger)">95%</div><div class="text-muted fs-sm">Saúde Mental</div></div>
-        </div></div>
-        <div class="grid grid-2 mt-3">
-            <div class="card"><div class="card-header"><h3>Índice de Satisfação</h3></div><div style="padding:16px"><canvas id="satisfactionChart" height="240"></canvas></div></div>
-            <div class="card"><div class="card-header"><h3>Iniciativas de Bem-Estar</h3></div>
-                <div style="padding:20px">
-                    <div class="mb-2"><div class="flex-between mb-1"><span>Ginástica Laboral</span><span class="text-success">85%</span></div><div class="progress-bar"><div class="progress-fill success" style="width:85%"></div></div></div>
-                    <div class="mb-2"><div class="flex-between mb-1"><span>Mindfulness</span><span style="color:var(--color-primary)">68%</span></div><div class="progress-bar"><div class="progress-fill primary" style="width:68%"></div></div></div>
-                    <div><div class="flex-between mb-1"><span>Nutrição</span><span class="text-warning">72%</span></div><div class="progress-bar"><div class="progress-fill warning" style="width:72%"></div></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- ══ TAB: FÉRIAS ══ -->
     <!-- ══ TAB: FÉRIAS ══ -->
     <div class="tab-content" id="ferias">
+        <!-- Cards de Estatísticas -->
         <div class="stats-grid">
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Solicitações Pendentes</div><div class="stat-value">12</div></div><div class="stat-icon warning"><span class="material-icons-sharp">pending</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Em Férias Hoje</div><div class="stat-value">28</div></div><div class="stat-icon primary"><span class="material-icons-sharp">beach_access</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Dias Médios/Funcionário</div><div class="stat-value">18.5</div></div><div class="stat-icon success"><span class="material-icons-sharp">event_available</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Taxa de Aprovação</div><div class="stat-value">94%</div></div><div class="stat-icon danger"><span class="material-icons-sharp">check_circle</span></div></div></div>
-        </div>
-        <div class="grid grid-2 mt-3">
-            <div class="leave-calendar card">
-                <div class="card-header">
-                    <h3><span class="material-icons-sharp">calendar_month</span><span id="calTitle"></span></h3>
-                    <div style="display:flex;gap:8px">
-                        <button class="btn btn-sm btn-secondary" onclick="mesAnterior()"><span class="material-icons-sharp">chevron_left</span></button>
-                        <button class="btn btn-sm btn-primary" onclick="mesAtual()">Hoje</button>
-                        <button class="btn btn-sm btn-secondary" onclick="proximoMes()"><span class="material-icons-sharp">chevron_right</span></button>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-label">Total Solicitações</div>
+                        <div class="stat-value" id="total-ferias">{{ solicitacoes|length }}</div>
                     </div>
+                    <div class="stat-icon primary"><span class="material-icons-sharp">event_note</span></div>
                 </div>
-                <div style="padding:16px"><div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:.78rem;text-align:center"></div></div>
             </div>
-            <div class="card">
-                <div class="card-header"><h3><span class="material-icons-sharp">pending_actions</span> Solicitações Pendentes</h3><span class="badge badge-warning">12</span></div>
-                <div id="leaveRequestsList" style="padding:12px"></div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-label">Pendentes</div>
+                        <div class="stat-value" id="pendentes-ferias">{{ pendentes_count }}</div>
+                    </div>
+                    <div class="stat-icon warning"><span class="material-icons-sharp">schedule</span></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-label">Aprovadas</div>
+                        <div class="stat-value" id="aprovadas-ferias">{{ aprovadas_count }}</div>
+                    </div>
+                    <div class="stat-icon success"><span class="material-icons-sharp">check_circle</span></div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div>
+                        <div class="stat-label">Em Férias Hoje</div>
+                        <div class="stat-value" id="hoje-ferias">{{ em_ferias_hoje }}</div>
+                    </div>
+                    <div class="stat-icon cyan" style="background:rgba(6,182,212,.15);color:var(--color-cyan)"><span class="material-icons-sharp">beach_access</span></div>
+                </div>
             </div>
         </div>
-        <div class="grid grid-2 mt-3">
-            <div class="card"><div class="card-header"><h3><span class="material-icons-sharp">insights</span> Planejamento 2026</h3></div><div style="padding:16px;height:280px"><canvas id="leaveChart"></canvas></div></div>
-            <div class="card"><div class="card-header"><h3><span class="material-icons-sharp">people</span> Em Férias Agora</h3><span class="badge badge-primary">28</span></div><div id="currentLeaveList" style="padding:12px"></div></div>
-        </div>
+
+        <!-- Tabela de Solicitações -->
         <div class="card mt-3">
             <div class="card-header">
-                <h3><span class="material-icons-sharp">upcoming</span> Próximas Férias (30 dias)</h3>
-                <button class="btn btn-sm btn-outline" onclick="exportarFerias()"><span class="material-icons-sharp">download</span> Exportar</button>
+                <h3><span class="material-icons-sharp">list_alt</span> Solicitações de Férias</h3>
+                <button class="btn btn-primary btn-sm" onclick="abrirModalNovaFerias()">
+                    <span class="material-icons-sharp">add</span> Nova
+                </button>
             </div>
-            <div id="upcomingLeaveList"></div>
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Tipo</th>
+                            <th>Período</th>
+                            <th>Dias</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ferriasTBody">
+                        {% for sol in solicitacoes %}
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="avatar" style="background:linear-gradient(135deg,var(--color-primary),#4a7ab5);">
+                                        {{ sol.funcionario.f_nome|first }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:500;">{{ sol.funcionario.f_nome }}</div>
+                                        <small style="color:var(--text-muted);">{{ sol.funcionario.departamento.nome_dpt|default:"N/A" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-warning">{{ sol.get_tipo_ausencia_display }}</span></td>
+                            <td style="font-size:.85rem;">{{ sol.data_inicio|date:"d/m" }} → {{ sol.data_fim|date:"d/m/Y" }}</td>
+                            <td style="font-weight:600;text-align:center;">{{ sol.dias_uteis }}</td>
+                            <td>
+                                <span class="badge {% if sol.status == 'aprovado' %}badge-success{% elif sol.status == 'rejeitado' %}badge-danger{% elif sol.status == 'cancelado' %}badge-gray{% else %}badge-warning{% endif %}">
+                                    {{ sol.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if sol.status == 'pendente' %}
+                                <form method="POST" action="{% url 'aprovarFerias' sol.id_solicitacao %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-success" title="Aprovar">
+                                        <span class="material-icons-sharp">check</span>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'rejeitarFerias' sol.id_solicitacao %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" title="Rejeitar" onclick="return confirm('Rejeitar solicitação?')">
+                                        <span class="material-icons-sharp">close</span>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span style="color:var(--text-muted);font-size:.8rem;">Processada</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:var(--text-muted);padding:30px;">
+                                Nenhuma solicitação de férias
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tabela de Saldos -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h3><span class="material-icons-sharp">account_balance_wallet</span> Saldos por Funcionário</h3>
+            </div>
+            <div class="table-wrap">
+                <table id="tabela-saldos" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Direito</th>
+                            <th>Gozado</th>
+                            <th>Agendado</th>
+                            <th>Restante</th>
+                            <th>Progresso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for func in todos_funcionarios %}
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="avatar" style="background:linear-gradient(135deg,var(--color-primary),#4a7ab5);">
+                                        {{ func.f_nome|first }}
+                                    </div>
+                                    <div style="font-weight:500;">{{ func.f_nome }}</div>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-gray">{{ func.departamento.nome_dpt|default:"N/A" }}</span></td>
+                            <td style="text-align:center;font-weight:600;">22</td>
+                            <td style="text-align:center;color:var(--color-success);">0</td>
+                            <td style="text-align:center;color:var(--color-warning);">0</td>
+                            <td style="text-align:center;color:var(--color-primary);font-weight:700;">22</td>
+                            <td style="min-width:100px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width:0%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -1531,7 +1646,6 @@ function mudarTab(tabName, e) {
     if(tabName==='recrutamento') { voltarLista(); }
     if(tabName==='avaliacoes')   { renderEvaluations(); setTimeout(initEvaluationCharts,100); }
     if(tabName==='treinamento')  { renderTraining();    setTimeout(initTrainingCharts,100); }
-    if(tabName==='bem-estar')    setTimeout(initWellnessCharts,100);
     if(tabName==='ferias')       initTabFerias();
 }
 
@@ -1569,11 +1683,7 @@ function initTrainingCharts(){
     if(trainChartInit) return; trainChartInit=true;
     new Chart(document.getElementById('trainingProgressChart'),{type:'bar',data:{labels:['Vendas','TI','RH','Financeiro'],datasets:[{label:'Horas',data:[340,420,280,205],backgroundColor:'#1B9C85',borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false}});
 }
-let wellnessChartInit=false;
-function initWellnessCharts(){
-    if(wellnessChartInit) return; wellnessChartInit=true;
-    new Chart(document.getElementById('satisfactionChart'),{type:'line',data:{labels:['Jan','Fev','Mar','Abr','Mai','Jun'],datasets:[{label:'Satisfação',data:[7.8,8.0,8.3,8.1,8.4,8.5],borderColor:'#1B9C85',tension:0.4,fill:true,backgroundColor:'rgba(27,156,133,0.08)'}]},options:{responsive:true,maintainAspectRatio:false}});
-}
+
 
 /* ══ TAB FÉRIAS ══ */
 const feriasPendentes=[
@@ -1670,13 +1780,225 @@ function exportarFerias(){
 function agendarEntrevista(){ toast('Funcionalidade em breve', 'warning'); }
 function gerarRelatorio()   { toast('A gerar relatório...', 'warning'); }
 
+/* ── Férias - Modal Funções ── */
+function abrirModalNovaFerias() {
+    const modal = document.getElementById('modalNovaFerias');
+    if(!modal) return;
+    modal.style.display = 'flex';
+    document.getElementById('form-nova-ferias').reset();
+    const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('ferias-data-inicio').setAttribute('min', hoje);
+    document.getElementById('ferias-data-fim').setAttribute('min', hoje);
+    // Definir valor padrão para hoje
+    document.getElementById('ferias-data-inicio').value = hoje;
+    // Definir data fim como uma semana depois
+    const semanaDepois = new Date();
+    semanaDepois.setDate(semanaDepois.getDate() + 7);
+    document.getElementById('ferias-data-fim').value = semanaDepois.toISOString().split('T')[0];
+    
+    // Adicionar event listener para atualizar data fim quando data início mudar
+    document.getElementById('ferias-data-inicio').addEventListener('change', atualizarDataFimMin);
+}
+
+function atualizarDataFimMin() {
+    const dataInicio = document.getElementById('ferias-data-inicio').value;
+    if(dataInicio) {
+        document.getElementById('ferias-data-fim').setAttribute('min', dataInicio);
+        // Se a data fim for anterior à nova data início, ajustar
+        const dataFim = document.getElementById('ferias-data-fim').value;
+        if(dataFim && dataFim < dataInicio) {
+            document.getElementById('ferias-data-fim').value = dataInicio;
+        }
+    }
+}
+
+function fecharModalNovaFerias() {
+    const modal = document.getElementById('modalNovaFerias');
+    if(modal) modal.style.display = 'none';
+}
+
+function salvarNovaFerias() {
+    const form = document.getElementById('form-nova-ferias');
+    const dataInicio = document.getElementById('ferias-data-inicio').value;
+    const dataFim = document.getElementById('ferias-data-fim').value;
+    const tipo = document.getElementById('ferias-tipo').value;
+    const observacoes = document.getElementById('ferias-observacoes').value;
+    
+    // Validação básica
+    if(!dataInicio || !dataFim || !tipo) {
+        toast('Preencha todos os campos obrigatórios', 'error');
+        return;
+    }
+    
+    // Se não for funcionário, verificar se selecionou um
+    {% if not user.f_id %}
+    const funcionarioId = document.getElementById('ferias-funcionario').value;
+    if(!funcionarioId) {
+        toast('Selecione um funcionário', 'error');
+        return;
+    }
+    {% endif %}
+    
+    if(new Date(dataInicio) > new Date(dataFim)) {
+        toast('A data de início não pode ser após a data de fim', 'error');
+        return;
+    }
+    
+    const formData = new FormData(form);
+    formData.append('data_inicio', dataInicio);
+    formData.append('data_fim', dataFim);
+    formData.append('tipo_ausencia', tipo);
+    formData.append('observacoes', observacoes);
+    
+    // Adicionar funcionário se necessário
+   
+    
+    fetch('{% url "solicitarFerias" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.sucesso) {
+            toast('Solicitação de férias criada com sucesso!', 'success');
+            fecharModalNovaFerias();
+            location.reload();
+        } else {
+            toast(data.erro || 'Erro ao criar solicitação', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        toast('Erro na comunicação com o servidor', 'error');
+    });
+}
+
 /* ── Init ── */
 voltarLista();
 
 </script>
 
+<!-- ══ MODAL - NOVA SOLICITAÇÃO DE FÉRIAS ══ -->
+<div id="modalNovaFerias" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.6);z-index:9999;justify-content:center;align-items:center;">
+    <div style="background:rgb(0, 13, 30);border-radius:16px;width:90%;max-width:500px;box-shadow:0 20px 60px rgb(0, 0, 0);overflow:hidden;animation:slideUp 0.3s ease">
+        <div style="background:linear-gradient(135deg,var(--color-primary),#5b7fef);padding:20px;color:#fff">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <h3 style="margin:0;font-size:1.2rem">Nova Solicitação de Férias</h3>
+                <button class="btn btn-icon btn-ghost" onclick="fecharModalNovaFerias()" style="color:#fff">
+                    <span class="material-icons-sharp">close</span>
+                </button>
+            </div>
+        </div>
+        
+        <form id="form-nova-ferias" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+            {% csrf_token %}
+            
+   
+            <div>
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Funcionário</label>
+                <select class="form-control" id="ferias-funcionario" name="funcionario_id" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:.875rem;transition:border-color 0.2s">
+                    <option value="">Selecione um funcionário...</option>
+                    {% for func in todos_funcionarios %}
+                        {% if func.ativo == 'ativo' %}
+                        <option value="{{ func.f_id }}">{{ func.f_nome }} - {{ func.cargo.nome_cargo}}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Tipo de Ausência -->
+            <div>
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Tipo de Ausência</label>
+                <select class="form-control" id="ferias-tipo" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:.875rem;transition:border-color 0.2s">
+                    <option value="">Selecione...</option>
+                    <option value="ferias">Férias</option>
+                    <option value="medica">Baixa Médica</option>
+                    <option value="maternidade">Licença Maternidade/Paternidade</option>
+                    <option value="sem_vencimento">Licença sem Vencimento</option>
+                </select>
+            </div>
+            
+            <!-- Data Início -->
+            <div>
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Data de Início</label>
+                <input class="form-control" type="date" id="ferias-data-inicio" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;">
+            </div>
+            
+            <!-- Data Fim -->
+            <div>
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Data de Fim</label>
+                <input class="form-control" type="date" id="ferias-data-fim" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px">
+            </div>
+            
+            <!-- Observações -->
+            <div>
+                <label style="display:block;margin-bottom:8px;font-weight:600;font-size:.875rem">Observações (Opcional)</label>
+                <textarea id="ferias-observacoes" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--color-card);color:var(--text-primary);font-size:.875rem;font-family:inherit;resize:vertical;min-height:80px;transition:border-color 0.2s" placeholder="Adicione notas ou motivo da ausência..."></textarea>
+            </div>
+        </form>
+        
+        <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end">
+            <button class="btn btn-outline" onclick="fecharModalNovaFerias()">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarNovaFerias()">
+                <span class="material-icons-sharp">check_circle</span> Solicitar
+            </button>
+        </div>
+    </div>
+</div>
 
 <script src="{% static "js/index.js" %}"></script>
 <script src="{% static "js/artemis-utils.js" %}"></script>
+
+<script>
+// Carregar saldos de férias quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    carregarSaldosFuncionarios();
+});
+
+function carregarSaldosFuncionarios() {
+    fetch('/rh/api/ferias/funcionarios/')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.querySelector('#tabela-saldos tbody');
+            if (!tbody) return;
+            
+            // Limpar linhas existentes
+            tbody.innerHTML = '';
+            
+            // Preencher tabela com dados reais
+            data.funcionarios.forEach(func => {
+                const rowHTML = `
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div class="avatar" style="background:linear-gradient(135deg,var(--color-primary),#4a7ab5);">
+                                    ${func.nome.charAt(0)}
+                                </div>
+                                <div style="font-weight:500;">${func.nome}</div>
+                            </div>
+                        </td>
+                        <td><span class="badge badge-gray">${func.departamento}</span></td>
+                        <td style="text-align:center;font-weight:600;">${func.direito}</td>
+                        <td style="text-align:center;color:var(--color-success);">${func.gozado}</td>
+                        <td style="text-align:center;color:var(--color-warning);">${func.agendado}</td>
+                        <td style="text-align:center;color:var(--color-primary);font-weight:700;">${func.restante}</td>
+                        <td style="min-width:100px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width:${(func.gozado / func.direito * 100) || 0}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', rowHTML);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar saldos:', error);
+        });
+}
+</script>
 
 {%endblock%}

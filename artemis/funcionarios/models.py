@@ -4,17 +4,37 @@ from rh.models import Candidatos
 
 class Controlo(models.Model):
     id_controlo = models.AutoField(primary_key=True)
+    fun_id = models.ForeignKey('Funcionarios', models.DO_NOTHING, db_column='f_id', blank=True, null=True) 
     numero_faltas = models.IntegerField()
     numero_presencas = models.IntegerField()
     inicio_carreira = models.DateField()
-    fim_carreira = models.DateField()
-    dias_acomulados = models.IntegerField()
-    dias_disponiveis = models.IntegerField()
-    dias_ferias = models.IntegerField()
+    fim_carreira = models.DateField(blank=True, null=True)
+    dias_acomulados = models.IntegerField(default=0)
+    dias_disponiveis = models.IntegerField(default=22)
+    dias_ferias = models.IntegerField(default=22)
+    
+    # Campos para planeamento de férias
+    direito_ferias_anual = models.IntegerField(default=22, help_text="Dias de férias anuais por lei")
+    ferias_gozadas = models.IntegerField(default=0, help_text="Dias de férias já tirados")
+    ferias_agendadas = models.IntegerField(default=0, help_text="Dias de férias marcadas")
+    ferias_restantes = models.IntegerField(default=22, help_text="Dias restantes (calculado)")
+    
+    # Outros tipos de ausência
+    baixa_medica_dias = models.IntegerField(default=0)
+    licenca_maternidade_dias = models.IntegerField(default=0)
+    licenca_sem_vencimento_dias = models.IntegerField(default=0)
+    
+    # Histórico
+    ferias_vencidas = models.IntegerField(default=0, help_text="Dias que expiraram sem gozar")
+    ultimo_ano_ferias = models.IntegerField(default=0, help_text="Ano da última atualização de férias")
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'controlo'
+    
+    def __str__(self):
+        func = self.fun_id.f_nome if self.fun_id else "N/A"
+        return f"Controlo - {func}"
 
 
 
@@ -38,8 +58,51 @@ class Equipas(models.Model):
         return f"{self.nome_equipa}"
 
 
+class PlanamentFerias(models.Model):
+    """Model para planeamento e solicitação de férias"""
+    TIPO_AUSENCIA_CHOICES = [
+        ('ferias', 'Férias Anuais'),
+        ('medica', 'Baixa Médica'),
+        ('maternidade', 'Licença Maternidade/Paternidade'),
+        ('sem_vencimento', 'Licença sem Vencimento'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('pendente', 'Pendente'),
+        ('aprovado', 'Aprovado'),
+        ('rejeitado', 'Rejeitado'),
+        ('cancelado', 'Cancelado'),
+    ]
+    
+    id_solicitacao = models.AutoField(primary_key=True)
+    funcionario = models.ForeignKey('Funcionarios', on_delete=models.CASCADE, related_name='solicitacoes_ferias')
+    tipo_ausencia = models.CharField(max_length=20, choices=TIPO_AUSENCIA_CHOICES, default='ferias')
+    data_inicio = models.DateField()
+    data_fim = models.DateField()
+    dias_uteis = models.IntegerField(default=0, help_text="Número de dias úteis")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    
+    observacoes = models.TextField(blank=True, null=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    atualizado_em = models.DateTimeField(auto_now=True)
+    
+    aprovado_por = models.ForeignKey('Funcionarios', on_delete=models.SET_NULL, null=True, blank=True, related_name='ferias_aprovadas')
+    data_aprovacao = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        managed = True
+        db_table = 'planeament_ferias'
+        verbose_name = 'Planeamento de Férias'
+        verbose_name_plural = 'Planeamentos de Férias'
+        ordering = ['-data_inicio']
+    
+    def __str__(self):
+        return f"{self.funcionario.f_nome} - {self.get_tipo_ausencia_display()} ({self.data_inicio})"
+
+
 class FDocuments(models.Model):
     id_docs = models.AutoField(primary_key=True)
+    fun_id = models.ForeignKey('Funcionarios', models.DO_NOTHING, db_column='f_id', blank=True, null=True) 
     bi = models.CharField(unique=True, max_length=255)
     passaporte = models.CharField(unique=True, max_length=255, blank=True, null=True)
     atestado = models.CharField(unique=True, max_length=255, blank=True, null=True)
@@ -47,7 +110,7 @@ class FDocuments(models.Model):
     contracto = models.CharField(unique=True, max_length=255)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'f_documents'
         verbose_name='Documentos'
 
@@ -67,10 +130,8 @@ class Funcionarios(models.Model):
     f_id = models.AutoField(primary_key=True)
     f_nome = models.CharField(max_length=45)
     cargo = models.ForeignKey('rh.Cargos', on_delete= models.DO_NOTHING, db_column='cargo', blank=True, null=True)
-    id_docs = models.IntegerField(unique=True, blank=True, null=True)
     estado = models.CharField(max_length=45, choices=EVENTUAL_CHOICES, default='efetivo')
     avaliacao = models.FloatField(blank=True, null=True) 
-    id_controlo = models.OneToOneField(Controlo, models.DO_NOTHING, db_column='id_controlo', blank=True, null=True)
     contacto = models.CharField(unique=True, max_length=25)
     foto_perfil = models.FileField(upload_to="rh/foto_perfil_funcionarios", null=True, blank=True)
     contacto_alt = models.CharField(max_length=45, blank=True, null=True)

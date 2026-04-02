@@ -196,7 +196,13 @@
  
 {% endblock %}
 
+{% block messages %}
+{% for message in messages %}
 
+<script id="message"> alert("{{ message }}")</script>
+
+{% endfor %}
+{% endblock messages %}
 
 
 {% block scripts%}

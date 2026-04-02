@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Funcionarios, Controlo, Equipas, FDocuments, MembrosEquipas
+from .models import Funcionarios, Controlo, Equipas, FDocuments, MembrosEquipas, PlanamentFerias
 
 # Register your models here.
 
@@ -39,3 +39,30 @@ admin.site.register(Controlo)
 admin.site.register(FDocuments)
 admin.site.register(Equipas, list_display = ['nome_equipa','responsavel_equipa','departamento','tipo_equipa','data_inicio','data_fim'])
 admin.site.register(MembrosEquipas, list_display = ['f','id_equipas', 'papel'])
+
+
+@admin.register(PlanamentFerias)
+class PlanamentFeriasAdmin(admin.ModelAdmin):
+    list_display = ('funcionario', 'tipo_ausencia', 'data_inicio', 'data_fim', 'dias_uteis', 'status')
+    list_filter = ('status', 'tipo_ausencia', 'data_inicio')
+    search_fields = ('funcionario__f_nome', 'status')
+    readonly_fields = ('criado_em', 'atualizado_em', 'data_aprovacao')
+    
+    fieldsets = (
+        ('Informações da Solicitação', {
+            'fields': ('funcionario', 'tipo_ausencia', 'status')
+        }),
+        ('Datas', {
+            'fields': ('data_inicio', 'data_fim', 'dias_uteis')
+        }),
+        ('Aprovação', {
+            'fields': ('aprovado_por', 'data_aprovacao')
+        }),
+        ('Observações', {
+            'fields': ('observacoes',)
+        }),
+        ('Datas de Sistema', {
+            'fields': ('criado_em', 'atualizado_em'),
+            'classes': ('collapse',)
+        }),
+    )
