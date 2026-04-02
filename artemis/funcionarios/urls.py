@@ -7,6 +7,7 @@ urlpatterns = [
     path("editar/<int:id>/", views.EditarFuncionario, name="EditarFuncionario"),
     path("salvar-funcionario/", views.salvarFuncionario, name="salvarFuncionario"),
     path("delete/<int:id>/", views.deletarFuncionario, name="deletarFuncionario"),
+    path("demitir/<int:id>/", views.demitirFuncionario, name="demitirFuncionario"),
     path("export-pdf/", views.export_pdf, name="export_pdf"),
     path("detalhes/<int:id>/", views.DetalhesFuncionario, name="DetalhesFuncionario"),
 ]

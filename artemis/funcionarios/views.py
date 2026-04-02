@@ -26,7 +26,7 @@ def FuncionariosPage(request):
     aniversariantes = Funcionarios.objects.annotate(
         mes_aniversario = ExtractMonth('data_nasc')
     ).filter(mes_aniversario = mes_atual)
-
+    
     funcionarios = Funcionarios.objects.all()
     status = request.GET.get('status', 'todos')
     if status and status != "todos":
@@ -34,6 +34,12 @@ def FuncionariosPage(request):
 
     ordenarpor = request.GET.get('ordenarpor', 'cargo_id')
     f_funcionarios = funcionarios.order_by(ordenarpor)
+
+    # Funcionários ativos e afastados (exclui demitidos) - para as cards de departamento
+    funcionarios_ativos = Funcionarios.objects.exclude(ativo='demitido')
+    if status and status != "todos":
+        funcionarios_ativos = funcionarios_ativos.filter(ativo=status)
+    funcionarios_ativos = funcionarios_ativos.order_by(ordenarpor)
 
     # Age distribution
     ages = []
@@ -58,12 +64,12 @@ def FuncionariosPage(request):
     age_labels = list(age_bins.keys())
     age_data = list(age_bins.values())
 
-    # Department performance and count
+    # Department performance and count (apenas ativos e afastados)
     dept_performance = {}
     dept_count = {}
     for dept in Departamentos.objects.all():
-        avg_perf = f_funcionarios.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
-        count = f_funcionarios.filter(departamento=dept).count()
+        avg_perf = funcionarios_ativos.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
+        count = funcionarios_ativos.filter(departamento=dept).count()
         dept_performance[dept.nome_dpt] = round(avg_perf, 1)
         dept_count[dept.nome_dpt] = count
 
@@ -152,7 +158,7 @@ def FuncionariosPage(request):
 
     context ={
         'funcionarios': Funcionarios.objects.all().order_by('cargo_id'),
-        'aniversariantes': aniversariantes,
+        'funcionarios_everybody': Funcionarios.objects.exclude(ativo='demitido'),
         'ativos': Funcionarios.ATIVO_CHOICES,
         'funcionarios_filtro': f_funcionarios,
         'age_labels_json': json.dumps(age_labels),
@@ -332,4 +338,24 @@ def deletarFuncionario(request, id):
         messages.error(request, f"Erro ao deletar funcionário: {str(e)}")
         logger.error(f"Erro ao Eliminar funcionário: {str(e)}", exc_info=True)
     return redirect('Funcionarios')
+
+
+@login_required(login_url='loginPage')
+def demitirFuncionario(request, id):
+    """Marcar funcionário como demitido em vez de deletar"""
+    try:
+        from datetime import date
+        funcionario = Funcionarios.objects.get(f_id=id)
+        funcionario.ativo = 'demitido'
+        funcionario.data_demissao = date.today()
+        funcionario.save()
+        messages.success(request, f"Funcionário {funcionario.f_nome} marcado como demitido")
+        logger.info(f"Funcionário Demitido: {funcionario.f_nome}")
+    except Funcionarios.DoesNotExist:
+        messages.error(request, "Funcionário não encontrado")
+    except Exception as e:
+        messages.error(request, f"Erro ao demitir funcionário: {str(e)}")
+        logger.error(f"Erro ao demitir funcionário: {str(e)}", exc_info=True)
+    return redirect('Funcionarios')
+
 

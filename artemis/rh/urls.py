@@ -13,5 +13,11 @@ urlpatterns = [
     path('ferias/rejeitar/<int:solicitacao_id>/', views.rejeitarFerias, name="rejeitarFerias"),
     path('api/ferias/solicitacoes/', views.obterSolicitacoesFerias, name="obterSolicitacoesFerias"),
     path('api/ferias/funcionarios/', views.obterFuncionariosComFerias, name="obterFuncionariosComFerias"),
+    
+    # Rotas para Processos Selectivos
+    path('api/processos/salvar/', views.salvarProcessoSeletivo, name="salvarProcessoSeletivo"),
+    path('api/processos/<int:candidato_id>/', views.carregarProcessosSelectivos, name="carregarProcessosSelectivos"),
+    path('baixar-cv/<int:candidato_id>/', views.baixarCV, name="baixarCV"),
+    path('debug-cv/<int:candidato_id>/', views.debugCV, name="debugCV"),
 ]
 

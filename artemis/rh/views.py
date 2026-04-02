@@ -1,14 +1,15 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse
 from django.views.decorators.http import require_http_methods
 from funcionarios.models import Funcionarios, Controlo, PlanamentFerias
-from .models import Cargos, Departamentos, Vaga, Candidatos
+from .models import Cargos, Departamentos, Vaga, Candidatos, ProcessoSeletivo
 from django.contrib import messages
 from django.db.models import Sum 
 from django.core.serializers import serialize
 from datetime import datetime, date, timedelta
 import json
+import os
 
 # Create your views here.
 
@@ -33,8 +34,11 @@ def rhPage(request):
                 'estado': candidato.estado,
                 'cv': candidato.cv.url if candidato.cv else '',
                 'notas': candidato.nota or '',
+                'vaga_id': vaga.id,
+                'vaga_titulo': vaga.titulo,
             })
     sincronizar_saldos_ferias()
+    atualizar_estado_funcionarios()
 
     todos_funcionarios = Funcionarios.objects.all()
 
@@ -207,6 +211,29 @@ def sincronizar_saldos_ferias():
         controlo.save()
 
 
+def atualizar_estado_funcionarios():
+    """Atualiza o estado dos funcionários baseado nas férias ativas ou aprovadas"""
+    hoje = date.today()
+
+    # Primeiro, marcar como 'ativo' todos os funcionários que não têm férias aprovadas
+    Funcionarios.objects.filter(
+        ativo='ferias'
+    ).exclude(
+        solicitacoes_ferias__status='aprovado',
+        solicitacoes_ferias__tipo_ausencia='ferias'
+    ).update(ativo='ativo')
+
+    # Depois, marcar como 'ferias' os que têm férias aprovadas (ativas ou futuras)
+    funcionarios_com_ferias_aprovadas = PlanamentFerias.objects.filter(
+        status='aprovado',
+        tipo_ausencia='ferias'
+    ).values_list('funcionario', flat=True).distinct()
+
+    Funcionarios.objects.filter(
+        f_id__in=funcionarios_com_ferias_aprovadas
+    ).update(ativo='ferias')
+
+
 @login_required(login_url="loginPage")
 @require_http_methods(["GET", "POST"])
 def solicitarFerias(request):
@@ -214,6 +241,7 @@ def solicitarFerias(request):
     if request.method == "POST":
         try:
             sincronizar_saldos_ferias()
+            atualizar_estado_funcionarios()
             # Se for AJAX, pegar o funcionário (do usuário logado ou especificado)
             funcionario_id = request.POST.get('funcionario_id')
 
@@ -338,6 +366,15 @@ def rejeitarFerias(request, solicitacao_id):
         solicitacao = PlanamentFerias.objects.get(id_solicitacao=solicitacao_id)
         solicitacao.status = 'rejeitado'
         solicitacao.save()
+
+        # Reajustar status do funcionário após rejeição
+        funcionario = solicitacao.funcionario
+        funcionario.ativo = 'ativo'
+        funcionario.save()
+
+        # Sincronizar estados globais após rejeição
+        sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         
         messages.success(request, "Solicitação rejeitada!")
         
@@ -378,6 +415,7 @@ def obterFuncionariosComFerias(request):
     """API para obter funcionários com seus saldos de férias"""
     try:
         sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         funcionarios = Funcionarios.objects.all()
         dados = []
         
@@ -420,12 +458,186 @@ def obterFuncionariosComFerias(request):
         return JsonResponse({'erro': str(e)}, status=400)
 
 
+@require_http_methods(["POST"])
+@login_required(login_url="loginPage")
+def salvarProcessoSeletivo(request):
+    """API para salvar um processo selectivo de um candidato"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        candidato_id = request.POST.get('candidato_id')
+        etapa = request.POST.get('etapa')
+        resultado = request.POST.get('resultado', 'pendente')
+        data_agendada = request.POST.get('data_agendada', '')
+        avaliador_nome = request.POST.get('avaliador', '')
+        nota = int(request.POST.get('nota', 0))
+        observacoes = request.POST.get('observacoes', '')
+
+        logger.info(f"Salvando processo: candidato={candidato_id}, etapa={etapa}, resultado={resultado}")
+
+        candidato = Candidatos.objects.get(id=candidato_id)
+        
+        avaliador = None
+        if avaliador_nome and avaliador_nome.strip():
+            avaliador = Funcionarios.objects.filter(f_nome__icontains=avaliador_nome).first()
+
+        # Mapeamento de etapas em texto para choice values
+        etapas_map = {
+            'Receção de Candidatura': 'recepcao_candidatura',
+            'Análise de CV': 'analise_cv',
+            'Entrevista Telefónica': 'entrevista_rh',
+            'Entrevista Técnica': 'entrevista_tecnica',
+            'Entrevista RH': 'entrevista_rh',
+            'Teste Técnico': 'teste_escrito',
+            'Teste Psicométrico': 'teste_pratico',
+            'Proposta de Emprego': 'proposta',
+            'Contratação': 'proposta',
+        }
+        
+        etapa_value = etapas_map.get(etapa, etapa)
+        
+        processo = ProcessoSeletivo.objects.create(
+            candidato=candidato,
+            etapa=etapa_value,
+            resultado=resultado,
+            data_agendada=data_agendada if data_agendada else None,
+            avaliador=avaliador,
+            nota=nota,
+            observacoes=observacoes
+        )
+
+        logger.info(f"Processo criado com sucesso: {processo.id}")
+
+        return JsonResponse({
+            'sucesso': True,
+            'id': processo.id,
+            'mensagem': 'Processo selectivo registado com sucesso'
+        })
+    except Candidatos.DoesNotExist:
+        logger.error(f"Candidato não encontrado: {candidato_id}")
+        return JsonResponse({'sucesso': False, 'erro': 'Candidato não encontrado'}, status=400)
+    except ValueError as e:
+        logger.error(f"Erro de validação: {str(e)}")
+        return JsonResponse({'sucesso': False, 'erro': f'Erro de validação: {str(e)}'}, status=400)
+    except Exception as e:
+        logger.error(f"Erro ao salvar processo: {str(e)}")
+        return JsonResponse({'sucesso': False, 'erro': str(e)}, status=400)
+
+
+@login_required(login_url="loginPage")
+def carregarProcessosSelectivos(request, candidato_id):
+    """API para carregar processos selectivos de um candidato"""
+    try:
+        processos = ProcessoSeletivo.objects.filter(candidato_id=candidato_id).order_by('-data_registo')
+        
+        dados = []
+        for p in processos:
+            dados.append({
+                'id': p.id,
+                'etapa': p.etapa,
+                'etapa_display': p.get_etapa_display(),
+                'resultado': p.resultado,
+                'resultado_display': p.get_resultado_display(),
+                'data_agendada': p.data_agendada.strftime('%Y-%m-%d') if p.data_agendada else '',
+                'avaliador': p.avaliador.f_nome if p.avaliador else 'N/A',
+                'nota': p.nota,
+                'observacoes': p.observacoes,
+                'data_registo': p.data_registo.strftime('%Y-%m-%d %H:%M')
+            })
+        
+        return JsonResponse({'processos': dados})
+    except Exception as e:
+        return JsonResponse({'erro': str(e)}, status=400)
+
+
+@login_required(login_url="loginPage")
+def baixarCV(request, candidato_id):
+    """View para descarregar o CV de um candidato"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        candidato = Candidatos.objects.get(id=candidato_id)
+        
+        if not candidato.cv or not str(candidato.cv):
+            return JsonResponse({'erro': 'Candidato não possui CV'}, status=404)
+        
+        # Obter o caminho do arquivo
+        cv_path = candidato.cv.path
+        
+        logger.info(f"Tentando descarregar CV: {cv_path}")
+        
+        # Verificar se arquivo existe
+        if not os.path.exists(cv_path):
+            logger.error(f"Arquivo CV não encontrado: {cv_path}")
+            return JsonResponse({'erro': 'Arquivo CV não encontrado no servidor'}, status=404)
+        
+        # Obter nome do arquivo original
+        filename = os.path.basename(cv_path)
+        nome_limpo = candidato.nome.replace(' ', '_')
+        
+        # Abrir e retornar o arquivo
+        try:
+            f = open(cv_path, 'rb')
+            response = FileResponse(f, as_attachment=True)
+            response['Content-Disposition'] = f'attachment; filename="CV_{nome_limpo}{os.path.splitext(filename)[1]}"'
+            response['Content-Type'] = 'application/octet-stream'
+            return response
+        except IOError as e:
+            logger.error(f"Erro ao abrir arquivo CV: {str(e)}")
+            return JsonResponse({'erro': f'Erro ao abrir arquivo: {str(e)}'}, status=400)
+            
+    except Candidatos.DoesNotExist:
+        logger.error(f"Candidato não encontrado: {candidato_id}")
+        return JsonResponse({'erro': 'Candidato não encontrado'}, status=404)
+    except Exception as e:
+        logger.error(f"Erro desconhecido ao baixar CV: {str(e)}")
+        return JsonResponse({'erro': f'Erro: {str(e)}'}, status=400)
+
+
+@login_required(login_url="loginPage")
+def debugCV(request, candidato_id):
+    """View debug para verificar status do CV"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        candidato = Candidatos.objects.get(id=candidato_id)
+        
+        info = {
+            'candidato_id': candidato_id,
+            'candidato_nome': candidato.nome,
+            'cv_campo': str(candidato.cv),
+            'cv_bool': bool(candidato.cv),
+            'cv_name': candidato.cv.name if candidato.cv else None,
+            'cv_url': candidato.cv.url if candidato.cv else None,
+        }
+        
+        if candidato.cv:
+            cv_path = candidato.cv.path
+            info['cv_path'] = cv_path
+            info['cv_existe'] = os.path.exists(cv_path)
+            if os.path.exists(cv_path):
+                info['cv_tamanho'] = os.path.getsize(cv_path)
+        
+        logger.info(f"Debug CV: {info}")
+        return JsonResponse(info)
+        
+    except Candidatos.DoesNotExist:
+        return JsonResponse({'erro': 'Candidato não encontrado'}, status=404)
+    except Exception as e:
+        logger.error(f"Erro no debug CV: {str(e)}")
+        return JsonResponse({'erro': str(e)}, status=400)
+
+
 @login_required(login_url="loginPage")
 def paginaFerias(request):
     """Página de gestão de férias"""
     try:
         # Atualiza saldos e obtém dados para a página
         sincronizar_saldos_ferias()
+        atualizar_estado_funcionarios()
         todos_funcionarios = Funcionarios.objects.all()
         solicitacoes = PlanamentFerias.objects.all().order_by('-data_inicio')
         
