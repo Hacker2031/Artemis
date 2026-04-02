@@ -224,6 +224,9 @@
 <script src="{% static 'js/artemis-utils.js' %}"></script>
 
 <script>
+    const ICON_COPY   = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const ICON_CHECK  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+const ICON_EXPORT = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
     marked.setOptions({ breaks: true, gfm: true });
 
     const ICON_COPY  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
@@ -297,42 +300,112 @@
        MENSAGENS
     ────────────────────────────────────────── */
     function adicionarMensagemBot(textoMarkdown) {
-        const chatMessages = document.getElementById('chatMessages');
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message ai';
-        msgDiv.style.position = 'relative';
-
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.textContent = 'CN';
-
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        content.innerHTML = marked.parse(textoMarkdown);
-
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.innerHTML = `${ICON_COPY} Copiar`;
-        copyBtn.title = 'Copiar resposta';
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(textoMarkdown).then(() => {
-                copyBtn.innerHTML = `${ICON_CHECK} Copiado!`;
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = `${ICON_COPY} Copiar`;
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            });
+    const chatMessages = document.getElementById('chatMessages');
+ 
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'message ai';
+    msgDiv.style.position = 'relative';
+ 
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.textContent = 'CN';
+ 
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = marked.parse(textoMarkdown);
+ 
+    /* ── Botão Copiar (existente) ── */
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.innerHTML = `${ICON_COPY} Copiar`;
+    copyBtn.title = 'Copiar resposta';
+    copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(textoMarkdown).then(() => {
+            copyBtn.innerHTML = `${ICON_CHECK} Copiado!`;
+            copyBtn.classList.add('copied');
+            setTimeout(() => {
+                copyBtn.innerHTML = `${ICON_COPY} Copiar`;
+                copyBtn.classList.remove('copied');
+            }, 2000);
         });
-
-        msgDiv.appendChild(avatar);
-        msgDiv.appendChild(content);
-        msgDiv.appendChild(copyBtn);
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+ 
+    /* ── Botão Exportar .docx (novo) ── */
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'export-btn';
+    exportBtn.innerHTML = `${ICON_EXPORT} Exportar`;
+    exportBtn.title = 'Exportar como Word (.docx)';
+    exportBtn.addEventListener('click', () => exportarDocx(textoMarkdown, exportBtn));
+ 
+    msgDiv.appendChild(avatar);
+    msgDiv.appendChild(content);
+    msgDiv.appendChild(exportBtn);   /* novo */
+    msgDiv.appendChild(copyBtn);
+    chatMessages.appendChild(msgDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+ 
+ 
+/* ──────────────────────────────────────────────────────────────────
+   NOVA FUNÇÃO — exportarDocx()
+   Extrai o título da mensagem (primeiro heading # ou fallback)
+   e faz download do .docx via endpoint Django.
+────────────────────────────────────────────────────────────────── */
+async function exportarDocx(textoMarkdown, btn) {
+    /* Extrai título: primeiro heading ## ou # ou linha simples */
+    const matchTitulo = textoMarkdown.match(/^#{1,3}\s+(.+)/m);
+    const titulo = matchTitulo
+        ? matchTitulo[1].replace(/\*\*/g, '').trim()
+        : 'Relatório CRONOS';
+ 
+    btn.innerHTML = `${ICON_EXPORT} A gerar…`;
+    btn.classList.add('loading');
+    btn.disabled = true;
+ 
+    try {
+        const response = await fetch("{% url 'cronos_exportar' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ conteudo: textoMarkdown, titulo })
+        });
+ 
+        if (!response.ok) {
+            const err = await response.json();
+            alert(`Erro ao exportar: ${err.erro || 'Erro desconhecido'}`);
+            return;
+        }
+ 
+        /* Cria link de download programático */
+        const blob = await response.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href     = url;
+        a.download = `${titulo.replace(/\s+/g, '_').substring(0, 50)}.docx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+ 
+        btn.innerHTML = `${ICON_CHECK} Exportado!`;
+        btn.classList.remove('loading');
+        btn.classList.add('done');
+        setTimeout(() => {
+            btn.innerHTML = `${ICON_EXPORT} Exportar`;
+            btn.classList.remove('done');
+            btn.disabled = false;
+        }, 2500);
+ 
+    } catch (error) {
+        alert('Erro de conexão ao exportar.');
+        console.error(error);
+        btn.innerHTML = `${ICON_EXPORT} Exportar`;
+        btn.classList.remove('loading');
+        btn.disabled = false;
     }
-
+}
     /* ──────────────────────────────────────────
        CSRF
     ────────────────────────────────────────── */
