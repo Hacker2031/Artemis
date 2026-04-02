@@ -1,266 +1,485 @@
 {% extends "layout.html" %}
 {% load static %}
 
-
-
 {% block extra_links %}
     <link rel="stylesheet" href="{% static "css/agente-ia.css"%}">
-{% endblock %}
-    
-{% block conteudo %}
- <div class="modulo-container">
-                <div class="modulo-header">
-                    <h1><span class="material-symbols-outlined">cognition_2</span>Assistente Inteligente Artemis</h1>
-                    <div class="actions">
-                        <button class="btn btn-outline"><span class="material-icons-sharp">history</span>Histórico</button>
-                        <button class="btn btn-primary" onclick="novaSessao()"><span class="material-icons-sharp">add</span>Nova Conversa</button>
-                    </div>
-                </div>
-                <div class="grid grid-3 mb-3">
-                    <div class="ai-capability">
-                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">psychology</span><h3>Análise Preditiva</h3></div>
-                        <p class="text-muted">Previsões de vendas, demanda e tendências usando ML</p>
-                    </div>
-                    <div class="ai-capability">
-                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">auto_awesome</span><h3>Automação</h3></div>
-                        <p class="text-muted">Automatize tarefas repetitivas e processos</p>
-                    </div>
-                    <div class="ai-capability">
-                        <div class="flex gap-2 mb-2"><span class="material-symbols-outlined" style="font-size: 2rem; color: #9b59b6;">insights</span><h3>Insights</h3></div>
-                        <p class="text-muted">Descubra padrões e oportunidades ocultas</p>
-                    </div>
-                </div>
-                <div class="chat-container">
-                    <div class="chat-header">
-                        <div><h3>💬 Chat com IA</h3><p class="text-muted">Seu assistente empresarial inteligente</p></div>
-                        <button class="btn btn-sm btn-outline" onclick="limparChat()">Limpar</button>
-                    </div>
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="message ai">
-                            <div class="message-avatar">CN</div>
-                            <div class="message-content">
-                                <p><strong>Olá! Sou o CRONOS 👋</strong></p>
-                                <p>Posso ajudá-lo com análises, relatórios, previsões e automações. Como posso ajudar hoje?</p>
-                            </div>
-                        </div>
-                        <div class="suggestion-chips">
-                            <div class="chip" onclick="enviarSugestao('Analise as vendas do último mês')">Analisar vendas</div>
-                            <div class="chip" onclick="enviarSugestao('Qual a previsão de stock para os próximos 7 dias?')"> Previsão de stock</div>
-                            <div class="chip" onclick="enviarSugestao('Gere um relatório de performance da equipe')"> Performance da equipe</div>
-                            <div class="chip" onclick="enviarSugestao('Identifique oportunidades de melhoria')">💡 Insights</div>
-                        </div>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" class="form-control" id="messageInput" placeholder="Digite sua mensagem..." onkeypress="if(event.key==='Enter') enviarMensagem()">
-                        <button class="btn btn-primary" onclick="enviarMensagem()"><span class="material-icons-sharp">send</span></button>
-                    </div>
-                </div>
-                <div class="card mt-3">
-                    <div class="card-header"><h3>Tarefas Automáticas Agendadas</h3></div>
-                    <div class="task-card">
-                        <div class="flex-between mb-2"><h4>Análise Diária de Vendas</h4><span class="task-status status-completed">Concluída</span></div>
-                        <p class="text-muted">Última execução: Hoje às 07:00</p>
-                        <p>✅ Vendas analisadas | 📊 Relatório gerado | 📧 Email enviado</p>
-                    </div>
-                    <div class="task-card">
-                        <div class="flex-between mb-2"><h4>Previsão de Demanda de Stock</h4><span class="task-status status-running">Executando</span></div>
-                        <p class="text-muted">Iniciada: Hoje às 12:30</p>
-                        <div class="progress-bar mt-2"><div class="progress-fill primary" style="width: 65%"></div></div>
-                    </div>
-                    <div class="task-card">
-                        <div class="flex-between mb-2"><h4>Otimização de Turnos</h4><span class="task-status status-pending">Agendada</span></div>
-                        <p class="text-muted">Próxima execução: Amanhã às 06:00</p>
-                    </div>
-                </div>
-            </div>
+    <style>
+        .message-content {
+            user-select: text;
+            -webkit-user-select: text;
+            cursor: text;
+        }
 
+        .copy-btn {
+            position: absolute;
+            top: 6px;
+            right: 10px;
+            background: transparent;
+            border: 1px solid rgba(155,89,182,0.35);
+            border-radius: 6px;
+            padding: 3px 9px;
+            cursor: pointer;
+            font-size: 11px;
+            color: inherit;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 2;
+        }
+        .message.ai:hover .copy-btn { opacity: 1; }
+        .copy-btn:hover { background: rgba(155,89,182,0.12); }
+        .copy-btn.copied { opacity: 1; color: #4ade80; border-color: #4ade80; }
+
+        /* Markdown */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 10px 0 5px; font-weight: 600; line-height: 1.3;
+        }
+        .message-content h1 { font-size: 1.15em; }
+        .message-content h2 { font-size: 1.05em; }
+        .message-content h3 { font-size: 0.98em; }
+        .message-content p  { margin: 5px 0; line-height: 1.6; }
+        .message-content ul, .message-content ol { padding-left: 18px; margin: 5px 0; }
+        .message-content li { margin: 2px 0; line-height: 1.5; }
+        .message-content strong { font-weight: 600; }
+        .message-content em     { font-style: italic; }
+        .message-content hr {
+            border: none;
+            border-top: 1px solid rgba(155,89,182,0.25);
+            margin: 10px 0;
+        }
+        .message-content blockquote {
+            border-left: 3px solid rgba(155,89,182,0.5);
+            padding-left: 10px; margin: 8px 0;
+            font-style: italic; opacity: 0.88;
+        }
+        .message-content table {
+            border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 0.88em;
+        }
+        .message-content th, .message-content td {
+            border: 1px solid rgba(155,89,182,0.25); padding: 5px 9px; text-align: left;
+        }
+        .message-content th { background: rgba(155,89,182,0.15); font-weight: 600; }
+        .message-content tr:nth-child(even) { background: rgba(155,89,182,0.05); }
+        .message-content code {
+            background: rgba(0,0,0,0.18); padding: 1px 5px;
+            border-radius: 4px; font-family: monospace; font-size: 0.88em;
+        }
+
+        /* Painel de histórico */
+        .historico-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45); z-index: 999;
+        }
+        .historico-overlay.aberto { display: block; }
+
+        .historico-panel {
+            display: none; position: fixed;
+            top: 0; right: 0;
+            width: 320px; height: 100vh;
+            background: var(--color-card, #1e1e2e);
+            border-left: 1px solid rgba(155,89,182,0.2);
+            z-index: 1000; padding: 20px;
+            overflow-y: auto;
+            box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+        }
+        .historico-panel.aberto { display: block; }
+
+        .historico-item {
+            padding: 10px 12px; border-radius: 8px; margin-bottom: 8px;
+            background: rgba(155,89,182,0.08);
+            border: 1px solid rgba(155,89,182,0.15);
+            cursor: pointer; font-size: 0.88em; line-height: 1.4;
+            transition: background 0.2s;
+        }
+        .historico-item:hover { background: rgba(155,89,182,0.18); }
+        .historico-item .hist-hora { font-size: 0.78em; opacity: 0.5; margin-top: 3px; }
+        .historico-vazio { opacity: 0.5; font-size: 0.9em; text-align: center; margin-top: 40px; }
+    </style>
+{% endblock %}
+
+{% block conteudo %}
+<!-- Painel de histórico -->
+<div class="historico-overlay" id="historicoOverlay" onclick="fecharHistorico()"></div>
+<div class="historico-panel" id="historicoPanel">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3>📋 Histórico</h3>
+        <button class="btn btn-sm btn-outline" onclick="fecharHistorico()">✕ Fechar</button>
+    </div>
+    <div id="historicoLista"></div>
+    <button class="btn btn-outline w-100 mt-2" onclick="limparHistoricoLocal()" style="font-size:0.85em; opacity:0.7; margin-top:12px;">
+        🗑 Limpar histórico
+    </button>
+</div>
+
+<div class="modulo-container">
+    <div class="modulo-header">
+        <h1><span class="material-symbols-outlined">cognition_2</span>Assistente Inteligente Artemis</h1>
+        <div class="actions">
+            <button class="btn btn-outline" onclick="abrirHistorico()">
+                <span class="material-icons-sharp">history</span>Histórico
+            </button>
+            <button class="btn btn-primary" onclick="novaSessao()">
+                <span class="material-icons-sharp">add</span>Nova Conversa
+            </button>
+        </div>
+    </div>
+
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h3>💬 Chat com CRONOS</h3>
+                <p class="text-muted">Ligado directamente à base de dados</p>
+            </div>
+            <button class="btn btn-sm btn-outline" onclick="limparChat()">Limpar</button>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" class="form-control" id="messageInput"
+                   placeholder="Escreve uma pergunta sobre RH, funcionários ou departamentos..."
+                   onkeypress="if(event.key==='Enter') enviarMensagem()">
+            <button class="btn btn-primary" onclick="enviarMensagem()" id="btnEnviar">
+                <span class="material-icons-sharp">send</span>
+            </button>
+        </div>
+    </div>
+    <div class="grid grid-3 mb-3">
+        <div class="ai-capability">
+            <div class="flex gap-2 mb-2">
+                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">manage_accounts</span>
+                <h3>Gestão de RH</h3>
+            </div>
+            <p class="text-muted">Consulta funcionários, cargos e departamentos em tempo real</p>
+        </div>
+        <div class="ai-capability">
+            <div class="flex gap-2 mb-2">
+                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">bar_chart</span>
+                <h3>Relatórios</h3>
+            </div>
+            <p class="text-muted">Gera análises salariais, de performance e estrutura organizacional</p>
+        </div>
+        <div class="ai-capability">
+            <div class="flex gap-2 mb-2">
+                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">insights</span>
+                <h3>Insights</h3>
+            </div>
+            <p class="text-muted">Identifica padrões e oportunidades nos dados da empresa</p>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
 
 {% block painel_direito %}
-            
-        <div class="lado-direito">
-            <div class="card mt-2">
-                <h3 class="mb-2">Capacidades IA</h3>
-                <div style="margin-bottom: 1rem;">
-                    <div class="flex-between mb-1"><span>Análise de Dados</span><span class="success">100%</span></div>
-                    <div class="progress-bar"><div class="progress-fill success" style="width: 100%"></div></div>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <div class="flex-between mb-1"><span>Previsões</span><span class="primary">95%</span></div>
-                    <div class="progress-bar"><div class="progress-fill primary" style="width: 95%"></div></div>
-                </div>
-                <div style="margin-bottom: 1rem;">
-                    <div class="flex-between mb-1"><span>Automação</span><span class="warning">88%</span></div>
-                    <div class="progress-bar"><div class="progress-fill warning" style="width: 88%"></div></div>
-                </div>
+<div class="lado-direito">
+    <div class="card mt-2">
+        <h3 class="mb-2">Consultas Rápidas</h3>
+        <button class="btn btn-primary w-100 mb-1"
+            onclick="enviarSugestao('Gera um relatório completo de capital humano com análise salarial por departamento')">
+            <span class="material-icons-sharp">summarize</span>Relatório de RH
+        </button>
+        <button class="btn btn-secondary w-100 mb-1"
+            onclick="enviarSugestao('Lista os 10 funcionários com maior salário e os seus respectivos cargos e departamentos')">
+            <span class="material-icons-sharp">emoji_events</span>Top Salários
+        </button>
+        <button class="btn btn-secondary w-100 mb-1"
+            onclick="enviarSugestao('Qual a distribuição de funcionários por departamento ordenada do maior para o menor?')">
+            <span class="material-icons-sharp">account_tree</span>Por Departamento
+        </button>
+        <button class="btn btn-outline w-100 mb-1"
+            onclick="enviarSugestao('Mostra todos os cargos existentes com a respectiva faixa salarial mínima, base e máxima')">
+            <span class="material-icons-sharp">work</span>Tabela de Cargos
+        </button>
+        <button class="btn btn-outline w-100"
+            onclick="enviarSugestao('Quantos funcionários temos no total, distribuídos por sexo e estado civil?')">
+            <span class="material-icons-sharp">diversity_3</span>Diversidade
+        </button>
+    </div>
+
+    <div class="card mt-2">
+        <h3 class="mb-2">Estado da Sessão</h3>
+        <div style="font-size:0.85em; line-height:2.2;">
+            <div class="flex-between">
+                <span>Base de dados</span>
+                <span class="success">● Ligada</span>
             </div>
-            <div class="card mt-2">
-                <h3 class="mb-2">Ações Rápidas</h3>
-                <button class="btn btn-primary w-100 mb-1" onclick="analisarDados()"><span class="material-icons-sharp">analytics</span>Análise Rápida</button>
-                <button class="btn btn-secondary w-100 mb-1" onclick="gerarPrevisao()"><span class="material-icons-sharp">trending_up</span>Gerar Previsão</button>
-                <button class="btn btn-outline w-100" onclick="otimizar()"><span class="material-icons-sharp">auto_fix_high</span>Otimizar Processos</button>
+            <div class="flex-between">
+                <span>Mensagens enviadas</span>
+                <span id="contadorMsgs">0</span>
+            </div>
+            <div class="flex-between">
+                <span>Histórico guardado</span>
+                <span id="contadorHist">0 itens</span>
             </div>
         </div>
-
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="{% static 'js/index.js' %}"></script>
+<script src="{% static 'js/artemis-utils.js' %}"></script>
 
+<script>
+    marked.setOptions({ breaks: true, gfm: true });
 
+    const ICON_COPY  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    const ICON_CHECK = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
 
-    <script src="{% static 'js/index.js' %}"></script>
-    <script src="{% static 'js/artemis-utils.js' %}"></script>   
-    
-    <script>
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
+    let contadorMensagens = 0;
 
-        async function enviarMensagem() {
-            const input = document.getElementById('messageInput');
-            const mensagem = input.value.trim();
-            if (!mensagem) return;
-            
-            const chatMessages = document.getElementById('chatMessages');
-            
-            // Adicionar mensagem do usuário
-            const userMsg = `
-                <div class="message user">
-                    <div class="message-avatar">U</div>
-                    <div class="message-content">
-                        <p>${mensagem.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
-                    </div>
-                </div>
-            `;
-            chatMessages.innerHTML += userMsg;
-            input.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Mostrar indicador de digitação
-            const typingIndicator = `
-                <div class="message ai" id="typing">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <div class="typing-indicator">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            chatMessages.innerHTML += typingIndicator;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            try {
-                const response = await fetch('{% url "perguntar" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({ pergunta: mensagem })
-                });
-                
-                const data = await response.json();
-                
-                // Remover indicador de digitação
-                document.getElementById('typing')?.remove();
-                
-                if (response.ok) {
-                    const aiMsg = `
-                        <div class="message ai">
-                            <div class="message-avatar">AI</div>
-                            <div class="message-content">
-                                <p>${data.resposta}</p>
-                            </div>
-                        </div>
-                    `;
-                    chatMessages.innerHTML += aiMsg;
-                } else {
-                    const errorMsg = `
-                        <div class="message ai">
-                            <div class="message-avatar">AI</div>
-                            <div class="message-content">
-                                <p style="color: #c00;">❌ Erro: ${data.erro || 'Erro desconhecido'}</p>
-                            </div>
-                        </div>
-                    `;
-                    chatMessages.innerHTML += errorMsg;
-                }
-                
-            } catch (error) {
-                document.getElementById('typing')?.remove();
-                const errorMsg = `
-                    <div class="message ai">
-                        <div class="message-avatar">AI</div>
-                        <div class="message-content">
-                            <p style="color: #c00;">❌ Erro de conexão. Tente novamente.</p>
-                        </div>
-                    </div>
-                `;
-                chatMessages.innerHTML += errorMsg;
-                console.error(error);
-            }
-            
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+    /* ──────────────────────────────────────────
+       HISTÓRICO (sessionStorage — por sessão)
+    ────────────────────────────────────────── */
+    function obterHistorico() {
+        return JSON.parse(sessionStorage.getItem('cronos_hist') || '[]');
+    }
 
-        function enviarSugestao(texto) {
-            document.getElementById('messageInput').value = texto;
-            enviarMensagem();
-        }
-
-        function limparChat() {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = `
-                <div class="message ai">
-                    <div class="message-avatar">AI</div>
-                    <div class="message-content">
-                        <p><strong>Olá! Sou o CRONOS 👋</strong></p>
-                        <p>Posso ajudá-lo com análises, relatórios, previsões e automações. Como posso ajudar hoje?</p>
-                    </div>
-                </div>
-                <div class="suggestion-chips">
-                    <div class="chip" onclick="enviarSugestao('Analise as vendas do último mês')">📊 Analisar vendas</div>
-                    <div class="chip" onclick="enviarSugestao('Qual a previsão de stock para os próximos 7 dias?')">📦 Previsão de stock</div>
-                    <div class="chip" onclick="enviarSugestao('Gere um relatório de performance da equipe')">👥 Performance da equipe</div>
-                    <div class="chip" onclick="enviarSugestao('Identifique oportunidades de melhoria')">💡 Insights</div>
-                </div>
-            `;
-        }
-
-        function novaSessao() {
-            limparChat();
-        }
-
-        function analisarDados() {
-            enviarSugestao('Faça uma análise completa dos dados da empresa');
-        }
-
-        function gerarPrevisao() {
-            enviarSugestao('Gere previsões para os próximos 30 dias');
-        }
-
-        function otimizar() {
-            enviarSugestao('Sugira otimizações para nossos processos');
-        }
-
-        // Carregar mensagem de boas-vindas ao iniciar
-        document.addEventListener('DOMContentLoaded', function() {
-            limparChat();
+    function guardarHistorico(pergunta, resposta) {
+        const hist = obterHistorico();
+        hist.push({
+            pergunta: pergunta.length > 80 ? pergunta.substring(0, 80) + '…' : pergunta,
+            resposta,
+            hora: new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
         });
-    </script>
+        sessionStorage.setItem('cronos_hist', JSON.stringify(hist.slice(-20)));
+        actualizarContadorHist();
+    }
 
+    function actualizarContadorHist() {
+        const n = obterHistorico().length;
+        document.getElementById('contadorHist').textContent = `${n} ${n === 1 ? 'item' : 'itens'}`;
+    }
+
+    function abrirHistorico() {
+        const hist = obterHistorico();
+        const lista = document.getElementById('historicoLista');
+
+        if (hist.length === 0) {
+            lista.innerHTML = '<p class="historico-vazio">Nenhuma conversa ainda nesta sessão.</p>';
+        } else {
+            lista.innerHTML = [...hist].reverse().map((item, i) => `
+                <div class="historico-item" onclick="reenviarHistorico(${hist.length - 1 - i})">
+                    <div>${item.pergunta}</div>
+                    <div class="hist-hora">🕐 ${item.hora}</div>
+                </div>
+            `).join('');
+        }
+
+        document.getElementById('historicoPanel').classList.add('aberto');
+        document.getElementById('historicoOverlay').classList.add('aberto');
+    }
+
+    function fecharHistorico() {
+        document.getElementById('historicoPanel').classList.remove('aberto');
+        document.getElementById('historicoOverlay').classList.remove('aberto');
+    }
+
+    function reenviarHistorico(index) {
+        const hist = obterHistorico();
+        fecharHistorico();
+        const pergunta = hist[index].pergunta.replace('…', '');
+        document.getElementById('messageInput').value = pergunta;
+        enviarMensagem();
+    }
+
+    function limparHistoricoLocal() {
+        if (!confirm('Limpar todo o histórico desta sessão?')) return;
+        sessionStorage.removeItem('cronos_hist');
+        actualizarContadorHist();
+        abrirHistorico();
+    }
+
+    /* ──────────────────────────────────────────
+       MENSAGENS
+    ────────────────────────────────────────── */
+    function adicionarMensagemBot(textoMarkdown) {
+        const chatMessages = document.getElementById('chatMessages');
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'message ai';
+        msgDiv.style.position = 'relative';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = 'CN';
+
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.innerHTML = marked.parse(textoMarkdown);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = `${ICON_COPY} Copiar`;
+        copyBtn.title = 'Copiar resposta';
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(textoMarkdown).then(() => {
+                copyBtn.innerHTML = `${ICON_CHECK} Copiado!`;
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.innerHTML = `${ICON_COPY} Copiar`;
+                    copyBtn.classList.remove('copied');
+                }, 2000);
+            });
+        });
+
+        msgDiv.appendChild(avatar);
+        msgDiv.appendChild(content);
+        msgDiv.appendChild(copyBtn);
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    /* ──────────────────────────────────────────
+       CSRF
+    ────────────────────────────────────────── */
+    function getCookie(name) {
+        for (const cookie of document.cookie.split(';')) {
+            const c = cookie.trim();
+            if (c.startsWith(name + '='))
+                return decodeURIComponent(c.slice(name.length + 1));
+        }
+        return null;
+    }
+
+    /* ──────────────────────────────────────────
+       ENVIAR MENSAGEM
+    ────────────────────────────────────────── */
+    async function enviarMensagem() {
+        const input    = document.getElementById('messageInput');
+        const mensagem = input.value.trim();
+        if (!mensagem) return;
+
+        const chatMessages = document.getElementById('chatMessages');
+        const btnEnviar    = document.getElementById('btnEnviar');
+
+        /* Mensagem do utilizador */
+        const userDiv = document.createElement('div');
+        userDiv.className = 'message user';
+        userDiv.innerHTML = `
+            <div class="message-avatar">U</div>
+            <div class="message-content">
+                <p>${mensagem.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+            </div>`;
+        chatMessages.appendChild(userDiv);
+
+        input.value = '';
+        input.disabled = true;
+        btnEnviar.disabled = true;
+
+        contadorMensagens++;
+        document.getElementById('contadorMsgs').textContent = contadorMensagens;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        /* Indicador de digitação */
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai';
+        typingDiv.id = 'typing';
+        typingDiv.innerHTML = `
+            <div class="message-avatar">CN</div>
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>`;
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch('{% url "perguntar" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ pergunta: mensagem })
+            });
+
+            const data = await response.json();
+            document.getElementById('typing')?.remove();
+
+            if (response.ok) {
+                adicionarMensagemBot(data.resposta);
+                guardarHistorico(mensagem, data.resposta);
+            } else {
+                adicionarMensagemBot(`❌ **Erro:** ${data.erro || 'Erro desconhecido'}`);
+            }
+
+        } catch (error) {
+            document.getElementById('typing')?.remove();
+            adicionarMensagemBot('❌ **Erro de conexão.** Verifica se o servidor está activo e tenta novamente.');
+            console.error(error);
+        }
+
+        input.disabled = false;
+        btnEnviar.disabled = false;
+        input.focus();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    /* ──────────────────────────────────────────
+       SUGESTÕES / CHIPS
+    ────────────────────────────────────────── */
+    function enviarSugestao(texto) {
+        document.getElementById('messageInput').value = texto;
+        enviarMensagem();
+    }
+
+    /* ──────────────────────────────────────────
+       BOAS-VINDAS
+    ────────────────────────────────────────── */
+    function mensagemBoasVindas() {
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.innerHTML = '';
+        contadorMensagens = 0;
+        document.getElementById('contadorMsgs').textContent = '0';
+
+        adicionarMensagemBot(
+            '**Olá! Sou o CRONOS 👋**\n\n' +
+            'Estou ligado directamente à base de dados do **Artemis ERP**.\n\n' +
+            'Posso ajudar com:\n' +
+            '- 📊 Relatórios de RH e análise salarial\n' +
+            '- 👤 Informações sobre funcionários e cargos\n' +
+            '- 🏢 Estrutura de departamentos\n' +
+            '- 💡 Insights e recomendações\n\n' +
+            'Como posso ajudar hoje?'
+        );
+
+        const chips = document.createElement('div');
+        chips.className = 'suggestion-chips';
+        chips.innerHTML = `
+            <div class="chip" onclick="enviarSugestao('Gera um relatório completo de capital humano com análise salarial por departamento')">📊 Relatório de RH</div>
+            <div class="chip" onclick="enviarSugestao('Quais departamentos têm mais funcionários e qual a média salarial de cada um?')">🏢 Por departamento</div>
+            <div class="chip" onclick="enviarSugestao('Mostra todos os cargos com a respectiva faixa salarial ordenada do maior para o menor')">💼 Cargos e salários</div>
+            <div class="chip" onclick="enviarSugestao('Quantos funcionários temos no total e como estão distribuídos por sexo e estado civil?')">👥 Diversidade</div>
+        `;
+        chatMessages.appendChild(chips);
+    }
+
+    /* ──────────────────────────────────────────
+       LIMPAR / NOVA SESSÃO
+    ────────────────────────────────────────── */
+    function limparChat() {
+        fetch('{% url "cronos_limpar" %}', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        mensagemBoasVindas();
+    }
+
+    function novaSessao() { limparChat(); }
+
+    /* ──────────────────────────────────────────
+       INICIAR
+    ────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+        mensagemBoasVindas();
+        actualizarContadorHist();
+    });
+</script>
 {% endblock %}
