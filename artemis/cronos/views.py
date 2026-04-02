@@ -10,6 +10,10 @@ from sqlalchemy import create_engine, text, inspect
 from google import genai
 from google.genai import types
 from dotenv import load_dotenv
+from django.http import HttpResponse
+import tempfile, os, re
+ 
+
 
 load_dotenv()
 
@@ -326,3 +330,73 @@ def limpar_historico(request):
         request.session.pop('cronos_historico', None)
         return JsonResponse({'status': 'ok', 'mensagem': 'Histórico limpo.'})
     return JsonResponse({'erro': 'Método não permitido'}, status=405)
+
+@login_required(login_url='loginPage')
+def exportar_docx(request):
+    """
+    Endpoint AJAX — recebe conteúdo Markdown e devolve ficheiro .docx.
+    Body JSON esperado:
+        { "conteudo": "...", "titulo": "Nome do Relatório" }
+    """
+    if request.method != 'POST':
+        return JsonResponse({'erro': 'Método não permitido'}, status=405)
+ 
+    try:
+        data     = json.loads(request.body)
+        conteudo = data.get('conteudo', '').strip()
+        titulo   = data.get('titulo', 'Relatório CRONOS')
+ 
+        if not conteudo:
+            return JsonResponse({'erro': 'Conteúdo vazio'}, status=400)
+ 
+        try:
+            import pypandoc
+        except ImportError:
+            return JsonResponse(
+                {'erro': 'Dependência em falta. Execute: pip install pypandoc'},
+                status=500
+            )
+ 
+        # Cabeçalho do documento
+        from datetime import datetime
+        data_hora = datetime.now().strftime('%d/%m/%Y às %H:%M')
+        markdown_final = (
+            f"# {titulo}\n\n"
+            f"*Relatório gerado pelo **CRONOS** — Artemis ERP*  \n"
+            f"*Data: {data_hora}*\n\n"
+            "---\n\n"
+            f"{conteudo}"
+        )
+ 
+        # Gera o .docx via pandoc
+        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as tmp:
+            tmp_path = tmp.name
+ 
+        pypandoc.convert_text(
+            markdown_final,
+            'docx',
+            format='markdown',
+            outputfile=tmp_path,
+            extra_args=['--standalone']
+        )
+ 
+        with open(tmp_path, 'rb') as f:
+            docx_bytes = f.read()
+ 
+        os.unlink(tmp_path)
+ 
+        # Nome do ficheiro seguro
+        nome_seguro = re.sub(r'[^\w\s-]', '', titulo)[:50].strip().replace(' ', '_') or 'relatorio_cronos'
+ 
+        response = HttpResponse(
+            docx_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{nome_seguro}.docx"'
+        return response
+ 
+    except json.JSONDecodeError:
+        return JsonResponse({'erro': 'JSON inválido'}, status=400)
+    except Exception as e:
+        return JsonResponse({'erro': f'Erro ao gerar documento: {str(e)}'}, status=500)
+ 
