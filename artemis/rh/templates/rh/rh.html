@@ -548,7 +548,7 @@
 
             <div class="card mt-3">
                 <div class="card-header">
-                    <h3><span class="material-icons-sharp">star</span> Candidatos em Destaque</h3>
+                    <h3><span class="material-icons-sharp">people</span> Candidatos</h3>
                     <button class="btn btn-sm btn-primary" onclick="mostrarTodosCandidatos()">
                         <span class="material-icons-sharp">people</span> Ver Todos
                     </button>
@@ -765,7 +765,7 @@
             <div class="card mt-3">
                 <div class="card-header">
                     <h3><span class="material-icons-sharp">people</span> Candidatos</h3>
-                    <button class="btn btn-primary btn-sm" onclick="abrirModalCandidato()">
+                    <button class="btn btn-primary btn-sm" onclick="abrirNovoCandidatoPorVaga()">
                         <span class="material-icons-sharp">person_add</span> Adicionar Candidato
                     </button>
                 </div>
@@ -1205,32 +1205,41 @@ function atualizarMetricas() {
     renderPipelineSidebar();
 }
 
-/* ── Candidatos em Destaque ── */
-const candidatosDestaque = [
-    { nome:'João Silva',   vaga:'Desenvolvedor Full Stack', skills:['React','Node.js','Python'], score:92 },
-    { nome:'Maria Santos', vaga:'Designer UX/UI',           skills:['Figma','Adobe XD','CSS'],   score:88 },
-    { nome:'Pedro Costa',  vaga:'Analista Financeiro',      skills:['SQL','Python','Tableau'],   score:85 },
-    { nome:'Ana Ferreira', vaga:'Gestor de Vendas',         skills:['CRM','Negociação','B2B'],   score:81 },
-];
-
+/* ── Candidatos ── */
 function renderCandidatesDestaque() {
     const el = document.getElementById('candidatesDestaquList');
     if (!el) return;
-    el.innerHTML = candidatosDestaque.map((c, i) => `
+
+    const todos = Object.values(candidatos).flat();
+    if (!todos.length) {
+        el.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-muted);">Nenhum candidato cadastrado</div>';
+        return;
+    }
+
+    el.innerHTML = todos.slice(0, 8).map((c, i) => {
+        const estadoDescr = {
+            'recebido': 'Recebido',
+            'em_analise': 'Em Análise',
+            'entrevista': 'Convocado',
+            'teste': 'Em Teste',
+            'oferta': 'Oferta',
+            'contratado': 'Contratado',
+            'rejeitado': 'Rejeitado',
+        }[c.estado] || c.estado;
+
+        return `
         <div class="candidate-card">
             <div class="candidate-photo" style="background:${corAvatar(i)};color:#fff">${iniciais(c.nome)}</div>
             <div class="candidate-info">
                 <div class="candidate-name">${c.nome}</div>
-                <div class="candidate-position">${c.vaga}</div>
+                <div class="candidate-position">${c.vaga_titulo || 'Vaga não definida'}</div>
                 <div class="candidate-skills">
-                    ${c.skills.map(s=>`<span class="skill-badge">${s}</span>`).join('')}
+                    <span class="skill-badge" style="background: rgba(0,0,0,.15); color: #fff;">${estadoDescr}</span>
                 </div>
+                <div style="margin-top: 8px; font-size: .8rem; color: var(--text-muted);">Candidatura: ${c.data}</div>
             </div>
-            <div style="text-align:center;flex-shrink:0">
-                <div style="font-size:1.15rem;font-weight:800;color:${c.score>=90?'var(--color-success)':c.score>=80?'var(--color-primary)':'var(--color-warning)'}">${c.score}%</div>
-                <div class="text-muted" style="font-size:.68rem;margin-top:1px">Score</div>
-            </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 function mostrarTodosCandidatos() { toast('A carregar todos os candidatos...', 'warning'); }
@@ -1241,7 +1250,7 @@ function renderPipelineSidebar() {
     const todos = Object.values(candidatos).flat();
     const etapas = [
         { label:'Candidaturas', count:todos.length,                                                         color:'var(--color-cyan)',    icon:'contact_mail' },
-        { label:'Em Análise',   count:todos.filter(c=>c.estado==='Análise').length,                         color:'var(--color-success)', icon:'fact_check'   },
+        { label:'Em Análise',   count:todos.filter(c=>c.estado==='em_analise').length,                         color:'var(--color-success)', icon:'fact_check'   },
         { label:'Entrevistas',  count:todos.filter(c=>c.estado==='Entrevista').length,                      color:'var(--color-warning)', icon:'video_call'   },
         { label:'Testes',       count:todos.filter(c=>c.estado==='Teste').length,                           color:'var(--color-purple)',  icon:'psychology'   },
         { label:'Ofertas',      count:todos.filter(c=>c.estado==='Oferta'||c.estado==='Contratado').length, color:'var(--color-primary)', icon:'check_circle' },
@@ -1371,6 +1380,33 @@ function irParaNovoCandidato() {
     // Popula o select de vagas
     
     document.getElementById('nc-cv-label').textContent = 'Clique para fazer upload do CV (PDF, DOC)';
+    // Limpar seleção de vaga
+    document.getElementById('nc-vaga').value = '';
+    mostrarPg('pg-novo-candidato');
+    ocultarBotoesHeader();
+}
+
+/* ── Novo Candidato para vaga específica ── */
+function abrirNovoCandidatoPorVaga() {
+    if (!vagaAtual || !vagaAtual.id) {
+        toast('Vaga não encontrada', 'error');
+        return;
+    }
+    
+    // Limpar campos
+    ['nc-nome', 'nc-email', 'nc-tel', 'nc-nac', 'nc-notas'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    
+    document.getElementById('nc-cv-label').textContent = 'Clique para fazer upload do CV (PDF, DOC)';
+    
+    // Pré-selecionar vaga
+    const vagaSelect = document.getElementById('nc-vaga');
+    if (vagaSelect) {
+        vagaSelect.value = String(vagaAtual.id);
+    }
+    
     mostrarPg('pg-novo-candidato');
     ocultarBotoesHeader();
 }
@@ -1494,8 +1530,23 @@ function verCandidato(id) {
     document.getElementById('bc-vaga-cand').textContent = vagaAtual.titulo;
     document.getElementById('bc-cand-nome').textContent = candidatoAtual.nome;
     renderCandidatoInfo();
-    renderTimeline();
+    carregarProcessosSelectivos();
     mostrarPg('pg-perfil-candidato');
+}
+
+function carregarProcessosSelectivos() {
+    fetch(`/rh/api/processos/${candidatoAtual.id}/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.processos) {
+                candidatoAtual.historico = data.processos;
+            }
+            renderTimeline();
+        })
+        .catch(e => {
+            console.error('Erro ao carregar processos:', e);
+            renderTimeline();
+        });
 }
 
 function renderCandidatoInfo() {
@@ -1515,9 +1566,9 @@ function renderCandidatoInfo() {
             </div>
         </div>
         <div style="flex-shrink:0">
-            ${c.cv?`<a class="btn btn-outline" href="${c.cv}" target="_blank" rel="noopener" download onclick="toast('Download de ${c.cv}')">
+            ${c.cv?`<button class="btn btn-outline" onclick="descarregarCV(${c.id})">
                 <span class="material-icons-sharp">download</span> Descarregar CV
-            </a>`:`<span class="text-muted fs-sm">Sem CV</span>`}
+            </button>`:`<span class="text-muted fs-sm">Sem CV</span>`}
         </div>`;
 }
 
@@ -1527,22 +1578,31 @@ function renderTimeline() {
         document.getElementById('timelineBlock').innerHTML = `<div class="empty-state"><span class="material-icons-sharp">history</span><p>Sem histórico ainda</p></div>`;
         return;
     }
-    document.getElementById('timelineBlock').innerHTML = hist.map(h=>`
+    document.getElementById('timelineBlock').innerHTML = hist.map(h=>{
+        const etapaDisplay = h.etapa_display || h.etapa;
+        const resultadoDisplay = h.resultado_display || h.resultado;
+        const data = h.data_agendada || h.data;
+        const avaliador = h.avaliador;
+        const obs = h.observacoes || h.obs;
+        const nota = h.nota || 0;
+        
+        return `
         <div class="tl-item">
-            <div class="tl-dot ${resultCls(h.resultado)}"></div>
+            <div class="tl-dot ${resultCls(resultadoDisplay)}"></div>
             <div class="tl-body">
                 <div class="tl-header">
-                    <div class="tl-title">${h.etapa}</div>
-                    ${h.resultado?`<span class="badge badge-${resultCls(h.resultado)==='success'?'success':resultCls(h.resultado)==='danger'?'danger':'warning'}">${h.resultado}</span>`:''}
+                    <div class="tl-title">${etapaDisplay}</div>
+                    ${resultadoDisplay?`<span class="badge badge-${resultCls(resultadoDisplay)==='success'?'success':resultCls(resultadoDisplay)==='danger'?'danger':'warning'}">${resultadoDisplay}</span>`:''}
                 </div>
                 <div class="tl-meta">
-                    ${h.data?`<span><span class="material-icons-sharp" style="font-size:.9rem;vertical-align:middle">calendar_today</span> ${formatarData(h.data)}</span>`:''}
-                    ${h.avaliador?`<span><span class="material-icons-sharp" style="font-size:.9rem;vertical-align:middle">person</span> ${h.avaliador}</span>`:''}
-                    ${h.nota?`<span>${'★'.repeat(h.nota)}${'☆'.repeat(5-h.nota)}</span>`:''}
+                    ${data?`<span><span class="material-icons-sharp" style="font-size:.9rem;vertical-align:middle">calendar_today</span> ${data}</span>`:''}
+                    ${avaliador?`<span><span class="material-icons-sharp" style="font-size:.9rem;vertical-align:middle">person</span> ${avaliador}</span>`:''}
+                    ${nota>0?`<span>${'★'.repeat(nota)}${'☆'.repeat(5-nota)}</span>`:''}
                 </div>
-                ${h.obs?`<div class="tl-obs">${h.obs}</div>`:''}
+                ${obs?`<div class="tl-obs">${obs}</div>`:''}
             </div>
-        </div>`).join('');
+        </div>`;
+    }).join('');
 }
 
 /* ── Registar etapa ── */
@@ -1560,20 +1620,140 @@ function registarEtapa() {
     const nota      = parseInt(document.getElementById('et-nota').value)||0;
     const obs       = document.getElementById('et-obs').value;
     if(!etapa) { toast('Selecione uma etapa', 'error'); return; }
-    candidatoAtual.historico.push({ etapa, resultado, data, avaliador, nota, obs });
+    
+    // Mapeamento de etapa para estado do candidato
     const mapaEstado = {
-        'Análise de CV':'Análise', 'Entrevista Telefónica':'Entrevista',
-        'Entrevista Técnica':'Entrevista', 'Entrevista RH':'Entrevista',
-        'Teste Técnico':'Teste', 'Teste Psicométrico':'Teste',
-        'Proposta de Emprego':'Oferta', 'Contratação':'Contratado',
+        'Receção de Candidatura': 'Análise',
+        'Análise de CV': 'Análise',
+        'Entrevista Telefónica': 'Entrevista',
+        'Entrevista Técnica': 'Entrevista',
+        'Entrevista RH': 'Entrevista',
+        'Teste Técnico': 'Teste',
+        'Teste Psicométrico': 'Teste',
+        'Proposta de Emprego': 'Oferta',
+        'Contratação': 'Contratado',
     };
-    if(resultado==='Reprovado') candidatoAtual.estado='Reprovado';
-    else if(mapaEstado[etapa]) candidatoAtual.estado = mapaEstado[etapa];
-    ['et-etapa','et-resultado','et-data','et-avaliador','et-obs'].forEach(id=> document.getElementById(id).value='');
-    setNota(0);
-    renderTimeline();
-    renderCandidatoInfo();
-    toast('Etapa registada com sucesso!');
+    
+    // Definir novo estado baseado na etapa
+    let novoEstado = mapaEstado[etapa] || 'Análise';
+    
+    // Se reprovado, override para Reprovado
+    if(resultado === 'Reprovado') {
+        novoEstado = 'Reprovado';
+    }
+    
+    // Enviar para o servidor
+    const formData = new FormData();
+    formData.append('candidato_id', candidatoAtual.id);
+    formData.append('etapa', etapa);
+    formData.append('resultado', resultado);
+    formData.append('data_agendada', data);
+    formData.append('avaliador', avaliador);
+    formData.append('nota', nota);
+    formData.append('observacoes', obs);
+    
+    // Obter CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+    
+    fetch('/rh/api/processos/salvar/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': csrftoken
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.sucesso) {
+            // Atualizar estado do candidato em memória
+            candidatoAtual.estado = novoEstado;
+            
+            // Atualizar também no array global de candidatos
+            const cands = candidatos[vagaAtual.id] || [];
+            const idx = cands.findIndex(c => c.id === candidatoAtual.id);
+            if(idx !== -1) {
+                cands[idx].estado = novoEstado;
+            }
+            
+            // Limpar formulário
+            ['et-etapa','et-resultado','et-data','et-avaliador','et-obs'].forEach(id=> document.getElementById(id).value='');
+            setNota(0);
+            
+            // Recarregar processos
+            carregarProcessosSelectivos();
+            
+            // Refrescar pipeline para atualizar contadores
+            atualizarMetricas();
+            
+            // Refrescar tabela de candidatos se visível
+            renderCandidatosTabela();
+            
+            toast('Etapa registada com sucesso!');
+        } else {
+            console.error('Erro servidor:', data);
+            toast('Erro ao registar: ' + (data.erro || 'Erro desconhecido'), 'error');
+        }
+    })
+    .catch(e => {
+        console.error('Erro:', e);
+        toast('Erro ao registar a etapa', 'error');
+    });
+}
+
+function descarregarCV(candidatoId) {
+    if (!candidatoId) {
+        console.error('Candidato ID inválido:', candidatoId);
+        toast('Candidato inválido', 'error');
+        return;
+    }
+    
+    console.log('Iniciando download de CV para candidato:', candidatoId);
+    
+    // Fazer debug antes de tentar download
+    fetch(`/rh/debug-cv/${candidatoId}/`)
+        .then(r => r.json())
+        .then(data => {
+            console.log('Debug CV:', data);
+            
+            if(!data.cv_existe && data.cv_bool) {
+                toast('Arquivo CV não encontrado no servidor', 'error');
+                return;
+            }
+            
+            if(!data.cv_bool) {
+                toast('Candidato não possui CV', 'error');
+                return;
+            }
+            
+            // Se tudo ok, fazer download
+            const link = document.createElement('a');
+            link.href = `/rh/baixar-cv/${candidatoId}/`;
+            link.download = true;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast('Download do CV iniciado!');
+        })
+        .catch(e => {
+            console.error('Erro ao verificar CV:', e);
+            toast('Erro ao processar CV', 'error');
+        });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
 }
 
 /* ── Modal Candidato (dentro de vaga) ── */

@@ -26,7 +26,7 @@ def FuncionariosPage(request):
     aniversariantes = Funcionarios.objects.annotate(
         mes_aniversario = ExtractMonth('data_nasc')
     ).filter(mes_aniversario = mes_atual)
-
+    
     funcionarios = Funcionarios.objects.all()
     status = request.GET.get('status', 'todos')
     if status and status != "todos":
@@ -34,6 +34,12 @@ def FuncionariosPage(request):
 
     ordenarpor = request.GET.get('ordenarpor', 'cargo_id')
     f_funcionarios = funcionarios.order_by(ordenarpor)
+
+    # Funcionários ativos e afastados (exclui demitidos) - para as cards de departamento
+    funcionarios_ativos = Funcionarios.objects.exclude(ativo='demitido')
+    if status and status != "todos":
+        funcionarios_ativos = funcionarios_ativos.filter(ativo=status)
+    funcionarios_ativos = funcionarios_ativos.order_by(ordenarpor)
 
     # Age distribution
     ages = []
@@ -58,12 +64,12 @@ def FuncionariosPage(request):
     age_labels = list(age_bins.keys())
     age_data = list(age_bins.values())
 
-    # Department performance and count
+    # Department performance and count (apenas ativos e afastados)
     dept_performance = {}
     dept_count = {}
     for dept in Departamentos.objects.all():
-        avg_perf = f_funcionarios.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
-        count = f_funcionarios.filter(departamento=dept).count()
+        avg_perf = funcionarios_ativos.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
+        count = funcionarios_ativos.filter(departamento=dept).count()
         dept_performance[dept.nome_dpt] = round(avg_perf, 1)
         dept_count[dept.nome_dpt] = count
 
@@ -152,7 +158,7 @@ def FuncionariosPage(request):
 
     context ={
         'funcionarios': Funcionarios.objects.all().order_by('cargo_id'),
-        'aniversariantes': aniversariantes,
+        'funcionarios_everybody': Funcionarios.objects.exclude(ativo='demitido'),
         'ativos': Funcionarios.ATIVO_CHOICES,
         'funcionarios_filtro': f_funcionarios,
         'age_labels_json': json.dumps(age_labels),
