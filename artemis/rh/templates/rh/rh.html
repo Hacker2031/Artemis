@@ -357,6 +357,7 @@
             display: flex; align-items: center; gap: 14px;
             padding: 14px 20px; border-bottom: 1px solid var(--border);
             transition: background .12s;
+            p: color: var(--text-primary);
         }
         .candidate-card:hover { background: var(--bg-hover); }
         .candidate-card:last-child { border-bottom: none; }
@@ -1251,9 +1252,10 @@ function renderPipelineSidebar() {
     const etapas = [
         { label:'Candidaturas', count:todos.length,                                                         color:'var(--color-cyan)',    icon:'contact_mail' },
         { label:'Em Análise',   count:todos.filter(c=>c.estado==='em_analise').length,                         color:'var(--color-success)', icon:'fact_check'   },
-        { label:'Entrevistas',  count:todos.filter(c=>c.estado==='Entrevista').length,                      color:'var(--color-warning)', icon:'video_call'   },
-        { label:'Testes',       count:todos.filter(c=>c.estado==='Teste').length,                           color:'var(--color-purple)',  icon:'psychology'   },
-        { label:'Ofertas',      count:todos.filter(c=>c.estado==='Oferta'||c.estado==='Contratado').length, color:'var(--color-primary)', icon:'check_circle' },
+        { label:'Entrevistas',  count:todos.filter(c=>c.estado==='entrevista').length,                      color:'var(--color-warning)', icon:'video_call'   },
+        { label:'Testes',       count:todos.filter(c=>c.estado==='teste').length,                           color:'var(--color-purple)',  icon:'psychology'   },
+        { label:'Ofertas',      count:todos.filter(c=>c.estado==='oferta'||c.estado==='contratado').length, color:'var(--color-primary)', icon:'check_circle' },
+        { label:'Rejeitados',   count:todos.filter(c=>c.estado==='rejeitado').length,                        color:'var(--color-danger)',  icon:'cancel'       },
     ];
     const max = Math.max(...etapas.map(e=>e.count), 1);
     el.innerHTML = etapas.map(e=>`
@@ -1284,8 +1286,17 @@ function estadoBadge(e) {
     return `<span class="badge ${map[label]||'badge-gray'}">${label}</span>`;
 }
 function candEstadoBadge(e) {
-    const map = { 'Análise':'badge-warning','Entrevista':'badge-primary','Teste':'badge-purple','Oferta':'badge-success','Reprovado':'badge-danger','Contratado':'badge-success' };
-    return `<span class="badge ${map[e]||'badge-gray'}">${e}</span>`;
+    const map = { 
+        'em_analise': 'badge-warning', 
+        'entrevista': 'badge-primary', 
+        'teste': 'badge-purple', 
+        'oferta': 'badge-success', 
+        'rejeitado': 'badge-danger', 
+        'contratado': 'badge-success',
+        'recebido': 'badge-gray'
+    };
+    const labels = { 'em_analise':'Análise','entrevista':'Entrevista','teste':'Teste','oferta':'Oferta','rejeitado':'Reprovado','contratado':'Contratado','recebido':'Recebido' };
+    return `<span class="badge ${map[e]||'badge-gray'}">${labels[e]||e}</span>`;
 }
 function resultCls(r) {
     if(r==='Aprovado') return 'success';
@@ -1481,10 +1492,10 @@ function renderFunil() {
     const cands = candidatos[vagaAtual.id]||[];
     const etapas = [
         { label:'Recebidos',   icon:'contact_mail', color:'var(--color-primary)', key: ()=>cands.length },
-        { label:'Em Análise',  icon:'fact_check',   color:'var(--color-cyan)',    key: ()=>cands.filter(c=>c.estado==='Análise').length },
-        { label:'Entrevistas', icon:'video_call',   color:'var(--color-warning)', key: ()=>cands.filter(c=>c.estado==='Entrevista').length },
-        { label:'Testes',      icon:'psychology',   color:'var(--color-purple)',  key: ()=>cands.filter(c=>c.estado==='Teste').length },
-        { label:'Ofertas',     icon:'check_circle', color:'var(--color-success)', key: ()=>cands.filter(c=>c.estado==='Oferta'||c.estado==='Contratado').length },
+        { label:'Em Análise',  icon:'fact_check',   color:'var(--color-cyan)',    key: ()=>cands.filter(c=>c.estado==='em_analise').length },
+        { label:'Entrevistas', icon:'video_call',   color:'var(--color-warning)', key: ()=>cands.filter(c=>c.estado==='entrevista').length },
+        { label:'Testes',      icon:'psychology',   color:'var(--color-purple)',  key: ()=>cands.filter(c=>c.estado==='teste').length },
+        { label:'Ofertas',     icon:'check_circle', color:'var(--color-success)', key: ()=>cands.filter(c=>c.estado==='oferta'||c.estado==='contratado').length },
     ];
     document.getElementById('vagaFunil').innerHTML = etapas.map((e,i)=>`
         ${i>0?`<div class="funnel-arrow"><span class="material-icons-sharp">chevron_right</span></div>`:''}
@@ -1623,23 +1634,22 @@ function registarEtapa() {
     
     // Mapeamento de etapa para estado do candidato
     const mapaEstado = {
-        'Receção de Candidatura': 'Análise',
-        'Análise de CV': 'Análise',
-        'Entrevista Telefónica': 'Entrevista',
-        'Entrevista Técnica': 'Entrevista',
-        'Entrevista RH': 'Entrevista',
-        'Teste Técnico': 'Teste',
-        'Teste Psicométrico': 'Teste',
-        'Proposta de Emprego': 'Oferta',
-        'Contratação': 'Contratado',
+        'Receção de Candidatura': 'recebido',
+        'Análise de CV': 'em_analise',
+        'Entrevista Telefónica': 'entrevista',
+        'Entrevista Técnica': 'entrevista',
+        'Entrevista RH': 'entrevista',
+        'Teste Técnico': 'teste',
+        'Teste Psicométrico': 'teste',
+        'Proposta de Emprego': 'oferta',
+        'Contratação': 'contratado',
     };
     
     // Definir novo estado baseado na etapa
-    let novoEstado = mapaEstado[etapa] || 'Análise';
+    let novoEstado = mapaEstado[etapa] || candidatoAtual.estado;
     
-    // Se reprovado, override para Reprovado
     if(resultado === 'Reprovado') {
-        novoEstado = 'Reprovado';
+        novoEstado = 'rejeitado';
     }
     
     // Enviar para o servidor
@@ -1776,7 +1786,7 @@ function adicionarCandidato() {
         tel:   document.getElementById('mc-tel').value,
         nac:   document.getElementById('mc-nac').value,
         notas: document.getElementById('mc-notas').value,
-        data:  hoje(), estado: 'Análise',
+        data:  hoje(), estado: 'recebido',
         cv:    cvInput.files[0]?.name || '',
         historico: [{ etapa:'Receção de Candidatura', resultado:'Aprovado', data: hoje(), avaliador:'Sistema', nota:0, obs:'Candidatura adicionada manualmente.' }],
     };

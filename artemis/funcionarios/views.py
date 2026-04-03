@@ -26,7 +26,7 @@ def FuncionariosPage(request):
     aniversariantes = Funcionarios.objects.annotate(
         mes_aniversario = ExtractMonth('data_nasc')
     ).filter(mes_aniversario = mes_atual)
-    
+
     funcionarios = Funcionarios.objects.all()
     status = request.GET.get('status', 'todos')
     if status and status != "todos":
@@ -34,12 +34,6 @@ def FuncionariosPage(request):
 
     ordenarpor = request.GET.get('ordenarpor', 'cargo_id')
     f_funcionarios = funcionarios.order_by(ordenarpor)
-
-    # Funcionários ativos e afastados (exclui demitidos) - para as cards de departamento
-    funcionarios_ativos = Funcionarios.objects.exclude(ativo='demitido')
-    if status and status != "todos":
-        funcionarios_ativos = funcionarios_ativos.filter(ativo=status)
-    funcionarios_ativos = funcionarios_ativos.order_by(ordenarpor)
 
     # Age distribution
     ages = []
@@ -64,12 +58,12 @@ def FuncionariosPage(request):
     age_labels = list(age_bins.keys())
     age_data = list(age_bins.values())
 
-    # Department performance and count (apenas ativos e afastados)
+    # Department performance and count
     dept_performance = {}
     dept_count = {}
     for dept in Departamentos.objects.all():
-        avg_perf = funcionarios_ativos.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
-        count = funcionarios_ativos.filter(departamento=dept).count()
+        avg_perf = f_funcionarios.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
+        count = f_funcionarios.filter(departamento=dept).count()
         dept_performance[dept.nome_dpt] = round(avg_perf, 1)
         dept_count[dept.nome_dpt] = count
 
@@ -103,74 +97,7 @@ def FuncionariosPage(request):
     }
     return render(request, "funcionarios/funcionarios.html", context)
 
-    aniversariantes = Funcionarios.objects.annotate(
-        mes_aniversario = ExtractMonth('data_nasc')
-    ).filter(mes_aniversario = mes_atual)
-
-    funcionarios = Funcionarios.objects.all()
-    status = request.GET.get('status', 'todos')
-    if status and status != "todos":
-        funcionarios = funcionarios.filter(ativo=status)
-
-    ordenarpor = request.GET.get('ordenarpor', 'cargo_id')
-    f_funcionarios = funcionarios.order_by(ordenarpor)
-
-    # Age distribution
-    ages = []
-    for f in f_funcionarios:
-        if f.data_nasc:
-            age = date.today().year - f.data_nasc.year
-            ages.append(age)
-
-    age_bins = {'18-25': 0, '26-35': 0, '36-45': 0, '46-55': 0, '56+': 0}
-    for age in ages:
-        if 18 <= age <= 25:
-            age_bins['18-25'] += 1
-        elif 26 <= age <= 35:
-            age_bins['26-35'] += 1
-        elif 36 <= age <= 45:
-            age_bins['36-45'] += 1
-        elif 46 <= age <= 55:
-            age_bins['46-55'] += 1
-        else:
-            age_bins['56+'] += 1
-
-    age_labels = list(age_bins.keys())
-    age_data = list(age_bins.values())
-
-    # Department performance
-    dept_performance = {}
-    for dept in Departamentos.objects.all():
-        avg_perf = f_funcionarios.filter(departamento=dept).aggregate(avg=Avg('avaliacao'))['avg'] or 0
-        dept_performance[dept.nome_dpt] = round(avg_perf, 1)
-
-    dept_labels = list(dept_performance.keys())
-    dept_data = list(dept_performance.values())
-
-    # Team growth (last 6 months cumulative hires)
-    growth_labels = []
-    growth_data = []
-    for i in range(5, -1, -1):
-        month_date = date.today().replace(day=1) - timedelta(days=30 * i)
-        count = Funcionarios.objects.filter(data_contratacao__lte=month_date + timedelta(days=31)).count()
-        growth_labels.append(month_date.strftime('%b'))
-        growth_data.append(count)
-
-    context ={
-        'funcionarios': Funcionarios.objects.all().order_by('cargo_id'),
-        'funcionarios_everybody': Funcionarios.objects.exclude(ativo='demitido'),
-        'ativos': Funcionarios.ATIVO_CHOICES,
-        'funcionarios_filtro': f_funcionarios,
-        'age_labels_json': json.dumps(age_labels),
-        'age_data_json': json.dumps(age_data),
-        'dept_labels_json': json.dumps(dept_labels),
-        'dept_data_json': json.dumps(dept_data),
-        'growth_labels_json': json.dumps(growth_labels),
-        'growth_data_json': json.dumps(growth_data),
-        
-        
-    }
-    return render(request, "funcionarios/funcionarios.html", context)
+    
 
 
 context_nv = {
