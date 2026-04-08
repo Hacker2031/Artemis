@@ -212,25 +212,33 @@ def sincronizar_saldos_ferias():
 
 
 def atualizar_estado_funcionarios():
-    """Atualiza o estado dos funcionários baseado nas férias ativas ou aprovadas"""
+    """
+    Atualiza o estado dos funcionários com base nas ausências ACTIVAS hoje.
+
+    Regras:
+    - Se o funcionário tem uma solicitação aprovada (qualquer tipo_ausencia)
+      com data_inicio <= hoje <= data_fim  →  estado = 'ferias' (ausente)
+    - Caso contrário, se o estado actual for 'ferias', volta para 'ativo'
+    """
     hoje = date.today()
 
-    # Primeiro, marcar como 'ativo' todos os funcionários que não têm férias aprovadas
+    # IDs de funcionários com ausência aprovada e ACTIVA hoje
+    ausentes_hoje = PlanamentFerias.objects.filter(
+        status='aprovado',
+        data_inicio__lte=hoje,
+        data_fim__gte=hoje,
+    ).values_list('funcionario', flat=True).distinct()
+
+    # 1. Quem está marcado como 'ferias' mas já não tem ausência activa → volta a 'ativo'
     Funcionarios.objects.filter(
         ativo='ferias'
     ).exclude(
-        solicitacoes_ferias__status='aprovado',
-        solicitacoes_ferias__tipo_ausencia='ferias'
+        f_id__in=ausentes_hoje
     ).update(ativo='ativo')
 
-    # Depois, marcar como 'ferias' os que têm férias aprovadas (ativas ou futuras)
-    funcionarios_com_ferias_aprovadas = PlanamentFerias.objects.filter(
-        status='aprovado',
-        tipo_ausencia='ferias'
-    ).values_list('funcionario', flat=True).distinct()
-
+    # 2. Quem tem ausência activa hoje → marcar como 'ferias'
     Funcionarios.objects.filter(
-        f_id__in=funcionarios_com_ferias_aprovadas
+        f_id__in=ausentes_hoje
     ).update(ativo='ferias')
 
 
@@ -337,10 +345,11 @@ def aprovarFerias(request, solicitacao_id):
             controlo.ferias_restantes -= solicitacao.dias_uteis
             controlo.save()
 
-        # Mudar estado do funcionário para 'ferias' quando o pedido for aprovado
+        # Mudar estado do funcionário para 'ferias' APENAS se a ausência já começou hoje
         funcionario = solicitacao.funcionario
-        funcionario.ativo = 'ferias'
-        funcionario.save()
+        if solicitacao.data_inicio <= date.today() <= solicitacao.data_fim:
+            funcionario.ativo = 'ferias'
+            funcionario.save()
 
         solicitacao.status = 'aprovado'
         # Usar o funcionário associado ao usuário, se existir
