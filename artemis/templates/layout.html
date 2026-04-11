@@ -532,7 +532,7 @@
             <div class="profile">
                 <div class="info">
                     <p><b>{{request.user.first_name}} {{request.user.last_name}}</b></p>
-                    <small class="text-muted">Admin</small>
+                    <small class="text-muted">{{request.user.get_tipo_display}}</small>
                 </div>
                 <div class="profile-photo">
                     <img src="{% static "images/user_icon.jpg"%}" alt="{% static "images/user_icon.jpg"%}">
@@ -568,12 +568,12 @@
             <h3>Funcionários</h3>
         </a>
         
-        <!-- Vendas -->
+        {% comment %} <!-- Vendas -->
         <a href="{% url 'vendas' %}" 
            class="{% if request.resolver_match.url_name == 'vendas' %}active{% endif %}">
             <span class="material-icons-sharp">storefront</span>
             <h3>Vendas</h3>
-        </a>
+        </a> fica para depois. possas, estou partido. Gililson, out!!{% endcomment %}
         
         <!-- Recursos Humanos -->
         <a href="{% url 'rh' %}" 

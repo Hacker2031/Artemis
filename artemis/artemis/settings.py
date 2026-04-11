@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'relatorios',
     'rh',
     'definicoes',
-    'vendas',
+    # 'vendas', essa fica para depois. estou cansado. Txe
     'stock',
     'users',
     'django.contrib.admin',

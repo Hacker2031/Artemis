@@ -16,7 +16,7 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
-            return redirect('Dashboard')
+            return redirect('home')
         else:
             messages.info(request, 'Nome de Utilizador ou palavra-passe errados!')
     context = {}

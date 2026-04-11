@@ -20,12 +20,11 @@ from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url="/dashboard/"), name="home"),
+    path('', RedirectView.as_view(url="/agente-ia/"), name="home"),
     path("login/", include("login.urls")),
     path('dashboard/', include("dashboard.urls")),
-    path('', RedirectView.as_view(url="/dashboard/"), name="home"),
     path('funcionarios/', include("funcionarios.urls")),
-    path('vendas/', include("vendas.urls")),
+    # path('vendas/', include("vendas.urls")),
     path('rh/', include("rh.urls")),
     path('stock/', include("stock.urls")),
     path('relatorios/', include("relatorios.urls")),
