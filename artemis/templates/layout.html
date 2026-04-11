@@ -555,18 +555,22 @@
         <aside>
     <div class="sidebar">
         <!-- Painel Inicial -->
+        {% if request.user.tipo in 'admin Programador gestor rh' %}
         <a href="{% url 'Dashboard' %}" 
            class="{% if request.resolver_match.url_name == 'Dashboard' %}active{% endif %}">
             <span class="material-symbols-outlined">dashboard</span>
             <h3>Painel Inicial</h3>
         </a>
+        {% endif %}
         
         <!-- Funcionários -->
+        {% if request.user.tipo in 'admin Programador rh' %}
         <a href="{% url 'Funcionarios' %}" 
            class="{% if request.resolver_match.url_name == 'Funcionarios' or request.resolver_match.url_name == 'NovoFuncionario' or request.resolver_match.url_name == 'EditarFuncionario' or request.resolver_match.url_name == 'DetalhesFuncionario'%}active{% endif %}">
             <span class="material-icons-sharp">person_outline</span>
             <h3>Funcionários</h3>
         </a>
+        {% endif %}
         
         {% comment %} <!-- Vendas -->
         <a href="{% url 'vendas' %}" 
@@ -576,39 +580,49 @@
         </a> fica para depois. possas, estou partido. Gililson, out!!{% endcomment %}
         
         <!-- Recursos Humanos -->
+        {% if request.user.tipo in 'admin Programador rh' %}
         <a href="{% url 'rh' %}" 
            class="{% if request.resolver_match.url_name == 'rh' or request.resolver_match.url_name == 'PromoverCandidato' %}active{% endif %}">
             <span class="material-symbols-outlined">crowdsource</span>
             <h3>Recursos Humanos</h3>
         </a>
+        {% endif %}
         
         <!-- Stock -->
+        {% if request.user.tipo in 'admin Programador stock' %}
         <a href="{% url 'stock' %}" 
            class="{% if request.resolver_match.url_name == 'stock' %}active{% endif %}">
             <span class="material-symbols-outlined">inventory_2</span>
             <h3>Stock</h3>
         </a>
+        {% endif %}
         
         <!-- Relatórios -->
+        {% if request.user.tipo in 'admin Programador rh stock gestor' %}
         <a href="{% url 'relatorios' %}"
            class="{% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}">
             <span class="material-symbols-outlined">edit_document</span>
             <h3>Relatórios</h3>
         </a>
+        {% endif %}
         
         <!-- Agente de IA -->
+        {% if request.user.tipo in 'admin Programador rh stock gestor' %}
         <a href="{% url 'agente-ia' %}"
            class="{% if request.resolver_match.url_name == 'agente-ia' %}active{% endif %}">
             <span class="material-symbols-outlined">cognition_2</span>
             <h3>Agente de IA</h3>
         </a>
+        {% endif %}
         
         <!-- Definições -->
+        {% if request.user.tipo in 'admin Programador' %}
         <a href="{% url 'definicoes' %}" 
            class="{% if request.resolver_match.url_name == 'definicoes' %}active{% endif %}">
             <span class="material-symbols-outlined">settings</span>
             <h3>Definições</h3>
         </a>
+        {% endif %}
     </div>
 </aside>
 
