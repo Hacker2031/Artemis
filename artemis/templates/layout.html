@@ -555,7 +555,7 @@
         <aside>
     <div class="sidebar">
         <!-- Painel Inicial -->
-        {% if request.user.tipo in 'admin Programador gestor rh' %}
+        {% if request.user.tipo in 'admin Programador' %}
         <a href="{% url 'Dashboard' %}" 
            class="{% if request.resolver_match.url_name == 'Dashboard' %}active{% endif %}">
             <span class="material-symbols-outlined">dashboard</span>
@@ -598,7 +598,7 @@
         {% endif %}
         
         <!-- Relatórios -->
-        {% if request.user.tipo in 'admin Programador rh stock gestor' %}
+        {% if request.user.tipo in 'admin Programador gestor' %}
         <a href="{% url 'relatorios' %}"
            class="{% if request.resolver_match.url_name == 'relatorios' %}active{% endif %}">
             <span class="material-symbols-outlined">edit_document</span>
