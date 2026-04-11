@@ -46,22 +46,22 @@ class Users(AbstractUser):
 
     @property
     def is_programador(self):
-        return self.tipo == 'programador'
+        return self.tipo == 'Programador'
 
     @property
     def is_gestor(self):
         """Gestores e programadores vêem o dashboard."""
-        return self.tipo in ('gestor', 'programador')
+        return self.tipo in ('gestor', 'Programador', 'admin')
 
     @property
     def can_access_rh(self):
         """RH e programador acedem à app de funcionários."""
-        return self.tipo in ('rh', 'programador')
+        return self.tipo in ('rh', 'Programador', 'admin')
 
     @property
     def can_edit_funcionarios(self):
-        """Só supervisores (e programador) podem editar/eliminar funcionários."""
-        return self.tipo == 'programador' or (
+        """Só supervisores, admins e programadores podem editar/eliminar funcionários."""
+        return self.tipo in ('Programador', 'admin') or (
             self.tipo == 'rh' and self.nivel == 'supervisor'
         )
 

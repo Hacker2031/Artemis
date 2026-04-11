@@ -22,10 +22,12 @@
                             <span class="material-icons-sharp">download</span>
                             Exportar
                         </button>
+                        {% if request.user.can_edit_funcionarios %}
                         <button class="btn btn-primary" onclick="window.location.href='{% url "NovoFuncionario" %}'">
                             <span class="material-icons-sharp">add</span>
                             Novo Funcionário
                         </button>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -89,7 +91,7 @@
                 <div class="tab-content active" id="lista">
                     <div class="table-container">
                         <table class="table">
-                            <thead>
+                           s <thead>
                                 <tr>
                                     <th>Funcionário</th>
                                     <th>Departamento</th>
@@ -307,12 +309,14 @@
                             <button class="btn btn-sm btn-primary" onclick="verDetalhes(${f.id})">
                                 <span class="material-icons-sharp">visibility</span>
                             </button>
+                            {% if request.user.can_edit_funcionarios %}
                             <button class="btn btn-sm btn-secondary" onclick="editarFuncionario(${f.id})">
                                 <span class="material-icons-sharp">edit</span>
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="deletarFuncionario(${f.id})">
                                 <span class="material-icons-sharp">delete</span>
                             </button>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
