@@ -1529,6 +1529,12 @@ function renderCandidatosTabela() {
                 <button class="btn btn-sm btn-primary" onclick="verCandidato(${c.id})">
                     <span class="material-icons-sharp">person</span> Ver Perfil
                 </button>
+                ${c.estado === 'oferta' ? `
+                <a href="/funcionarios/promover-candidato/${c.id}/"
+                   class="btn btn-sm btn-success"
+                   title="Promover para Funcionário">
+                    <span class="material-icons-sharp">person_add</span> Promover
+                </a>` : ''}
             </td>
         </tr>`).join('');
 }

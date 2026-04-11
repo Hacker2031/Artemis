@@ -19,7 +19,5 @@ urlpatterns = [
     path('api/processos/<int:candidato_id>/', views.carregarProcessosSelectivos, name="carregarProcessosSelectivos"),
     path('baixar-cv/<int:candidato_id>/', views.baixarCV, name="baixarCV"),
     path('debug-cv/<int:candidato_id>/', views.debugCV, name="debugCV"),
-    path('api/candidatos/<int:candidato_id>/pre-promover/', views.preVisualizarPromocao, name='pre_promover_candidato'),
-    path('api/candidatos/<int:candidato_id>/promover/',     views.promoverCandidatoParaFuncionario,  name='promover_candidato'),
-]
+   ]
 

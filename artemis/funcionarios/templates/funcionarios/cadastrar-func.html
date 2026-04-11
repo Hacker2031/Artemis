@@ -269,14 +269,14 @@
         {% endblock extra_css %}
 
 
-        {% block conteudo %}
+{% block conteudo %}
     <div class="modulo-header">
         <h1>
             <span class="material-icons-sharp">person_add</span>
             Cadastro de Funcionário
         </h1>
         <div class="actions">
-            <button class="btn btn-secondary btn-sm" onclick="window.location.href='{% url 'Funcionarios'%}'">
+            <button class="btn btn-secondary btn-sm"  onclick="window.location.href='{% if is_promocao %}{% url 'rh' %}{% else %}{% url 'Funcionarios' %}{% endif %}'">
                 <span class="material-icons-sharp">close</span>
                 Cancelar
             </button>
@@ -285,7 +285,19 @@
 
     <form id="funcionarioForm" method="POST" action="{% url 'salvarFuncionario' %}" enctype="multipart/form-data">
         {% csrf_token %}
+        {% if is_promocao and candidato_origem %}
+        <input type="hidden" name="candidato_origem_id" value="{{ candidato_origem.pk }}">
+        {% endif %}
         <input type="hidden" name="id" value="{{ funcionario.f_id|default:'' }}">
+        {% if is_promocao and candidato_origem %}
+            <div style="background: rgba(16,185,129,0.10); border: ...">
+            <span>Verificado</span>
+            <div>
+            <strong>Promoção de Candidato: {{ candidato_origem.nome }} </strong>
+            <p style="color: white;">Os dados de <strong>{{ candidato_origem.nome }}</strong> foram pré-preenchidos...</p>
+            </div>
+            </div>
+        {% endif %}
         <div class="form-card">
 
             <!-- BARRA DE ABAS -->

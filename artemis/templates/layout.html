@@ -577,7 +577,7 @@
         
         <!-- Recursos Humanos -->
         <a href="{% url 'rh' %}" 
-           class="{% if request.resolver_match.url_name == 'rh' %}active{% endif %}">
+           class="{% if request.resolver_match.url_name == 'rh' or request.resolver_match.url_name == 'PromoverCandidato' %}active{% endif %}">
             <span class="material-symbols-outlined">crowdsource</span>
             <h3>Recursos Humanos</h3>
         </a>

@@ -10,4 +10,5 @@ urlpatterns = [
     path("demitir/<int:id>/", views.demitirFuncionario, name="demitirFuncionario"),
     path("export-pdf/", views.export_pdf, name="export_pdf"),
     path("detalhes/<int:id>/", views.DetalhesFuncionario, name="DetalhesFuncionario"),
+    path('promover-candidato/<int:candidato_id>/', views.PromoverCandidato, name='PromoverCandidato'),
 ]
