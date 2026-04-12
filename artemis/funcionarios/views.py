@@ -348,10 +348,6 @@ def export_pdf(request):
     return response
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# DETALHES, DELETAR E DEMITIR
-# ──────────────────────────────────────────────────────────────────────────────
-
 @login_required(login_url='loginPage')
 def DetalhesFuncionario(request, id):
     try:
