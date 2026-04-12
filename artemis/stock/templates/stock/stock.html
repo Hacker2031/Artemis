@@ -74,6 +74,48 @@
             gap: 0.8rem;
         }
 
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-card {
+            background: var(--color-white);
+            width: 100%;
+            max-width: 550px;
+            border-radius: var(--border-radius-3);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+            animation: modalIn 0.3s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-light);
+            padding-bottom: 1rem;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .full-width { grid-column: span 2; }
+
 
 
 {% endblock extra_css %}
@@ -85,7 +127,6 @@
                 <div class="modulo-header">
                     <h1><span class="material-symbols-outlined">inventory_2</span>Gestão de Stock</h1>
                     <div class="actions">
-                        <button class="btn btn-outline"><span class="material-icons-sharp">qr_code_scanner</span>Scanner</button>
                         <button class="btn btn-primary" onclick="novoProduto()"><span class="material-icons-sharp">add</span>Novo Produto</button>
                     </div>
                 </div>
@@ -144,7 +185,7 @@
                             </div>
                             <div class="flex-between mt-2">
                                 <span class="success" style="font-weight: 700;">{{ produto.preco_custo }} Kz</span>
-                                <div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">edit</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">qr_code</span></button></div>
+                                <div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">edit</span></button></div>
                             </div>
                         </div>
                         {% endfor %}
@@ -165,6 +206,60 @@
                     <div class="table-container"><table class="table"><thead><tr><th>Fornecedor</th><th>Produtos</th><th>Prazo Médio</th><th>Confiabilidade</th><th>Ações</th></tr></thead><tbody id="supplierTable"></tbody></table></div>
                 </div>
             </div>
+
+            <!-- Modal Novo Produto -->
+            <div class="modal-overlay" id="modalProduto">
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h2>Registar Novo Produto</h2>
+                        <button class="btn-close" onclick="fecharModal()"><span class="material-icons-sharp">close</span></button>
+                    </div>
+                    <form action="{% url 'adicionar_produto' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label for="nome">Nome do Produto*</label>
+                                <input type="text" name="nome" class="form-control" placeholder="Ex: Caixas de Laranja" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="categoria">Categoria*</label>
+                                <select name="categoria" class="form-control" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for cat in categorias %}
+                                    <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fornecedor">Fornecedor*</label>
+                                <select name="fornecedor" class="form-control" required>
+                                    <option value="">Seleccione...</option>
+                                    {% for forn in fornecedores %}
+                                    <option value="{{ forn.id }}">{{ forn.nome_empresa }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="preco_custo">Preço de Custo (Kz)*</label>
+                                <input type="number" name="preco_custo" step="0.01" class="form-control" placeholder="0.00" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="stock_minimo">Stock Mínimo</label>
+                                <input type="number" name="stock_minimo" class="form-control" value="5">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="id_produto">Código de Produto (Opcional)</label>
+                                <input type="text" name="id_produto" class="form-control" placeholder="Deixe vazio para gerar automaticamente">
+                                <small class="text-muted">O sistema gera um código baseado na categoria se preferir.</small>
+                            </div>
+                        </div>
+                        <div class="flex-end mt-2 gap-1">
+                            <button type="button" class="btn btn-secondary" onclick="fecharModal()">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 {% endblock %}
 {% block painel_direito%}
 
@@ -174,6 +269,13 @@
             <div class="card mt-2"><h3 class="mb-2">Alertas</h3><div class="alert alert-danger"><span class="material-icons-sharp">error</span><div>1 produto com stock baixo</div></div></div>
         </div>
 {% endblock %}
+{% block messages %}
+{% for message in messages %}
+
+<script id="message"> alert("{{ message }}")</script>
+
+{% endfor %}
+{% endblock messages %}
 
 {% block scripts%}
 
@@ -184,19 +286,7 @@
     <script>
         // Dados e funções de renderização removidos pois agora usamos Django Templates para dados iniciais.
 
-        function renderMovements() {
-            const movements = [
-                { type: 'Entrada', produto: 'Laptop HP', qtd: 20, date: '2026-02-08', user: 'João Silva' },
-                { type: 'Saída', produto: 'Mouse Wireless', qtd: -15, date: '2026-02-07', user: 'Maria Costa' },
-                { type: 'Entrada', produto: 'Teclado Mecânico', qtd: 50, date: '2026-02-06', user: 'Pedro Santos' },
-            ];
-            document.getElementById('movementsList').innerHTML = movements.map(m => `
-                <div class="movement-item">
-                    <div class="movement-type"><span class="material-icons-sharp ${m.type === 'Entrada' ? 'success' : 'danger'}">${m.type === 'Entrada' ? 'add_circle' : 'remove_circle'}</span><div><div style="font-weight: 500;">${m.produto}</div><small class="text-muted">${m.date} • ${m.user}</small></div></div>
-                    <div class="${m.qtd > 0 ? 'success' : 'danger'}" style="font-weight: 700;">${m.qtd > 0 ? '+' : ''}${m.qtd}</div>
-                </div>
-            `).join('');
-        }
+      
         function renderSuppliers() {
             const suppliers = [
                 { nome: 'TechSupply Angola', produtos: 45, prazo: '7 dias', confiabilidade: 98 },
@@ -237,7 +327,14 @@
             if (tabName === 'previsao') setTimeout(initDemandChart, 100);
             if (tabName === 'fornecedores') renderSuppliers();
         }
-        function novoProduto() { alert('Adicionar novo produto'); }
+        
+        function novoProduto() {
+            document.getElementById('modalProduto').classList.add('active');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalProduto').classList.remove('active');
+        }
     </script>
 
 {% endblock %}

@@ -35,14 +35,21 @@ def adicionarProduto(request):
     # Cria novo produto via formulario POST
     if request.method == "POST":
         try:
-            Produto.objects.create(
-                id_produto=request.POST.get('id_produto'),
+            # Se o ID não for fornecido, o model gera automaticamente no save()
+            id_manual = request.POST.get('id_produto')
+            
+            novo_produto = Produto(
                 nome=request.POST.get('nome'),
                 categoria_id=request.POST.get('categoria'),
                 fornecedor_id=request.POST.get('fornecedor'),
                 preco_custo=request.POST.get('preco_custo'),
                 stock_minimo=request.POST.get('stock_minimo', 5)
             )
+            
+            if id_manual:
+                novo_produto.id_produto = id_manual
+                
+            novo_produto.save()
             messages.success(request, "Produto registado com sucesso")
         except Exception as e:
             messages.error(request, f"Erro ao registar produto: {e}")
