@@ -92,19 +92,19 @@
                 <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-card-header">
-                            <div><div class="stat-label">Total em Stock</div><div class="stat-value">8,542</div></div>
+                            <div><div class="stat-label">Total em Stock</div><div class="stat-value">{{ total_stock }}</div></div>
                             <div class="stat-icon primary"><span class="material-icons-sharp">inventory</span></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
-                            <div><div class="stat-label">Valor Total</div><div class="stat-value">2.8M Kz</div></div>
+                            <div><div class="stat-label">Valor Total</div><div class="stat-value">{{ valor_total|floatformat:2 }} Kz</div></div>
                             <div class="stat-icon success"><span class="material-icons-sharp">payments</span></div>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
-                            <div><div class="stat-label">Alerta Baixo</div><div class="stat-value danger">23</div></div>
+                            <div><div class="stat-label">Alerta Baixo</div><div class="stat-value danger">{{ alertas|length }}</div></div>
                             <div class="stat-icon warning"><span class="material-icons-sharp">warning</span></div>
                         </div>
                     </div>
@@ -124,10 +124,31 @@
                 <div class="tab-content active" id="produtos">
                     <div class="filters mb-3">
                         <div class="search-bar"><span class="material-icons-sharp">search</span><input type="text" placeholder="Buscar produto..." id="searchProduct"></div>
-                        <select class="form-control" style="max-width: 200px;"><option>Todas Categorias</option><option>Eletrónicos</option><option>Vestuário</option><option>Alimentos</option></select>
+                        <select class="form-control" style="max-width: 200px;">
+                            <option>Todas Categorias</option>
+                            {% for cat in categorias %}
+                            <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                            {% endfor %}
+                        </select>
                         <select class="form-control" style="max-width: 200px;"><option>Todos Status</option><option>Em Stock</option><option>Stock Baixo</option><option>Esgotado</option></select>
                     </div>
-                    <div class="inventory-grid" id="productGrid"></div>
+                    <div class="inventory-grid" id="productGrid">
+                        {% for produto in produtos %}
+                        <div class="product-item">
+                            <div class="product-image"><span class="material-icons-sharp" style="font-size: 4rem; color: white;">inventory_2</span></div>
+                            <div class="product-name">{{ produto.nome }}</div>
+                            <p class="text-muted">{{ produto.categoria.nome }}</p>
+                            <div class="stock-level"><span class="material-icons-sharp">widgets</span><span>{{ produto.stock_atual }} unidades</span></div>
+                            <div class="stock-status {% if produto.stock_atual == 0 %}stock-low{% elif produto.stock_atual <= produto.stock_minimo %}stock-low{% elif produto.stock_atual <= produto.stock_minimo|add:produto.stock_minimo %}stock-medium{% else %}stock-high{% endif %}">
+                                {% if produto.stock_atual == 0 %}Esgotado{% elif produto.stock_atual <= produto.stock_minimo %}Stock Baixo{% elif produto.stock_atual <= produto.stock_minimo|add:produto.stock_minimo %}Stock Médio{% else %}Stock Alto{% endif %}
+                            </div>
+                            <div class="flex-between mt-2">
+                                <span class="success" style="font-weight: 700;">{{ produto.preco_custo }} Kz</span>
+                                <div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">edit</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">qr_code</span></button></div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="tab-content" id="movimentacoes">
                     <div class="card"><div class="card-header"><h3>Histórico de Movimentações</h3></div><div id="movementsList"></div></div>
@@ -161,35 +182,8 @@
 <script src="{% static "js/artemis-utils.js" %}"></script>   
 
     <script>
-        
-        const produtos = [
-            { id: 1, nome: 'Laptop HP', stock: 45, min: 20, preco: 120000, categoria: 'Eletrónicos' },
-            { id: 2, nome: 'Mouse Wireless', stock: 8, min: 50, preco: 2500, categoria: 'Eletrónicos' },
-            { id: 3, nome: 'Teclado Mecânico', stock: 120, min: 30, preco: 8500, categoria: 'Eletrónicos' },
-            { id: 4, nome: 'Monitor 24"', stock: 67, min: 25, preco: 45000, categoria: 'Eletrónicos' },
-            { id: 5, nome: 'Webcam HD', stock: 32, min: 15, preco: 15000, categoria: 'Eletrónicos' },
-            { id: 6, nome: 'Headset Gamer', stock: 89, min: 40, preco: 12000, categoria: 'Eletrónicos' },
-        ];
-        function getStockStatus(stock, min) {
-            if (stock === 0) return { class: 'stock-low', text: 'Esgotado' };
-            if (stock < min) return { class: 'stock-low', text: 'Stock Baixo' };
-            if (stock < min * 2) return { class: 'stock-medium', text: 'Stock Médio' };
-            return { class: 'stock-high', text: 'Stock Alto' };
-        }
-        function renderProducts() {
-            const grid = document.getElementById('productGrid');
-            grid.innerHTML = produtos.map(p => {
-                const status = getStockStatus(p.stock, p.min);
-                return `<div class="product-item">
-                    <div class="product-image"><span class="material-icons-sharp" style="font-size: 4rem; color: white;">inventory_2</span></div>
-                    <div class="product-name">${p.nome}</div>
-                    <p class="text-muted">${p.categoria}</p>
-                    <div class="stock-level"><span class="material-icons-sharp">widgets</span><span>${p.stock} unidades</span></div>
-                    <div class="stock-status ${status.class}">${status.text}</div>
-                    <div class="flex-between mt-2"><span class="success" style="font-weight: 700;">${p.preco.toLocaleString('pt-BR')} Kz</span><div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">edit</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">qr_code</span></button></div></div>
-                </div>`;
-            }).join('');
-        }
+        // Dados e funções de renderização removidos pois agora usamos Django Templates para dados iniciais.
+
         function renderMovements() {
             const movements = [
                 { type: 'Entrada', produto: 'Laptop HP', qtd: 20, date: '2026-02-08', user: 'João Silva' },
@@ -239,13 +233,11 @@
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             event.target.closest('.tab').classList.add('active');
             document.getElementById(tabName).classList.add('active');
-            if (tabName === 'produtos') renderProducts();
             if (tabName === 'movimentacoes') renderMovements();
             if (tabName === 'previsao') setTimeout(initDemandChart, 100);
             if (tabName === 'fornecedores') renderSuppliers();
         }
         function novoProduto() { alert('Adicionar novo produto'); }
-        renderProducts();
     </script>
 
 {% endblock %}
