@@ -112,12 +112,14 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'pt-pt'
 USE_I18N = True
-USE_L10N = True
-
-TIME_ZONE = 'UTC'
-
-
 USE_TZ = True
+
+USE_THOUSAND_SEPARATOR = True
+THOUSAND_SEPARATOR = '.'
+DECIMAL_SEPARATOR = ','
+NUMBER_GROUPING = 3
+
+TIME_ZONE = 'Africa/Luanda'
 
 # Configuração de Expiração de Sessão por Inatividade (4 horas)
 
