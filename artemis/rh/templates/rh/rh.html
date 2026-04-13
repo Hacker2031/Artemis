@@ -464,10 +464,7 @@
             <span class="material-icons-sharp">assignment</span>
             Avaliações
         </button>
-        <button class="tab" onclick="mudarTab('treinamento', event)">
-            <span class="material-icons-sharp">school</span>
-            Treinamento
-        </button>
+        
         <button class="tab" onclick="mudarTab('ferias', event)">
             <span class="material-icons-sharp">beach_access</span>
             Férias
@@ -886,21 +883,6 @@
         </div>
     </div>
 
-    <!-- ══ TAB: TREINAMENTO ══ -->
-    <div class="tab-content" id="treinamento">
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Cursos Ativos</div><div class="stat-value">24</div></div><div class="stat-icon primary"><span class="material-icons-sharp">school</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Horas Treinamento</div><div class="stat-value">1.245</div></div><div class="stat-icon success"><span class="material-icons-sharp">schedule</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Taxa de Conclusão</div><div class="stat-value">87%</div></div><div class="stat-icon warning"><span class="material-icons-sharp">check_circle</span></div></div></div>
-            <div class="stat-card"><div class="stat-card-header"><div><div class="stat-label">Certificações</div><div class="stat-value">156</div></div><div class="stat-icon danger"><span class="material-icons-sharp">workspace_premium</span></div></div></div>
-        </div>
-        <div class="grid grid-2 mt-3">
-            <div class="card"><div class="card-header"><h3>Cursos Populares</h3></div><div id="trainingList" style="padding:16px"></div></div>
-            <div class="card"><div class="card-header"><h3>Progresso por Departamento</h3></div><div style="padding:16px"><canvas id="trainingProgressChart" height="240"></canvas></div></div>
-        </div>
-    </div>
-
-    <!-- ══ TAB: FÉRIAS ══ -->
     <!-- ══ TAB: FÉRIAS ══ -->
     <div class="tab-content" id="ferias">
         <!-- Cards de Estatísticas -->
@@ -1845,7 +1827,6 @@ function mudarTab(tabName, e) {
     document.getElementById(tabName).classList.add('active');
     if(tabName==='recrutamento') { voltarLista(); }
     if(tabName==='avaliacoes')   { renderEvaluations(); setTimeout(initEvaluationCharts,100); }
-    if(tabName==='treinamento')  { renderTraining();    setTimeout(initTrainingCharts,100); }
     if(tabName==='ferias')       initTabFerias();
 }
 

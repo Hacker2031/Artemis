@@ -105,7 +105,7 @@
         }
 
         p{
-            color: #000000;
+            color: var(--color-dark-variant);
         }
 
         b{
@@ -335,6 +335,7 @@
         .metas-info h4{
             font-size: 0.85rem;
             margin-bottom: 0.3rem;
+            color: var(--color-dark);
         }
 
         .metas-info small{
@@ -623,10 +624,10 @@
 
         .assistente-ia h3 span{
             font-size: 1.5rem;
-            animation: pulse 2s infinite;
+            animation: pulse-ia 2s infinite;
         }
 
-        @keyframes pulse{
+        @keyframes pulse-ia{
             0%, 100%{
                 transform: scale(1);
             }
@@ -832,174 +833,117 @@
         <div class="header-principal">
             <div class="saudacao">
                 <h1>Bom dia, {{request.user.first_name}}!</h1>
-                <p class="text-muted">Aqui está o resumo do seu negócio hoje</p>
+                <p class="text-muted">Painel de Controle Artemis — Gestão de Capital Humano</p>
             </div>
-           
         </div>
 
-        <!-- Cards de Análise com Sparklines -->
+        <!-- Cards de Métricas Reais -->
         <div class="analise">
             <div class="Vendas fade-in-up">
                 <div class="Estado">
                     <div class="info">
-                        <h3>Total de Vendas</h3>
-                        <h1>100.200Kz</h1>
-                        <span class="variacao positiva">
-                            <span class="material-icons-sharp">trending_up</span>
-                            +90%
+                        <h3>Funcionários Ativos</h3>
+                        <h1>{{ total_func|default:"0" }}</h1>
+                        <span class="variacao-info">
+                            <span class="material-icons-sharp">groups</span>
+                            Total Colaboradores
                         </span>
                     </div>
                 </div>
-                <div class="sparkline" id="sparklineVendas"></div>
+                <div class="sparkline" id="sparklineFunc"></div>
             </div>
 
             <div class="users fade-in-up">
                 <div class="Estado">
                     <div class="info">
-                        <h3>Novos Usuários</h3>
-                        <h1>450</h1>
-                        <span class="variacao negativa">
-                            <span class="material-icons-sharp">trending_down</span>
-                            -45%
+                        <h3>Recrutamento</h3>
+                        <h1>{{ vagas_abertas|default:"0" }}</h1>
+                        <span class="variacao-info">
+                            <span class="material-icons-sharp">work</span>
+                            Vagas em Aberto
                         </span>
                     </div>
                 </div>
-                <div class="sparkline" id="sparklineUsers"></div>
+                <div class="sparkline" id="sparklineVagas"></div>
             </div>
 
             <div class="pendentes fade-in-up">
                 <div class="Estado">
                     <div class="info">
-                        <h3>Pendências</h3>
-                        <h1>150</h1>
-                        <span class="variacao positiva">
-                            <span class="material-icons-sharp">trending_up</span>
-                            +55%
+                        <h3>Gestão de Ausências</h3>
+                        <h1>{{ ferias_hoje|default:"0" }}</h1>
+                        <span class="variacao-info">
+                            <span class="material-icons-sharp">event_available</span>
+                            Em férias hoje
                         </span>
                     </div>
                 </div>
-                <div class="sparkline" id="sparklinePendentes"></div>
+                <div class="sparkline" id="sparklineFerias"></div>
             </div>
         </div>
 
-        <!-- Widgets Rápidos -->
         <div class="widgets-rapidos">
-            <!-- Metas do Mês -->
             <div class="widget">
                 <h3>
-                    <span class="material-icons-sharp">flag</span>
-                    Metas do Mês
+                    <span class="material-icons-sharp">groups</span>
+                    Equipas de Trabalho
                 </h3>
-                <div class="metas-item">
+                <p>O Artemis gere atualmente <b>{{ total_equipas }}</b> equipas ativas. Os recursos humanos estão distribuídos por projetos estratégicos.</p>
+                <div class="metas-item" style="border: none; padding-top: 1rem;">
                     <div class="metas-info">
-                        <h4>Vendas</h4>
-                        <small>85.000Kz / 100.000Kz</small>
+                        <h4>Taxa de Ocupação</h4>
+                        <small>Monitorização de capital humano</small>
                     </div>
                     <div class="barra-progresso">
                         <div class="barra-progresso-fill" style="width: 85%"></div>
                     </div>
                 </div>
-                <div class="metas-item">
-                    <div class="metas-info">
-                        <h4>Novos Clientes</h4>
-                        <small>340 / 500</small>
-                    </div>
-                    <div class="barra-progresso">
-                        <div class="barra-progresso-fill" style="width: 68%"></div>
-                    </div>
-                </div>
-                <div class="metas-item">
-                    <div class="metas-info">
-                        <h4>Satisfação</h4>
-                        <small>92% / 95%</small>
-                    </div>
-                    <div class="barra-progresso">
-                        <div class="barra-progresso-fill" style="width: 97%"></div>
-                    </div>
-                </div>
+                <a href="{% url 'rh' %}" class="primary" style="margin-top: 1rem; display: block;">Visualizar Estrutura</a>
             </div>
 
-            <!-- Atividades Recentes -->
             <div class="widget">
                 <h3>
-                    <span class="material-icons-sharp">history</span>
-                    Atividades Recentes
+                    <span class="material-icons-sharp">insights</span>
+                    Status Operacional
                 </h3>
-                <div class="atividade-item">
-                    <div class="atividade-icone success">
-                        <span class="material-icons-sharp">check_circle</span>
-                    </div>
-                    <div class="atividade-conteudo">
-                        <h4>Venda Aprovada</h4>
-                        <small>Ordem #85631 - há 5 minutos</small>
-                    </div>
-                </div>
-                <div class="atividade-item">
-                    <div class="atividade-icone primary">
-                        <span class="material-icons-sharp">person_add</span>
-                    </div>
-                    <div class="atividade-conteudo">
-                        <h4>Novo Cliente Registado</h4>
-                        <small>Maria Santos - há 12 minutos</small>
-                    </div>
-                </div>
-                <div class="atividade-item">
-                    <div class="atividade-icone warning">
-                        <span class="material-icons-sharp">inventory</span>
-                    </div>
-                    <div class="atividade-conteudo">
-                        <h4>Stock Baixo</h4>
-                        <small>Produto XYZ - há 1 hora</small>
-                    </div>
-                </div>
+                <p>O sistema identificou <b>{{ solicitacoes_pendentes }}</b> novas solicitações que requerem atenção do RH.</p>
+                <a href="{% url 'rh' %}" class="primary" style="margin-top: 1rem; display: block;">Ir para RH →</a>
             </div>
         </div>
 
-        <!-- Tabela de Ordens -->
         <div class="novas-ordens">
-            <h2>Novas Ordens</h2>
+            <h2>Próximas Ausências (Férias Aprovadas)</h2>
             <table>
+                <thead>
+                    <tr>
+                        <th>Colaborador</th>
+                        <th>Início</th>
+                        <th>Fim</th>
+                        <th>Dias Úteis</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
                 <tbody>
+                    {% for f in proximas_ferias %}
                     <tr>
-                        <td><b>João Silva</b></td>
-                        <td>#12345</td>
-                        <td>Laptop Dell XPS</td>
-                        <td>125.000Kz</td>
-                        <td><span class="status-badge aprovado">Aprovado</span></td>
-                        <td><a href="#" class="primary">Ver Detalhes</a></td>
+                        <td><b>{{ f.funcionario.f_nome }}</b></td>
+                        <td>{{ f.data_inicio|date:"d/m/Y" }}</td>
+                        <td>{{ f.data_fim|date:"d/m/Y" }}</td>
+                        <td>{{ f.dias_uteis }}</td>
+                        <td>
+                            <span class="status-badge aprovado">Confirmado</span>
+                        </td>
                     </tr>
-                    <tr>
-                        <td><b>Maria Santos</b></td>
-                        <td>#12346</td>
-                        <td>iPhone 15 Pro</td>
-                        <td>285.000Kz</td>
-                        <td><span class="status-badge pendente">Pendente</span></td>
-                        <td><a href="#" class="primary">Ver Detalhes</a></td>
-                    </tr>
-                    <tr>
-                        <td><b>Carlos Costa</b></td>
-                        <td>#12347</td>
-                        <td>Samsung Galaxy S24</td>
-                        <td>195.000Kz</td>
-                        <td><span class="status-badge aprovado">Aprovado</span></td>
-                        <td><a href="#" class="primary">Ver Detalhes</a></td>
-                    </tr>
-                    <tr>
-                        <td><b>Ana Oliveira</b></td>
-                        <td>#12348</td>
-                        <td>MacBook Air M3</td>
-                        <td>425.000Kz</td>
-                        <td><span class="status-badge cancelado">Cancelado</span></td>
-                        <td><a href="#" class="primary">Ver Detalhes</a></td>
-                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">Nenhuma ausência agendada para o período.</td></tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- Gráficos -->
         <div class="graficos">
             <div class="header-graficos">
-                <h2>Estatísticas</h2>
+                <h2>Distribuição Organizacional</h2>
                 <div class="controles-tipo">
                     <button class="btn-tipo active" data-tipo="linha">
                         <span class="material-icons-sharp">show_chart</span>
@@ -1014,8 +958,8 @@
 
             <div class="container-grafico">
                 <div class="tabs-modulos">
-                    <button class="tab-modulo active" data-modulo="vendas">Vendas</button>
-                    <button class="tab-modulo" data-modulo="stock">Stock</button>
+                    <button class="tab-modulo active" data-modulo="rh">Colaboradores / Departamento</button>
+                    <button class="tab-modulo" data-modulo="vagas">Vagas / Tipo</button>
                 </div>
 
                 <div class="area-grafico">
@@ -1028,7 +972,6 @@
                 </div>
             </div>
          
-
             <a href="#">Mostrar tudo</a>
         </div>
 
@@ -1045,12 +988,12 @@
         </div>
 
         <!-- Assistente IA -->
-        <div class="assistente-ia" onclick="showToast('Bumba, Alcides!', 'info')">
+        <div class="assistente-ia" onclick="window.location.href='{% url 'agente-ia' %}'">
             <h3>
                 <span class="material-symbols-outlined">smart_toy</span>
                 Assistente IA
             </h3>
-            <p>Olá sou o CRONOS! Como posso ajudar você hoje?</p>
+            <p>Olá! Sou o CRONOS. Tenho acesso a {{ total_func }} registos e posso gerar relatórios dinâmicos.</p>
         </div>
 
         <!-- Lembretes -->
@@ -1060,51 +1003,33 @@
                 <span class="material-icons-sharp">notifications_none</span>
             </div>
 
+            {% if ferias_hoje > 0 %}
             <div class="notification">
                 <div class="icon">
-                    <span class="material-icons-sharp">volume_up</span>
+                    <span class="material-icons-sharp">flight_takeoff</span>
                 </div>
                 <div class="content">
                     <div class="info">
-                        <h3>Reunião de Equipa</h3>
-                        <small class="text-muted">08:00 AM - 09:30 AM</small>
+                        <h3>Colaboradores Ausentes</h3>
+                        <small class="text-muted">{{ ferias_hoje }} em gozo de férias hoje</small>
                     </div>
-                    <span class="material-icons-sharp">more_vert</span>
                 </div>
             </div>
-
+            {% endif %}
+            
+            {% if solicitacoes_pendentes > 0 %}
             <div class="notification deactive">
                 <div class="icon">
-                    <span class="material-icons-sharp">edit</span>
+                    <span class="material-icons-sharp">pending_actions</span>
                 </div>
                 <div class="content">
                     <div class="info">
-                        <h3>Relatório Mensal</h3>
-                        <small class="text-muted">Prazo: Amanhã</small>
+                        <h3>Férias Pendentes</h3>
+                        <small class="text-muted">{{ solicitacoes_pendentes }} pedidos por validar</small>
                     </div>
-                    <span class="material-icons-sharp">more_vert</span>
                 </div>
             </div>
-
-            <div class="notification">
-                <div class="icon">
-                    <span class="material-icons-sharp">shopping_cart</span>
-                </div>
-                <div class="content">
-                    <div class="info">
-                        <h3>Nova Encomenda</h3>
-                        <small class="text-muted">Ordem #85631</small>
-                    </div>
-                    <span class="material-icons-sharp">more_vert</span>
-                </div>
-            </div>
-
-            <div class="notification add-lembrete">
-                <div>
-                    <span class="material-icons-sharp">add</span>
-                    <h3>Adicionar Lembrete</h3>
-                </div>
-            </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -1145,12 +1070,12 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-// ============== SPARKLINES (Mini Gráficos) ==============
+// ============== SPARKLINES DINÂMICOS ==============
 function criarSparklines() {
-    // Sparkline Vendas
-    const sparklineVendasOptions = {
+    // Sparkline Funcionários
+    const sparklineFuncOptions = {
         series: [{
-            data: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000]
+            data: [{{ total_func|add:"-5" }}, {{ total_func|add:"-3" }}, {{ total_func }}]
         }],
         chart: {
             type: 'area',
@@ -1173,12 +1098,12 @@ function criarSparklines() {
         },
         colors: ['#1B9C85']
     };
-    new ApexCharts(document.querySelector("#sparklineVendas"), sparklineVendasOptions).render();
+    new ApexCharts(document.querySelector("#sparklineFunc"), sparklineFuncOptions).render();
 
-    // Sparkline Users
-    const sparklineUsersOptions = {
+    // Sparkline Vagas
+    const sparklineVagasOptions = {
         series: [{
-            data: [450, 420, 380, 350, 320, 290, 260, 230]
+            data: [2, 5, 3, {{ vagas_abertas }}]
         }],
         chart: {
             type: 'area',
@@ -1196,12 +1121,12 @@ function criarSparklines() {
         },
         colors: ['#FF0060']
     };
-    new ApexCharts(document.querySelector("#sparklineUsers"), sparklineUsersOptions).render();
+    new ApexCharts(document.querySelector("#sparklineVagas"), sparklineVagasOptions).render();
 
-    // Sparkline Pendentes
-    const sparklinePendentesOptions = {
+    // Sparkline Férias
+    const sparklineFeriasOptions = {
         series: [{
-            data: [100, 110, 120, 130, 135, 140, 145, 150]
+            data: [0, 1, 2, {{ ferias_hoje }}]
         }],
         chart: {
             type: 'area',
@@ -1219,31 +1144,31 @@ function criarSparklines() {
         },
         colors: ['#6C9BCF']
     };
-    new ApexCharts(document.querySelector("#sparklinePendentes"), sparklinePendentesOptions).render();
+    new ApexCharts(document.querySelector("#sparklineFerias"), sparklineFeriasOptions).render();
 }
 
-// ============== DADOS DOS GRÁFICOS ==============
+// ============== DADOS DOS GRÁFICOS DINÂMICOS ==============
 const dadosGraficos = {
-    vendas: {
+    rh: {
         linha: {
-            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            dados: [12000, 19000, 15000, 25000, 22000, 30000, 28000, 35000, 32000, 40000, 38000, 45000],
-            titulo: 'Vendas Mensais (Kz)'
+            labels: {{ depts_labels|safe|default:"[]" }},
+            dados: {{ depts_counts|safe|default:"[]" }},
+            titulo: 'Funcionários por Departamento'
         },
         pizza: {
-            labels: ['Eletrónicos', 'Vestuário', 'Alimentos', 'Livros', 'Outros'],
-            dados: [35, 25, 20, 12, 8]
+            labels: {{ depts_labels|safe|default:"[]" }},
+            dados: {{ depts_counts|safe|default:"[]" }}
         }
     },
-    stock: {
+    vagas: {
         linha: {
-            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            dados: [850, 920, 880, 1050, 1100, 1080, 1200, 1150, 1300, 1280, 1400, 1450],
-            titulo: 'Stock Total (unidades)'
+            labels: {{ vagas_labels|safe|default:"[]" }},
+            dados: {{ vagas_counts|safe|default:"[]" }},
+            titulo: 'Candidaturas por Vaga'
         },
         pizza: {
-            labels: ['Disponível', 'Reservado', 'Em Trânsito', 'Baixo', 'Esgotado'],
-            dados: [40, 25, 20, 10, 5]
+            labels: ['Abertas', 'Em Seleção', 'Fechadas'],
+            dados: [{{ vagas_abertas }}, 2, 8]
         }
     }
 };
@@ -1256,11 +1181,11 @@ function inicializarGraficos() {
     graficoLinha = new Chart(ctxLinha, {
         type: 'line',
         data: {
-            labels: dadosGraficos.vendas.linha.labels,
+            labels: dadosGraficos.rh.linha.labels,
             datasets: [{
-                label: dadosGraficos.vendas.linha.titulo,
-                data: dadosGraficos.vendas.linha.dados,
-                borderColor: '#6C9BCF',
+                label: dadosGraficos.rh.linha.titulo,
+                data: dadosGraficos.rh.linha.dados,
+                borderColor: '#1B9C85',
                 backgroundColor: 'rgba(108, 155, 207, 0.1)',
                 tension: 0.4,
                 fill: true,
@@ -1307,9 +1232,9 @@ function inicializarGraficos() {
     graficoPizza = new Chart(ctxPizza, {
         type: 'doughnut',
         data: {
-            labels: dadosGraficos.vendas.pizza.labels,
+            labels: dadosGraficos.rh.pizza.labels,
             datasets: [{
-                data: dadosGraficos.vendas.pizza.dados,
+                data: dadosGraficos.rh.pizza.dados,
                 backgroundColor: [
                     '#6C9BCF',
                     '#1B9C85',

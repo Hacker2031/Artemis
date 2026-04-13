@@ -438,6 +438,7 @@
                                     <th>Produto</th>
                                     <th>Categoria</th>
                                     <th>Stock Atual</th>
+                                    <th>Stock Mínimo</th>
                                     <th>Preço Custo</th>
                                     <th>Status</th>
                                 </tr>
@@ -449,6 +450,7 @@
                                     <td><strong>{{ p.nome }}</strong></td>
                                     <td>{{ p.categoria.nome }}</td>
                                     <td>{{ p.stock_atual }}</td>
+                                    <td>{{ p.stock_minimo }}</td>
                                     <td>{{ p.preco_custo }} Kz</td>
                                     <td>
                                         <span class="type-badge {% if p.stock_atual <= p.stock_minimo %}type-S{% else %}type-E{% endif %}">

@@ -126,6 +126,13 @@ TIME_ZONE = 'UTC'
 
 USE_TZ = True
 
+# Configuração de Expiração de Sessão por Inatividade (4 horas)
+
+SESSION_COOKIE_AGE = 14400 
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

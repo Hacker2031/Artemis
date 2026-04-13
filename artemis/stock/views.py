@@ -130,18 +130,19 @@ def export_inventario(request):
     elements = [Paragraph("Relatório de Inventário de Stock", styles['Title'])]
 
     # Cabeçalhos da tabela
-    data = [['ID Produto', 'Nome', 'Categoria', 'Stock Atual', 'Preço Custo', 'Valor Total']]
+    data = [['ID Produto', 'Nome', 'Categoria', 'Stock Atual', 'Stock Mínimo','Preço Custo', 'Valor Total']]
     
     total_geral = 0
     for p in produtos:
         stock = p.stock_atual
+        stock_min = p.stock_minimo
         valor_item = stock * p.preco_custo
         total_geral += valor_item
         
         categoria_nome = p.categoria.nome if p.categoria else 'N/A'
-        data.append([p.id_produto, p.nome, categoria_nome, str(stock), f"{p.preco_custo} Kz", f"{valor_item} Kz"])
+        data.append([p.id_produto, p.nome, categoria_nome, str(stock), str(stock_min), f"{p.preco_custo} Kz", f"{valor_item} Kz"])
 
-    data.append(['', '', '', '', 'TOTAL GERAL:', f"{total_geral} Kz"])
+    data.append(['', '', '', '', '', 'TOTAL GERAL:', f"{total_geral} Kz"])
 
     table = Table(data)
     table.setStyle(TableStyle([
