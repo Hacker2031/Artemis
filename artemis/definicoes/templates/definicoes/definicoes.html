@@ -1,262 +1,302 @@
 {% extends "layout.html" %}
 {% load static %}
 
-
-
-
-{%block extra_css%}
-
-
-        .settings-section { background-color: var(--color-white); padding: 2rem; border-radius: var(--border-radius-2); box-shadow: var(--box-shadow-sm); margin-bottom: 1.5rem; }
-        .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem 0; border-bottom: 1px solid var(--color-light); }
-        .settings-item:last-child { border-bottom: none; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-light); transition: 0.4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: 0.4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--color-success); }
-        input:checked + .slider:before { transform: translateX(26px); }
-        .theme-option { background-color: var(--color-white); padding: 1.5rem; border-radius: var(--border-radius-2); box-shadow: var(--box-shadow-sm); cursor: pointer; transition: var(--transition-all); border: 2px solid transparent; }
-        .theme-option:hover { border-color: var(--color-primary); transform: translateY(-3px); }
-        .theme-option.active { border-color: var(--color-success); background-color: var(--color-light); }
-        .color-picker { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid var(--color-light); transition: var(--transition-all); }
-        .color-picker:hover { transform: scale(1.1); }
-        .backup-card { background: linear-gradient(135deg, rgba(108, 155, 207, 0.1), rgba(27, 156, 133, 0.1)); padding: 1.5rem; border-radius: var(--border-radius-2); margin-bottom: 1rem; }
-        .security-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background-color: var(--color-light); border-radius: 2rem; font-size: 0.85rem; }
-        .user-permission { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--color-light); border-radius: var(--border-radius-1); margin-bottom: 0.8rem; }
-        /* ── Layout: 2-col grid (main + lado-direito) ── */
+{% block extra_css %}
+        .sistema-container { max-width: 1200px; margin: 0 auto; }
+        .sistema-tabs { display: flex; background: var(--color-white); border-radius: var(--border-radius-2) var(--border-radius-2) 0 0; box-shadow: var(--box-shadow-sm); overflow: hidden; }
+        .sistema-tab { flex: 1; padding: 1rem 0; text-align: center; background: none; border: none; font-weight: 500; cursor: pointer; transition: var(--transition-all); color: var(--color-dark-variant); position: relative; }
+        .sistema-tab.active { background: var(--color-primary); color: white; }
+        .sistema-tab:not(.active):hover { background: rgba(108,155,207,0.1); }
+        .tab-content { display: none; background: var(--color-white); border-radius: 0 0 var(--border-radius-2) var(--border-radius-2); box-shadow: var(--box-shadow); padding: 2rem; }
+        .tab-content.active { display: block; }
         
-        .lado-direito { margin-right: 0; }
-        canvas { max-height: 260px; }
-
+        /* Form styles */
+        .user-form-card { background: linear-gradient(135deg, rgba(108,155,207,0.05), rgba(27,156,133,0.05)); border: 1px solid rgba(108,155,207,0.2); padding: 2rem; border-radius: var(--border-radius-2); margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: 500; margin-bottom: 0.5rem; color: var(--color-dark); }
+        .form-group input, .form-group select { padding: 0.75rem 1rem; border: 2px solid var(--color-light); border-radius: var(--border-radius-1); background: white; transition: var(--transition-all); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(108,155,207,0.1); }
+        .btn-primary { background: linear-gradient(135deg, var(--color-primary), #5a8bc5); color: white; border: none; padding: 1rem 2rem; border-radius: var(--border-radius-1); font-weight: 600; cursor: pointer; transition: var(--transition-all); font-size: 1rem; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--box-shadow); }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        /* Users table */
+        .users-table-container { overflow-x: auto; }
+        .users-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--border-radius-1); overflow: hidden; box-shadow: var(--box-shadow-sm); }
+        .users-table th { background: var(--color-primary); color: white; padding: 1rem; text-align: left; font-weight: 600; }
+        .users-table td { padding: 1rem; border-bottom: 1px solid var(--color-light); }
+        .users-table tr:hover { background: rgba(108,155,207,0.05); }
+        .badge { padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 500; }
+        .badge-tipo { background: rgba(27,156,133,0.2); color: var(--color-success); }
+        .badge-nivel { background: rgba(247,208,96,0.2); color: var(--color-warning); }
+        .no-users { text-align: center; padding: 3rem; color: var(--color-dark-variant); }
+        
+        /* Integracoes */
+        .integration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .integration-card { background: linear-gradient(135deg, rgba(108,155,207,0.08), rgba(27,156,133,0.08)); border: 1px solid rgba(108,155,207,0.2); border-radius: var(--border-radius-2); padding: 1.5rem; text-align: center; transition: var(--transition-all); }
+        .integration-card:hover { transform: translateY(-5px); box-shadow: var(--box-shadow); }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: var(--color-white); padding: 2rem; border-radius: var(--border-radius-2); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: var(--box-shadow); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: var(--color-dark-variant); }
+        
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } .sistema-tabs { flex-direction: column; } }
 {% endblock %}
 
-{%block conteudo %}
-            <div class="modulo-container">
-                <div class="modulo-header">
-                    <h1><span class="material-symbols-outlined">settings</span>Configurações do Sistema</h1>
-                </div>
-                <div class="tabs">
-                    <button class="tab active" onclick="mudarTab('geral')">Geral</button>
-                    <button class="tab" onclick="mudarTab('aparencia')">Aparência</button>
-                    <button class="tab" onclick="mudarTab('notificacoes')">Notificações</button>
-                    <button class="tab" onclick="mudarTab('seguranca')">Segurança</button>
-                    <button class="tab" onclick="mudarTab('integracao')">Integrações</button>
-                    <button class="tab" onclick="mudarTab('backup')">Backup</button>
-                </div>
-                <div class="tab-content active" id="geral">
-                    <div class="settings-section">
-                        <h3 class="mb-3">Configurações Gerais</h3>
-                        <div class="settings-item">
-                            <div><h4>Nome da Empresa</h4><p class="text-muted">Artemis ERP Solutions</p></div>
-                            <button class="btn btn-sm btn-secondary">Editar</button>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Fuso Horário</h4><p class="text-muted">GMT+1 (Luanda)</p></div>
-                            <select class="form-control" style="max-width: 200px;"><option>GMT+1 (Luanda)</option><option>GMT+0 (UTC)</option></select>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Moeda Padrão</h4><p class="text-muted">Kwanza Angolano (Kz)</p></div>
-                            <select class="form-control" style="max-width: 200px;"><option>Kz</option><option>USD</option><option>EUR</option></select>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Idioma do Sistema</h4><p class="text-muted">Português</p></div>
-                            <select class="form-control" style="max-width: 200px;"><option>Português</option><option>English</option></select>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Formato de Data</h4><p class="text-muted">DD/MM/AAAA</p></div>
-                            <select class="form-control" style="max-width: 200px;"><option>DD/MM/AAAA</option><option>MM/DD/AAAA</option><option>AAAA-MM-DD</option></select>
-                        </div>
+{% block conteudo %}
+<div class="sistema-container">
+    <div class="modulo-header">
+        <h1><span class="material-symbols-outlined">settings</span>Sistema</h1>
+        <p>Gestão de utilizadores e integrações</p>
+    </div>
+    
+    <div class="sistema-tabs">
+        <button class="sistema-tab active" data-tab="geral">Geral</button>
+        <button class="sistema-tab" data-tab="integracoes">Integrações</button>
+    </div>
+    
+    <!-- Geral Tab -->
+    <div class="tab-content active" id="geral">
+        <!-- Form Novo User -->
+        <div class="user-form-card">
+            <h3><span class="material-symbols-outlined">person_add</span> Novo Utilizador</h3>
+            <form id="userForm" method="post" action="{% url 'create_user' %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" name="username" required maxlength="150">
                     </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Funcionalidades</h3>
-                        <div class="settings-item">
-                            <div><h4>Modo Multi-empresa</h4><p class="text-muted">Gerir múltiplas empresas num único sistema</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Análise de IA</h4><p class="text-muted">Insights e previsões automáticas</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Auditoria Automática</h4><p class="text-muted">Registar todas as ações no sistema</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" name="first_name">
                     </div>
-                </div>
-                <div class="tab-content" id="aparencia">
-                    <div class="settings-section">
-                        <h3 class="mb-3">Tema</h3>
-                        <div class="grid grid-3">
-                            <div class="theme-option active">
-                                <div class="flex-between mb-2"><h4>Claro</h4><span class="material-icons-sharp success">check_circle</span></div>
-                                <div style="background: linear-gradient(135deg, #f6f6f9, #ffffff); height: 100px; border-radius: 0.5rem;"></div>
-                            </div>
-                            <div class="theme-option">
-                                <div class="flex-between mb-2"><h4>Escuro</h4><span class="material-icons-sharp" style="color: var(--color-light);">radio_button_unchecked</span></div>
-                                <div style="background: linear-gradient(135deg, #181a1e, #202528); height: 100px; border-radius: 0.5rem;"></div>
-                            </div>
-                            <div class="theme-option">
-                                <div class="flex-between mb-2"><h4>Automático</h4><span class="material-icons-sharp" style="color: var(--color-light);">radio_button_unchecked</span></div>
-                                <div style="background: linear-gradient(135deg, #f6f6f9, #181a1e); height: 100px; border-radius: 0.5rem;"></div>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label>Apelido</label>
+                        <input type="text" name="last_name">
                     </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Cores Personalizadas</h3>
-                        <div class="flex gap-2 flex-wrap">
-                            <div><p class="text-muted mb-1">Primária</p><div class="color-picker" style="background-color: #6C9BCF;"></div></div>
-                            <div><p class="text-muted mb-1">Sucesso</p><div class="color-picker" style="background-color: #1B9C85;"></div></div>
-                            <div><p class="text-muted mb-1">Perigo</p><div class="color-picker" style="background-color: #FF0060;"></div></div>
-                            <div><p class="text-muted mb-1">Aviso</p><div class="color-picker" style="background-color: #F7D060;"></div></div>
-                        </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email">
                     </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Layout</h3>
-                        <div class="settings-item">
-                            <div><h4>Barra Lateral Compacta</h4><p class="text-muted">Mostrar apenas ícones na barra lateral</p></div>
-                            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Animações</h4><p class="text-muted">Ativar animações de transição</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
+                    <div class="form-group">
+                        <label>Senha *</label>
+                        <input type="password" name="password1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Senha *</label>
+                        <input type="password" name="password2" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo/Sector *</label>
+                        <select name="tipo" required>
+                            <option value="rh">Recursos Humanos</option>
+                            <option value="vendas">Vendas</option>
+                            <option value="stock">Stock</option>
+                            <option value="gestor">Gestor</option>
+                            <option value="admin">Admin</option>
+                            <option value="Programador">Programador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nível *</label>
+                        <select name="nivel" required>
+                            <option value="operario">Operário</option>
+                            <option value="supervisor">Supervisor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Vincular a Funcionário (Opcional)</label>
+                        <select name="f_id">
+                            <option value="">-- Selecione um Funcionário --</option>
+                            {% for func in funcionarios %}
+                                <option value="{{ func.f_id }}">{{ func.f_nome }} (ID: {{ func.f_id }})</option>
+                            {% endfor %}
+                        </select>
+                        <small>Escolha o funcionário que utilizará esta conta</small>
                     </div>
                 </div>
-                <div class="tab-content" id="notificacoes">
-                    <div class="settings-section">
-                        <h3 class="mb-3">Notificações Email</h3>
-                        <div class="settings-item">
-                            <div><h4>Relatórios Diários</h4><p class="text-muted">Receber resumo diário por email</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Alertas de Stock</h4><p class="text-muted">Notificar quando stock estiver baixo</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Novas Vendas</h4><p class="text-muted">Notificar em tempo real sobre vendas</p></div>
-                            <label class="switch"><input type="checkbox"><span class="slider"></span></label>
-                        </div>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Notificações Push</h3>
-                        <div class="settings-item">
-                            <div><h4>Ativar Push</h4><p class="text-muted">Receber notificações no navegador</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="seguranca">
-                    <div class="settings-section">
-                        <h3 class="mb-3">Autenticação</h3>
-                        <div class="settings-item">
-                            <div><h4>Autenticação de Dois Fatores (2FA)</h4><p class="text-muted">Adicionar camada extra de segurança</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Sessões Simultâneas</h4><p class="text-muted">2 sessões ativas</p></div>
-                            <button class="btn btn-sm btn-danger">Encerrar Todas</button>
-                        </div>
-                        <div class="security-badge success mt-2"><span class="material-icons-sharp">verified_user</span>Nível de Segurança: Alto</div>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Permissões de Usuários</h3>
-                        <div class="user-permission">
-                            <div><h4>Admin</h4><p class="text-muted">Acesso total ao sistema</p></div>
-                            <span class="badge badge-danger">Total</span>
-                        </div>
-                        <div class="user-permission">
-                            <div><h4>Gerente</h4><p class="text-muted">Gestão de equipe e relatórios</p></div>
-                            <span class="badge badge-warning">Avançado</span>
-                        </div>
-                        <div class="user-permission">
-                            <div><h4>Funcionário</h4><p class="text-muted">Acesso básico</p></div>
-                            <span class="badge badge-info">Básico</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="integracao">
-                    <div class="settings-section">
-                        <h3 class="mb-3">APIs e Integrações</h3>
-                        <div class="settings-item">
-                            <div><h4>Chave API</h4><p class="text-muted">ak_live_xxxxxxxxxxxxxxxx</p></div>
-                            <div class="flex gap-1"><button class="btn btn-sm btn-secondary">Copiar</button><button class="btn btn-sm btn-danger">Regenerar</button></div>
-                        </div>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Integrações Ativas</h3>
-                        <div class="grid grid-2">
-                            <div class="card"><div class="flex-between"><div><h4>Google Workspace</h4><p class="text-muted">Email e Calendário</p></div><span class="badge badge-success">Conectado</span></div></div>
-                            <div class="card"><div class="flex-between"><div><h4>WhatsApp Business</h4><p class="text-muted">Notificações</p></div><span class="badge badge-success">Conectado</span></div></div>
-                            <div class="card"><div class="flex-between"><div><h4>Slack</h4><p class="text-muted">Comunicação</p></div><span class="badge badge-info">Disponível</span></div></div>
-                            <div class="card"><div class="flex-between"><div><h4>Zapier</h4><p class="text-muted">Automações</p></div><span class="badge badge-info">Disponível</span></div></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="backup">
-                    <div class="backup-card">
-                        <h3 class="mb-2">Último Backup</h3>
-                        <p class="text-muted">09/02/2026 às 03:00 PM</p>
-                        <div class="flex gap-2 mt-2"><span class="badge badge-success">Completo</span><span class="badge badge-info">127.5 GB</span></div>
-                    </div>
-                    <div class="settings-section">
-                        <h3 class="mb-3">Configurações de Backup</h3>
-                        <div class="settings-item">
-                            <div><h4>Backup Automático</h4><p class="text-muted">Diariamente às 03:00</p></div>
-                            <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Retenção</h4><p class="text-muted">Manter backups por 30 dias</p></div>
-                            <select class="form-control" style="max-width: 200px;"><option>30 dias</option><option>60 dias</option><option>90 dias</option></select>
-                        </div>
-                        <div class="settings-item">
-                            <div><h4>Armazenamento</h4><p class="text-muted">Cloud Storage (Encrypted)</p></div>
-                            <span class="badge badge-success">Seguro</span>
-                        </div>
-                        <button class="btn btn-primary mt-3" onclick="fazerBackup()"><span class="material-icons-sharp">backup</span>Fazer Backup Agora</button>
-                    </div>
-                </div>
+                <button type="submit" class="btn-primary mt-3">
+                    <span class="material-symbols-outlined">add</span> Criar Utilizador
+                </button>
+            </form>
+        </div>
+        
+        <!-- Lista Users -->
+        <div class="users-table-container">
+            <h3><span class="material-symbols-outlined">people</span> Utilizadores Cadastrados ({{ users.count }})</h3>
+            {% if users %}
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Tipo</th>
+                        <th>Nível</th>
+                        <th>F_ID</th>
+                        <th>Data Criação</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for user in users %}
+                    <tr>
+                        <td><strong>{{ user.username }}</strong></td>
+                        <td>{{ user.first_name }} {{ user.last_name }}</td>
+                        <td>{{ user.email|default:"—" }}</td>
+                        <td><span class="badge badge-tipo">{{ user.get_tipo_display }}</span></td>
+                        <td><span class="badge badge-nivel">{{ user.get_nivel_display }}</span></td>
+                        <td>{{ user.f_id.f_id|default:"—" }}</td>
+                        <td>{{ user.date_joined|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-users">
+                <span class="material-symbols-outlined" style="font-size: 4rem; color: var(--color-light);">person_off</span>
+                <h4>Nenhum utilizador cadastrado</h4>
+                <p>Crie o primeiro utilizador acima.</p>
             </div>
-{% endblock %}
-
-{% block painel_direito %}
-        <div class="lado-direito">
-            <div class="card mt-2">
-                <h3 class="mb-2">Estado do Sistema</h3>
-                <div class="flex-between mb-2"><span>CPU</span><span class="success">32%</span></div>
-                <div class="progress-bar mb-2"><div class="progress-fill success" style="width: 32%"></div></div>
-                <div class="flex-between mb-2"><span>Memória</span><span class="warning">68%</span></div>
-                <div class="progress-bar mb-2"><div class="progress-fill warning" style="width: 68%"></div></div>
-                <div class="flex-between mb-2"><span>Storage</span><span class="primary">45%</span></div>
-                <div class="progress-bar"><div class="progress-fill primary" style="width: 45%"></div></div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Integracoes Tab -->
+    <div class="tab-content" id="integracoes">
+        <h3><span class="material-symbols-outlined">integration_instructions</span>Integrações</h3>
+        <p class="text-muted mb-4">Configure APIs e serviços externos</p>
+        <div class="integration-grid">
+            <div class="integration-card">
+                <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--color-primary); display: block; margin-bottom: 1rem;">api</span>
+                <h4>API Externa</h4>
+                <p>Gerir chaves API e webhooks</p>
+                <button class="btn btn-secondary btn-sm">Configurar</button>
             </div>
-            <div class="card mt-2">
-                <h3 class="mb-2">Versão</h3>
-                <p><strong>Artemis ERP - Developed by WAGYUU SQUAD</strong></p>
-                <p class="text-muted">v2.5.0 (Build 20260209)</p>
-                <button class="btn btn-outline w-100 mt-2"><span class="material-icons-sharp">update</span>Verificar Atualizações</button>
+            <div class="integration-card">
+                <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--color-success); display: block; margin-bottom: 1rem;">cloud</span>
+                <h4>Cloud Storage</h4>
+                <p>Backup automático e ficheiros</p>
+                <button class="btn btn-secondary btn-sm">Configurar</button>
+            </div>
+            <div class="integration-card">
+                <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--color-warning); display: block; margin-bottom: 1rem;">mail</span>
+                <h4>Email Service</h4>
+                <p>SMTP para notificações</p>
+                <button class="btn btn-secondary btn-sm">Configurar</button>
+            </div>
+            <div class="integration-card">
+                <span class="material-symbols-outlined" style="font-size: 3rem; color: var(--color-purple); display: block; margin-bottom: 1rem;">psychology</span>
+                <h4>IA Agent</h4>
+                <p>Configurar modelo de IA</p>
+                <button class="btn btn-secondary btn-sm">Configurar</button>
             </div>
         </div>
+    </div>
+</div>
 
+<!-- Success/Error Modal -->
+<div id="notificationModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle"></h3>
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+        </div>
+        <div id="modalBody"></div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        document.querySelector('.dark-mode').addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode-variables');
-            this.querySelector('span:nth-child(1)').classList.toggle('active');
-            this.querySelector('span:nth-child(2)').classList.toggle('active');
+<script>
+let currentUsers = {{ users|safe }}; // Initial users for client-side
+
+// Tab switching
+document.querySelectorAll('.sistema-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.sistema-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Form submit AJAX
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const submitBtn = e.target.querySelector('.btn-primary');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Criando...';
+    
+    try {
+        const response = await fetch("{% url 'create_user' %}", {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
         });
-        function mudarTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.closest('.tab').classList.add('active');
-            document.getElementById(tabName).classList.add('active');
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Sucesso!', 'Utilizador criado com sucesso.', 'success');
+            e.target.reset();
+            addUserToTable(data.user);
+            updateCount();
+        } else {
+            showNotification('Erro!', data.error || 'Erro desconhecido.', 'error');
         }
-        function fazerBackup() {
-            alert('Iniciando backup...');
-            setTimeout(() => alert('Backup concluído com sucesso!'), 2000);
-        }
-    </script>
-{%endblock%}
+    } catch (err) {
+        showNotification('Erro!', 'Erro de conexão. Tente novamente.', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined">add</span> Criar Utilizador';
+    }
+});
+
+// Add user to table
+function addUserToTable(user) {
+    const tbody = document.getElementById('usersTableBody');
+    const row = tbody.insertRow(0);
+    row.innerHTML = `
+        <td><strong>${user.username}</strong></td>
+        <td>${user.name || '—'}</td>
+        <td>${user.email || '—'}</td>
+        <td><span class="badge badge-tipo">${user.tipo}</span></td>
+        <td><span class="badge badge-nivel">${user.nivel}</span></td>
+        <td>${user.f_id || '—'}</td>
+        <td>${new Date().toLocaleString('pt-PT')}</td>
+    `;
+}
+
+// Update count
+function updateCount() {
+    const countEl = document.querySelector('h3:has(span[title="people"])');
+    if (countEl) countEl.innerHTML = `<span class="material-symbols-outlined">people</span> Utilizadores Cadastrados (${document.querySelectorAll('#usersTableBody tr').length})`;
+}
+
+// Notification modal
+function showNotification(title, message, type) {
+    const modal = document.getElementById('notificationModal');
+    const titleEl = document.getElementById('modalTitle');
+    const bodyEl = document.getElementById('modalBody');
+    
+    titleEl.textContent = title;
+    bodyEl.innerHTML = `<p>${message}</p>`;
+    modal.classList.add('active');
+    
+    // Auto close after 4s
+    setTimeout(closeModal, 4000);
+}
+
+function closeModal() {
+    document.getElementById('notificationModal').classList.remove('active');
+}
+
+// Initial count update
+updateCount();
+</script>
+{% endblock %}

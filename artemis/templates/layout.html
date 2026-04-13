@@ -617,10 +617,10 @@
         
         <!-- Definições -->
         {% if request.user.tipo in 'admin Programador' %}
-        <a href="{% url 'definicoes' %}" 
-           class="{% if request.resolver_match.url_name == 'definicoes' %}active{% endif %}">
+        <a href="{% url 'sistema' %}" 
+           class="{% if request.resolver_match.url_name == 'sistema' %}active{% endif %}">
             <span class="material-symbols-outlined">settings</span>
-            <h3>Definições</h3>
+            <h3>Sistema</h3>
         </a>
         {% endif %}
     </div>

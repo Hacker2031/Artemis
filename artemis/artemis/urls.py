@@ -29,6 +29,6 @@ urlpatterns = [
     path('stock/', include("stock.urls")),
     path('relatorios/', include("relatorios.urls")),
     path('agente-ia/', include("cronos.urls")),
-    path('definicoes/', include("definicoes.urls")),
+    path('sistema/', include("definicoes.urls")),
 ]
 
