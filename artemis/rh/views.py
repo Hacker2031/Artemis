@@ -8,6 +8,10 @@ from django.contrib import messages
 from django.db.models import Sum 
 from django.core.serializers import serialize
 from datetime import datetime, date, timedelta
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 import json
 import os
 
@@ -76,6 +80,7 @@ def rhPage(request):
         'estado': Candidatos.ESTADO_CHOICES,
         'todos_funcionarios': todos_funcionarios,
         'funcionarios_para_solicitar': funcionarios_para_solicitar,
+        'candidatos_analise_count': Candidatos.objects.filter(estado='em_analise').count(),
         
         # Dados de férias
         'solicitacoes': PlanamentFerias.objects.all().order_by('-data_inicio'),
@@ -127,13 +132,11 @@ def salvarCandidato(request):
                 email = request.POST.get('email'),
                 telefone = request.POST.get('telefone'),
                 nacionalidade = request.POST.get('nacionalidade'),
-                data_candidatura = request.POST.get('data_candidatura') or None,
-                cv = request.POST.get('cv'),
+                cv = request.FILES.get('cv'),
                 estado = request.POST.get('estado'),
-                vaga_id = request.POST.get('vaga_id'),
+                vaga_id = request.POST.get('vaga_id'),  # Django aceita o sufixo _id para atribuir chaves
                 nota = request.POST.get('nota'),
                 fonte_recrutamento = request.POST.get('fonte_recrutamento')
-
             )
             novo_candidato.save()
             messages.success(request, "Candidato Criado com Sucesso")
@@ -309,7 +312,7 @@ def solicitarFerias(request):
                     return JsonResponse({'sucesso': False, 'erro': 'Funcionário sem registo de controlo'}, status=400)
             
             solicitacao = PlanamentFerias(
-                funcionario=funcionario,
+                funcionario_id=funcionario.f_id if hasattr(funcionario, 'f_id') else funcionario,
                 tipo_ausencia=tipo_ausencia,
                 data_inicio=data_inicio,
                 data_fim=data_fim,
@@ -352,8 +355,10 @@ def aprovarFerias(request, solicitacao_id):
             funcionario.save()
 
         solicitacao.status = 'aprovado'
-        # Usar o funcionário associado ao usuário, se existir
-        solicitacao.aprovado_por = getattr(request.user, 'f_id', 'Desenvolvedor')
+        # Corrigido: aprovado_por deve ser um objeto Funcionarios ou None, não uma string
+        if hasattr(request.user, 'f_id') and request.user.f_id:
+            solicitacao.aprovado_por = request.user.f_id
+            
         solicitacao.data_aprovacao = datetime.now()
         solicitacao.save()
         
@@ -696,3 +701,96 @@ def paginaFerias(request):
         messages.error(request, f"Erro ao carregar página de férias: {e}")
         return redirect('rh')
 
+@login_required(login_url="loginPage")
+@require_http_methods(["POST"])
+def atualizar_avaliacao(request):
+    """API para atualizar a nota de avaliação de um funcionário"""
+    try:
+        data = json.loads(request.body)
+        funcionario_id = data.get('id')
+        nova_nota = data.get('nota')
+        
+        funcionario = Funcionarios.objects.get(f_id=funcionario_id)
+        funcionario.avaliacao = nova_nota
+        funcionario.save()
+        
+        return JsonResponse({'sucesso': True, 'mensagem': 'Avaliação atualizada!'})
+    except Exception as e:
+        return JsonResponse({'sucesso': False, 'erro': str(e)}, status=400)
+
+@login_required(login_url="loginPage")
+def exportar_relatorio_candidatos(request):
+    """Gera PDF com candidatos e as vagas correspondentes"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="relatorio_candidaturas.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elements = [Paragraph("Relatório de Candidaturas por Vaga", styles['Title']), Spacer(1, 12)]
+
+    vagas = Vaga.objects.prefetch_related('candidatos').all()
+    
+    data = [['Vaga', 'Candidato', 'Email', 'Estado', 'Data']]
+    for vaga in vagas:
+        for cand in vaga.candidatos.all():
+            data.append([
+                vaga.titulo[:20], 
+                cand.nome[:25], 
+                cand.email, 
+                cand.get_estado_display(),
+                cand.data_candidatura.strftime('%d/%m/%Y')
+            ])
+
+    t = Table(data, colWidths=[100, 130, 150, 80, 70])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4f6ef7')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.HexColor('#f8f9fa')),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+    ]))
+    
+    elements.append(t)
+    doc.build(elements)
+    return response
+
+@login_required(login_url="loginPage")
+def exportar_todos_candidatos_pdf(request):
+    """Exporta lista completa de todos os candidatos do sistema"""
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="todos_candidatos.pdf"'
+
+    doc = SimpleDocTemplate(response, pagesize=landscape(letter))
+    styles = getSampleStyleSheet()
+    elements = [Paragraph("Listagem Geral de Candidatos", styles['Title']), Spacer(1, 12)]
+
+    candidatos = Candidatos.objects.all().order_by('-data_candidatura')
+    
+    data = [['Nome', 'Telefone', 'Email', 'Nacionalidade', 'Vaga', 'Estado']]
+    for c in candidatos:
+        vaga_nome = c.vaga.titulo if c.vaga else "N/A"
+        data.append([
+            c.nome, 
+            c.telefone or "N/A", 
+            c.email, 
+            c.get_nacionalidade_display(), 
+            vaga_nome, 
+            c.get_estado_display()
+        ])
+
+    t = Table(data)
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    elements.append(t)
+    doc.build(elements)
+    return response

@@ -10,38 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='relatoriogerado',
-            name='arquivo',
-        ),
-        migrations.AddField(
-            model_name='relatoriogerado',
-            name='arquivo_path',
-            field=models.CharField(blank=True, default='', max_length=500),
-        ),
-        migrations.AddField(
-            model_name='relatoriogerado',
-            name='nome_arquivo',
-            field=models.CharField(blank=True, default='', max_length=255),
-        ),
-        migrations.AlterField(
-            model_name='relatorioagendado',
-            name='formato',
-            field=models.CharField(choices=[('csv', 'CSV (Excel)'), ('json', 'JSON'), ('txt', 'Texto')], default='csv', max_length=10),
-        ),
-        migrations.AlterField(
-            model_name='relatorioagendado',
-            name='tipo',
-            field=models.CharField(choices=[('usuarios', 'Funcionários'), ('stock', 'Stock'), ('rh', 'RH / Recrutamento'), ('financeiro', 'Financeiro'), ('vendas', 'Vendas'), ('custom', 'Personalizado')], default='custom', max_length=20),
-        ),
-        migrations.AlterField(
-            model_name='relatoriogerado',
-            name='periodo_ref',
-            field=models.CharField(max_length=50),
-        ),
-        migrations.AlterField(
-            model_name='relatoriogerado',
-            name='status',
-            field=models.CharField(choices=[('processando', 'Processando'), ('concluido', 'Concluído'), ('erro', 'Erro')], default='processando', max_length=15),
-        ),
+      
     ]

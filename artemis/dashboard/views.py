@@ -22,8 +22,8 @@ def ShowDashboard(request):
     # Dados para a Tabela: Próximas ausências agendadas (Substituindo Candidaturas na visão principal)
     proximas_ferias = PlanamentFerias.objects.filter(
         status='aprovado', 
-        data_inicio__gt=hoje
-    ).select_related('funcionario').order_by('data_inicio')[:5]
+        data_fim__gt=hoje
+    ).order_by('data_inicio')
 
     # Dados para Gráficos: Distribuição por Departamento
     depts = Departamentos.objects.annotate(total=Count('funcionarios')).order_by('-total')
