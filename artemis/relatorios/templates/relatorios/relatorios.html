@@ -1,172 +1,522 @@
 {% extends "layout.html" %}
 {% load static %}
 
-
-
-{% block extra_css %}
-
-     .report-template {
-            background-color: var(--color-white);
-            padding: 1.5rem;
-            border-radius: var(--border-radius-2);
-            box-shadow: var(--box-shadow-sm);
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: var(--transition-all);
-            border-left: 4px solid var(--color-primary);
-        }
-        .report-template:hover { box-shadow: var(--box-shadow); transform: translateY(-3px); }
-        .report-icon { width: 60px; height: 60px; border-radius: var(--border-radius-1); background-color: var(--color-light); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--color-primary); margin-bottom: 1rem; }
-        .schedule-card { background: linear-gradient(135deg, rgba(108, 155, 207, 0.1), rgba(27, 156, 133, 0.1)); padding: 1.2rem; border-radius: var(--border-radius-2); margin-bottom: 1rem; }
-        .report-history-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid var(--color-light); }
-        .custom-field { margin-bottom: 1rem; padding: 1rem; background-color: var(--color-light); border-radius: var(--border-radius-1); }
-
-   
-        .lado-direito { margin-right: 0; }
-        canvas { max-height: 260px; }
-
-
-{% endblock extra_css %}
-
-
 {% block extra_links %}
+<style>
+    /* ── Module tabs ──────────────────────────────────────────────────── */
+    .mod-tabs {
+        display: flex; gap: 0.4rem; margin-bottom: 1rem;
+    }
+    .mod-tab {
+        flex: 1; padding: 0.55rem 0.3rem; border-radius: 8px;
+        border: 1px solid rgba(108,155,207,0.2);
+        background: transparent; color: inherit;
+        cursor: pointer; font-size: 0.75rem; text-align: center;
+        transition: all 0.2s; line-height: 1.3;
+    }
+    .mod-tab .tab-icon { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+    .mod-tab.active {
+        background: rgba(108,155,207,0.15);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+    .mod-tab:hover:not(.active) { background: rgba(108,155,207,0.07); }
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    /* ── Report cards (sidebar) ───────────────────────────────────────── */
+    .rel-card {
+        padding: 0.75rem 0.9rem; border-radius: 8px; margin-bottom: 0.45rem;
+        background: rgba(108,155,207,0.04);
+        border: 1px solid rgba(108,155,207,0.1);
+        cursor: pointer; transition: all 0.2s;
+    }
+    .rel-card:hover  { background: rgba(108,155,207,0.1); border-color: rgba(108,155,207,0.35); }
+    .rel-card.active { background: rgba(108,155,207,0.18); border-color: var(--color-primary); }
+    .rel-card-head   { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem; }
+    .rel-card-head span { font-size: 1.05rem; color: var(--color-primary); flex-shrink: 0; }
+    .rel-card h4     { font-size: 0.82rem; font-weight: 600; margin: 0; }
+    .rel-card p      { font-size: 0.73rem; color: var(--color-dark-variant); margin: 0; line-height: 1.4; }
 
+    /* ── Preview area ─────────────────────────────────────────────────── */
+    .preview-area {
+        background: var(--color-white);
+        border-radius: 14px;
+        padding: 1.5rem;
+        min-height: 420px;
+        box-shadow: var(--box-shadow-sm);
+        position: relative;
+    }
+
+    /* Placeholder */
+    .preview-placeholder {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        height: 360px; color: var(--color-dark-variant); gap: 0.8rem;
+        text-align: center;
+    }
+    .preview-placeholder .ph-icon {
+        font-size: 3.5rem; opacity: 0.2; color: var(--color-primary);
+    }
+    .preview-placeholder p { font-size: 0.88rem; max-width: 280px; }
+
+    /* Header */
+    .preview-header {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        margin-bottom: 1.2rem; padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(108,155,207,0.15);
+    }
+    .preview-header h2  { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .preview-meta       { font-size: 0.78rem; color: var(--color-dark-variant); }
+    .preview-actions    { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+    /* Markdown table */
+    .preview-content table {
+        border-collapse: collapse; width: 100%; margin: 0.8rem 0; font-size: 0.83rem;
+        overflow-x: auto; display: block;
+    }
+    .preview-content th, .preview-content td {
+        border: 1px solid rgba(108,155,207,0.18); padding: 5px 10px; text-align: left;
+        white-space: nowrap;
+    }
+    .preview-content th {
+        background: rgba(108,155,207,0.1); font-weight: 600;
+        color: var(--color-primary);
+    }
+    .preview-content tr:nth-child(even) { background: rgba(108,155,207,0.04); }
+    .preview-content h2  { font-size: 1rem; margin: 1rem 0 0.4rem; }
+    .preview-content h3  { font-size: 0.9rem; margin: 0.8rem 0 0.3rem; opacity: 0.85; }
+    .preview-content p   { margin: 0.35rem 0; font-size: 0.87rem; line-height: 1.6; }
+    .preview-content ul  { padding-left: 1.1rem; margin: 0.3rem 0; }
+    .preview-content li  { font-size: 0.85rem; margin: 0.2rem 0; }
+    .preview-content strong { font-weight: 600; }
+    .preview-content em     { font-style: italic; opacity: 0.85; }
+    .preview-content hr {
+        border: none; border-top: 1px solid rgba(108,155,207,0.18); margin: 0.8rem 0;
+    }
+
+    /* Chart */
+    .chart-wrapper {
+        margin: 1.2rem 0 0.5rem;
+        background: rgba(108,155,207,0.03);
+        border: 1px solid rgba(108,155,207,0.1);
+        border-radius: 10px; padding: 1rem;
+    }
+    .chart-wrapper canvas { max-height: 300px; }
+
+    /* Loading */
+    .loading-state {
+        display: flex; align-items: center; justify-content: center;
+        height: 300px; gap: 0.8rem; color: var(--color-dark-variant); flex-direction: column;
+    }
+    .spinner {
+        width: 28px; height: 28px;
+        border: 3px solid rgba(108,155,207,0.2);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error state */
+    .error-state {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        height: 300px; gap: 0.6rem; color: var(--color-danger); text-align: center;
+    }
+    .error-state span { font-size: 2.5rem; }
+    .error-state p    { font-size: 0.88rem; max-width: 300px; }
+
+    /* Badge */
+    .badge-total {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        background: rgba(27,156,133,0.12); color: var(--color-success);
+        border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 600;
+    }
+
+    /* Scrollable sidebar list */
+    #relList { max-height: calc(100vh - 280px); overflow-y: auto; padding-right: 2px; }
+</style>
 {% endblock %}
 
 {% block conteudo %}
+<div class="modulo-container">
+    <div class="modulo-header">
+        <h1>
+            <span class="material-symbols-outlined">edit_document</span>
+            Relatórios
+        </h1>
+        <div class="actions" id="previewActions" style="display:none;">
+            <button class="btn btn-outline" onclick="copiarMarkdown()" id="btnCopiar">
+                <span class="material-icons-sharp">content_copy</span>Copiar
+            </button>
+            <button class="btn btn-primary" onclick="exportarDocx()" id="btnExportar">
+                <span class="material-icons-sharp">download</span>Exportar .docx
+            </button>
+        </div>
+    </div>
 
-            <div class="modulo-container">
-                <div class="modulo-header">
-                    <h1><span class="material-symbols-outlined">edit_document</span>Centro de Relatórios</h1>
-                    <div class="actions">
-                        <button class="btn btn-outline"><span class="material-icons-sharp">folder</span>Meus Relatórios</button>
-                        <button class="btn btn-primary" onclick="criarRelatorioCustom()"><span class="material-icons-sharp">add</span>Criar Personalizado</button>
+    <!-- ── Área de pré-visualização ── -->
+    <div class="preview-area" id="previewArea">
+
+        <!-- Estado inicial -->
+        <div class="preview-placeholder" id="statePlaceholder">
+            <span class="material-symbols-outlined ph-icon">edit_document</span>
+            <p>Selecciona um relatório no painel lateral para gerar a pré-visualização.</p>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state" id="stateLoading" style="display:none;">
+            <div class="spinner"></div>
+            <span style="font-size:0.88rem;">A consultar a base de dados…</span>
+        </div>
+
+        <!-- Erro -->
+        <div class="error-state" id="stateError" style="display:none;">
+            <span class="material-symbols-outlined">error_outline</span>
+            <p id="errorMsg">Ocorreu um erro.</p>
+            <button class="btn btn-outline" style="font-size:0.8rem;" onclick="showState('placeholder')">
+                Voltar
+            </button>
+        </div>
+
+        <!-- Conteúdo -->
+        <div id="stateContent" style="display:none;">
+            <div class="preview-header">
+                <div>
+                    <h2 id="prevTitulo"></h2>
+                    <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.3rem;">
+                        <span class="badge-total" id="prevBadge">
+                            <span class="material-icons-sharp" style="font-size:0.9rem;">table_rows</span>
+                            <span id="prevTotal">0</span> registos
+                        </span>
+                        <span class="preview-meta" id="prevHora"></span>
                     </div>
                 </div>
-                <div class="tabs">
-                    <button class="tab active" onclick="mudarTab('templates')">Templates</button>
-                    <button class="tab" onclick="mudarTab('agendados')">Agendados</button>
-                    <button class="tab" onclick="mudarTab('historico')">Histórico</button>
-                    <button class="tab" onclick="mudarTab('customizado')">Construtor</button>
-                </div>
-                <div class="tab-content active" id="templates">
-                    <div class="grid grid-3">
-                        <div class="report-template" onclick="gerarRelatorio('vendas')">
-                            <div class="report-icon"><span class="material-icons-sharp">trending_up</span></div>
-                            <h3>Relatório de Vendas</h3>
-                            <p class="text-muted">Análise completa de vendas por período, produto e vendedor</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-primary">Vendas</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                        <div class="report-template" onclick="gerarRelatorio('financeiro')">
-                            <div class="report-icon"><span class="material-icons-sharp">account_balance</span></div>
-                            <h3>Demonstrativo Financeiro</h3>
-                            <p class="text-muted">Balanço, DRE, fluxo de caixa e indicadores financeiros</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-success">Financeiro</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                        <div class="report-template" onclick="gerarRelatorio('rh')">
-                            <div class="report-icon"><span class="material-icons-sharp">people</span></div>
-                            <h3>Análise de RH</h3>
-                            <p class="text-muted">Performance, rotatividade, presença e satisfação</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-warning">RH</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                        <div class="report-template" onclick="gerarRelatorio('stock')">
-                            <div class="report-icon"><span class="material-icons-sharp">inventory</span></div>
-                            <h3>Inventário e Stock</h3>
-                            <p class="text-muted">Movimentação, valorização e previsão de demanda</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-danger">Stock</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                        <div class="report-template" onclick="gerarRelatorio('cliente')">
-                            <div class="report-icon"><span class="material-icons-sharp">groups</span></div>
-                            <h3>Análise de Clientes</h3>
-                            <p class="text-muted">Segmentação, lifetime value, churn e satisfação</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-primary">CRM</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                        <div class="report-template" onclick="gerarRelatorio('executivo')">
-                            <div class="report-icon"><span class="material-icons-sharp">dashboard</span></div>
-                            <h3>Dashboard Executivo</h3>
-                            <p class="text-muted">Visão consolidada de todos os KPIs da empresa</p>
-                            <div class="flex gap-1 mt-2"><span class="badge badge-success">Executivo</span><span class="badge badge-info">Diário</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="agendados">
-                    <div class="card">
-                        <div class="card-header"><h3>Relatórios Automáticos</h3><button class="btn btn-sm btn-primary" onclick="novoAgendamento()">Agendar Novo</button></div>
-                        <div class="schedule-card">
-                            <div class="flex-between mb-2"><h4>Vendas Mensais</h4><span class="badge badge-success">Ativo</span></div>
-                            <p class="text-muted">Enviado todo dia 1 às 08:00 para <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f89f979682999f99b8998a8c9d95918bd69997">[email&#160;protected]</a></p>
-                            <div class="flex gap-2 mt-2"><button class="btn btn-sm btn-secondary">Editar</button><button class="btn btn-sm btn-outline">Pausar</button></div>
-                        </div>
-                        <div class="schedule-card">
-                            <div class="flex-between mb-2"><h4>Dashboard Executivo</h4><span class="badge badge-success">Ativo</span></div>
-                            <p class="text-muted">Enviado diariamente às 07:00 para <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="385d494d51485d78594a4c5d55514b165957">[email&#160;protected]</a></p>
-                            <div class="flex gap-2 mt-2"><button class="btn btn-sm btn-secondary">Editar</button><button class="btn btn-sm btn-outline">Pausar</button></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="tab-content" id="historico">
-                    <div class="card">
-                        <div class="card-header"><h3>Relatórios Gerados</h3></div>
-                        <div id="reportHistory"></div>
-                    </div>
-                </div>
-                <div class="tab-content" id="customizado">
-                    <div class="card">
-                        <div class="card-header"><h3>Construtor de Relatórios</h3><p class="text-muted">Crie relatórios personalizados arrastando e soltando campos</p></div>
-                        <div class="form-row">
-                            <div class="form-group"><label class="form-label">Nome do Relatório</label><input type="text" class="form-control" placeholder="Ex: Vendas por Região"></div>
-                            <div class="form-group"><label class="form-label">Fonte de Dados</label><select class="form-control"><option>Vendas</option><option>Funcionários</option><option>Stock</option><option>RH</option></select></div>
-                        </div>
-                        <div class="custom-field"><h4 class="mb-2">Campos Disponíveis</h4><div class="flex gap-1 flex-wrap"><span class="badge badge-primary" style="cursor: pointer;">Data</span><span class="badge badge-primary" style="cursor: pointer;">Valor</span><span class="badge badge-primary" style="cursor: pointer;">Produto</span><span class="badge badge-primary" style="cursor: pointer;">Cliente</span><span class="badge badge-primary" style="cursor: pointer;">Vendedor</span><span class="badge badge-primary" style="cursor: pointer;">Região</span></div></div>
-                        <div class="form-row">
-                            <div class="form-group"><label class="form-label">Período</label><select class="form-control"><option>Último mês</option><option>Último trimestre</option><option>Último ano</option><option>Personalizado</option></select></div>
-                            <div class="form-group"><label class="form-label">Formato</label><select class="form-control"><option>PDF</option><option>Excel</option><option>CSV</option></select></div>
-                        </div>
-                        <button class="btn btn-primary mt-2" onclick="gerarRelatorioCustom()">Gerar Relatório</button>
-                    </div>
+                <div class="preview-actions">
+                    <button class="btn btn-outline btn-sm" onclick="copiarMarkdown()" id="btnCopiar2">
+                        <span class="material-icons-sharp">content_copy</span>
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="exportarDocx()" id="btnExportar2">
+                        <span class="material-icons-sharp">download</span>.docx
+                    </button>
                 </div>
             </div>
 
+            <!-- Markdown output -->
+            <div class="preview-content" id="markdownOutput"></div>
+
+            <!-- Chart -->
+            <div class="chart-wrapper" id="chartWrapper" style="display:none;">
+                <canvas id="chartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block painel_direito %}
-        <div class="lado-direito">
-            <div class="card mt-2"><h3 class="mb-2">Exportação Rápida</h3><button class="btn btn-primary w-100 mb-1"><span class="material-icons-sharp">picture_as_pdf</span>Exportar PDF</button><button class="btn btn-secondary w-100 mb-1"><span class="material-icons-sharp">table_chart</span>Exportar Excel</button><button class="btn btn-outline w-100"><span class="material-icons-sharp">email</span>Enviar por Email</button></div>
-            <div class="card mt-2"><h3 class="mb-2">Insights IA</h3><div class="ai-insight"><div class="ai-insight-header"><span class="material-symbols-outlined">insights</span>Análise</div><p style="font-size: 0.85rem;">Vendas aumentaram 23% comparado ao mês anterior. Melhor performance no setor de eletrónicos.</p></div></div>
+<div class="lado-direito">
+    <div class="card mt-2" style="padding:1rem;">
+
+        <!-- Module tabs -->
+        <div class="mod-tabs">
+            <button class="mod-tab active" onclick="selectMod('rh', this)">
+                <span class="material-symbols-outlined tab-icon">manage_accounts</span>
+                RH
+            </button>
+            <button class="mod-tab" onclick="selectMod('stock', this)">
+                <span class="material-symbols-outlined tab-icon">inventory_2</span>
+                Stock
+            </button>
+            <button class="mod-tab" onclick="selectMod('recrutamento', this)">
+                <span class="material-symbols-outlined tab-icon">person_search</span>
+                Recrutamento
+            </button>
         </div>
 
+        <!-- Report list -->
+        <div id="relList"></div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static "js/index.js" %}"></script>
-    <script src="{% static "js/artemis-utils.js" %}"></script>   
-    
-    
-    <script>
-        
-        function renderHistory() {
-            const history = [
-                { nome: 'Vendas Janeiro 2026', data: '2026-02-01', tipo: 'PDF', size: '2.4 MB' },
-                { nome: 'Dashboard Executivo', data: '2026-02-08', tipo: 'Excel', size: '1.8 MB' },
-                { nome: 'Análise de Stock', data: '2026-02-05', tipo: 'PDF', size: '3.1 MB' },
-            ];
-            document.getElementById('reportHistory').innerHTML = history.map(r => `
-                <div class="report-history-item"><div><div style="font-weight: 500;">${r.nome}</div><small class="text-muted">${r.data} • ${r.tipo} • ${r.size}</small></div><div class="flex gap-1"><button class="btn btn-sm btn-primary"><span class="material-icons-sharp">download</span></button><button class="btn btn-sm btn-secondary"><span class="material-icons-sharp">share</span></button></div></div>
-            `).join('');
-        }
-       function mudarTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            event.target.closest('.tab').classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-            if (tabName === 'historico') renderHistory();
-        }
-        function gerarRelatorio(tipo) { alert('Gerando relatório de ' + tipo + '...'); setTimeout(() => alert('Relatório gerado com sucesso!'), 1000); }
-        function criarRelatorioCustom() { document.querySelectorAll('.tab')[3].click(); }
-        function gerarRelatorioCustom() { alert('Gerando relatório personalizado...'); }
-        function novoAgendamento() { alert('Criar novo agendamento'); }
-    </script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
+<script>
+    marked.setOptions({ breaks: true, gfm: true });
+
+    /* ── Catálogo vindo do backend (sem SQL) ── */
+    const CATALOGO = {{ catalogo_json|safe }};
+
+    /* ── Estado global ── */
+    let ultimoRelatorio = null;   // { titulo, markdown, chart }
+    let chartInstance   = null;
+    let moduloActivo    = 'rh';
+    let relActivo       = null;
+
+    const CORES_CHART = [
+        'rgba(108,155,207,0.82)', 'rgba(221,132,82,0.82)',  'rgba(85,168,104,0.82)',
+        'rgba(196,78,82,0.82)',   'rgba(129,114,178,0.82)', 'rgba(147,120,96,0.82)',
+        'rgba(218,139,195,0.82)', 'rgba(140,140,140,0.82)', 'rgba(204,185,116,0.82)',
+        'rgba(100,181,205,0.82)',
+    ];
+
+    /* ────────────────────────────────────────────────────────────────────
+       ESTADOS DA PREVIEW
+    ──────────────────────────────────────────────────────────────────── */
+    function showState(state, msg = '') {
+        ['statePlaceholder', 'stateLoading', 'stateError', 'stateContent'].forEach(id => {
+            document.getElementById(id).style.display = 'none';
+        });
+        document.getElementById('previewActions').style.display = 'none';
+
+        if (state === 'placeholder') {
+            document.getElementById('statePlaceholder').style.display = 'flex';
+        } else if (state === 'loading') {
+            document.getElementById('stateLoading').style.display = 'flex';
+        } else if (state === 'error') {
+            document.getElementById('errorMsg').textContent = msg || 'Ocorreu um erro.';
+            document.getElementById('stateError').style.display = 'flex';
+        } else if (state === 'content') {
+            document.getElementById('stateContent').style.display = 'block';
+            document.getElementById('previewActions').style.display = 'flex';
+        }
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       MODULE SELECTOR
+    ──────────────────────────────────────────────────────────────────── */
+    function selectMod(mod, btn) {
+        moduloActivo = mod;
+        document.querySelectorAll('.mod-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderRelList(mod);
+    }
+
+    function renderRelList(mod) {
+        const lista = document.getElementById('relList');
+        const items = Object.entries(CATALOGO).filter(([, v]) => v.modulo === mod);
+
+        lista.innerHTML = items.map(([id, rel]) => `
+            <div class="rel-card ${id === relActivo ? 'active' : ''}"
+                 id="card-${id}"
+                 onclick="gerarRelatorio('${id}', this)">
+                <div class="rel-card-head">
+                    <span class="material-symbols-outlined">${rel.icone}</span>
+                    <h4>${rel.titulo}</h4>
+                </div>
+                <p>${rel.descricao}</p>
+            </div>
+        `).join('');
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       GERAR RELATÓRIO
+    ──────────────────────────────────────────────────────────────────── */
+    async function gerarRelatorio(relId, cardEl) {
+        // Marca card activo
+        document.querySelectorAll('.rel-card').forEach(c => c.classList.remove('active'));
+        cardEl.classList.add('active');
+        relActivo = relId;
+
+        showState('loading');
+
+        try {
+            const response = await fetch("{% url 'relatorios_gerar' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ relatorio_id: relId })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                showState('error', data.erro || 'Erro desconhecido');
+                return;
+            }
+
+            // Guarda para exportação
+            ultimoRelatorio = {
+                titulo:   data.titulo,
+                markdown: data.markdown,
+                chart:    data.chart || null,
+            };
+
+            // Preenche header
+            document.getElementById('prevTitulo').textContent = data.titulo;
+            document.getElementById('prevTotal').textContent  = data.total_registos;
+            document.getElementById('prevHora').textContent   =
+                `Gerado às ${new Date().toLocaleTimeString('pt-PT', {hour:'2-digit', minute:'2-digit'})}`;
+
+            // Markdown → HTML
+            document.getElementById('markdownOutput').innerHTML =
+                marked.parse(data.markdown);
+
+            // Gráfico
+            renderChart(data.chart);
+
+            showState('content');
+
+        } catch (err) {
+            showState('error', 'Erro de conexão. Verifica se o servidor está activo.');
+            console.error(err);
+        }
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       CHART.JS RENDERER
+    ──────────────────────────────────────────────────────────────────── */
+    function renderChart(chartData) {
+        const wrapper = document.getElementById('chartWrapper');
+        const canvas  = document.getElementById('chartCanvas');
+
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+
+        if (!chartData || !chartData.labels || !chartData.datasets) {
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        wrapper.style.display = 'block';
+
+        // Chart.js 4 usa 'bar' + indexAxis:'y' em vez de 'horizontalBar'
+        const isHorizontal = chartData.type === 'horizontalbar';
+        const type = isHorizontal ? 'bar' : chartData.type;
+
+        const isPie = ['pie', 'doughnut'].includes(type);
+
+        // Cores
+        if (isPie) {
+            chartData.datasets[0].backgroundColor = CORES_CHART.slice(0, chartData.labels.length);
+            chartData.datasets[0].borderColor = 'rgba(255,255,255,0.15)';
+            chartData.datasets[0].borderWidth = 2;
+        } else {
+            chartData.datasets[0].backgroundColor = CORES_CHART.slice(0, chartData.labels.length);
+            chartData.datasets[0].borderColor = 'transparent';
+            chartData.datasets[0].borderWidth = 0;
+            chartData.datasets[0].borderRadius = 4;
+        }
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: isPie },
+                title: chartData.title ? {
+                    display: true,
+                    text: chartData.title,
+                    font: { size: 12, weight: '600' },
+                    padding: { bottom: 12 },
+                } : { display: false },
+            },
+            scales: isPie ? {} : {
+                x: { grid: { color: 'rgba(108,155,207,0.08)' } },
+                y: { grid: { color: 'rgba(108,155,207,0.08)' } },
+            },
+        };
+
+        if (isHorizontal) options.indexAxis = 'y';
+
+        chartInstance = new Chart(canvas, { type, data: chartData, options });
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       EXPORTAR .docx (reutiliza endpoint do Cronos)
+    ──────────────────────────────────────────────────────────────────── */
+    async function exportarDocx() {
+        if (!ultimoRelatorio) return;
+
+        const btns = ['btnExportar', 'btnExportar2'];
+        btns.forEach(id => {
+            const b = document.getElementById(id);
+            if (b) { b.disabled = true; b.innerHTML = '<span class="material-icons-sharp">hourglass_empty</span>A gerar…'; }
+        });
+
+        try {
+            const response = await fetch("{% url 'cronos_exportar' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    titulo:   ultimoRelatorio.titulo,
+                    conteudo: ultimoRelatorio.markdown,
+                    chart:    ultimoRelatorio.chart,
+                })
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                alert('Erro ao exportar: ' + (err.erro || 'Erro desconhecido'));
+                return;
+            }
+
+            const blob = await response.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href     = url;
+            a.download = `${ultimoRelatorio.titulo.replace(/\s+/g, '_').substring(0, 50)}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+        } catch (err) {
+            alert('Erro de conexão ao exportar.');
+            console.error(err);
+        } finally {
+            btns.forEach(id => {
+                const b = document.getElementById(id);
+                if (b) { b.disabled = false; b.innerHTML = '<span class="material-icons-sharp">download</span>.docx'; }
+            });
+            document.getElementById('btnExportar').innerHTML =
+                '<span class="material-icons-sharp">download</span>Exportar .docx';
+        }
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       COPIAR MARKDOWN
+    ──────────────────────────────────────────────────────────────────── */
+    function copiarMarkdown() {
+        if (!ultimoRelatorio) return;
+        navigator.clipboard.writeText(ultimoRelatorio.markdown).then(() => {
+            ['btnCopiar', 'btnCopiar2'].forEach(id => {
+                const b = document.getElementById(id);
+                if (b) {
+                    const original = b.innerHTML;
+                    b.innerHTML = '<span class="material-icons-sharp">check</span>Copiado!';
+                    setTimeout(() => { b.innerHTML = original; }, 2000);
+                }
+            });
+        });
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       CSRF
+    ──────────────────────────────────────────────────────────────────── */
+    function getCookie(name) {
+        for (const cookie of document.cookie.split(';')) {
+            const c = cookie.trim();
+            if (c.startsWith(name + '='))
+                return decodeURIComponent(c.slice(name.length + 1));
+        }
+        return null;
+    }
+
+    /* ────────────────────────────────────────────────────────────────────
+       INIT
+    ──────────────────────────────────────────────────────────────────── */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderRelList('rh');
+    });
+</script>
 {% endblock %}
