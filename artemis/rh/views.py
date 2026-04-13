@@ -65,6 +65,32 @@ def rhPage(request):
         if not esta_em_ferias and restante <= 22:
             funcionarios_para_solicitar.append(func)
 
+    # Cálculos para o gráfico de Avaliações por Departamento
+    dept_stats = []
+    for d in Departamentos.objects.filter(ativo=1):
+        # Filtramos funcionários que tenham avaliação preenchida
+        avaliacoes_dpt = Funcionarios.objects.filter(departamento=d).exclude(avaliacao__isnull=True)
+        total_notas = 0
+        count = 0
+        for f in avaliacoes_dpt:
+            try:
+                total_notas += float(f.avaliacao)
+                count += 1
+            except (ValueError, TypeError):
+                continue
+        media = round(total_notas / count, 1) if count > 0 else 0
+        dept_stats.append({'nome': d.nome_dpt, 'media': media})
+
+    # Cálculos para os Alertas Dinâmicos
+    hoje_dt = date.today()
+    inicio_semana = hoje_dt - timedelta(days=hoje_dt.weekday())
+    fim_semana = inicio_semana + timedelta(days=6)
+    
+    processos_pendentes_semana = ProcessoSeletivo.objects.filter(
+        resultado='pendente',
+        data_agendada__date__range=[inicio_semana, fim_semana]
+    ).count()
+
     context = {
         'funcionarios': Funcionarios.objects.all().filter(avaliacao__gte=90).order_by('-avaliacao'),
         'cargos': Cargos.objects.filter(ativo=1),
@@ -81,6 +107,7 @@ def rhPage(request):
         'todos_funcionarios': todos_funcionarios,
         'funcionarios_para_solicitar': funcionarios_para_solicitar,
         'candidatos_analise_count': Candidatos.objects.filter(estado='em_analise').count(),
+        'processos_semana_count': processos_pendentes_semana,
         
         # Dados de férias
         'solicitacoes': PlanamentFerias.objects.all().order_by('-data_inicio'),
@@ -91,6 +118,10 @@ def rhPage(request):
             data_inicio__lte=date.today(),
             data_fim__gte=date.today()
         ).count(),
+
+        # JSON para o gráfico do Chart.js
+        'dept_labels_json': json.dumps([ds['nome'] for ds in dept_stats]),
+        'dept_data_json': json.dumps([ds['media'] for ds in dept_stats]),
     }
 
     return render(request, "rh/rh.html", context)

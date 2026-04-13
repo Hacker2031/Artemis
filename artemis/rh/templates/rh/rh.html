@@ -481,7 +481,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-card-header">
-                        <div><div class="stat-label">Vagas Abertas</div><div class="stat-value" id="m-vagas">{{num_vagas}}</div></div>
+                        <div><div class="stat-label">Total de Vagas</div><div class="stat-value" id="m-vagas">{{num_vagas}}</div></div>
                         <div class="stat-icon primary"><span class="material-icons-sharp">work_outline</span></div>
                     </div>
                 </div>
@@ -1061,21 +1061,14 @@
 
 <div class="lado-direito">
     <div style="padding-top:24px;display:flex;flex-direction:column;gap:16px">
-        <div class="card">
-            <div class="card-header"><h3><span class="material-icons-sharp">bolt</span> Ações Rápidas</h3></div>
-            <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
-                <button class="btn btn-primary w-100" onclick="irParaNovaVaga()"><span class="material-icons-sharp">add</span> Nova Vaga</button>
-                <button class="btn btn-secondary w-100" onclick="agendarEntrevista()"><span class="material-icons-sharp">event</span> Agendar Entrevista</button>
-                <button class="btn btn-outline w-100" onclick="gerarRelatorio()"><span class="material-icons-sharp">description</span> Gerar Relatório</button>
-            </div>
-        </div>
+        
         <div class="card">
             <div class="card-header"><h3><span class="material-icons-sharp">notifications</span> Alertas</h3></div>
             <div style="padding:12px;display:flex;flex-direction:column;gap:8px">
-                <div class="alert alert-warning"><span class="material-icons-sharp">warning</span><div>3 avaliações pendentes esta semana</div></div>
+                <div class="alert alert-warning"><span class="material-icons-sharp">warning</span><div>{{ processos_semana_count }} avaliações pendentes esta semana</div></div>
                 <div style="background:rgba(79,110,247,.08);border:1px solid rgba(79,110,247,.2);border-radius:8px;padding:10px 12px;font-size:.82rem;color:var(--color-primary);display:flex;gap:8px;align-items:flex-start">
                     <span class="material-icons-sharp" style="font-size:1rem;flex-shrink:0">info</span>
-                    <div>12 férias aguardam aprovação</div>
+                    <div>{{ pendentes_count }} férias aguardam aprovação</div>
                 </div>
             </div>
         </div>
@@ -1849,11 +1842,63 @@ function renderEvaluations() {
         </div>`).join('');
 }
 
-let evalChartsInit=false;
+
+let evalChartObj = null;
 function initEvaluationCharts() {
-    if(evalChartsInit) return; evalChartsInit=true;
-    new Chart(document.getElementById('deptPerformanceChart'),{type:'radar',data:{labels:['Liderança','Comunicação','Técnica','Inovação','Equipe'],datasets:[{label:'Média',data:[8.5,8.2,7.8,8.0,8.7],borderColor:'#6C9BCF',backgroundColor:'rgba(108,155,207,0.2)'}]},options:{responsive:true,maintainAspectRatio:false}});
-    new Chart(document.getElementById('ratingDistChart'),{type:'doughnut',data:{labels:['Excelente','Bom','Regular','Baixo'],datasets:[{data:[45,38,15,2],backgroundColor:['#1B9C85','#6C9BCF','#F7D060','#FF0060']}]},options:{responsive:true,maintainAspectRatio:false}});
+    const ctx = document.getElementById('deptEvaluationChart');
+    if(!ctx || evalChartObj) return;
+
+    const labels = {{ dept_labels_json|safe }};
+    const data = {{ dept_data_json|safe }};
+
+    evalChartObj = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Média de Avaliação',
+                data: data,
+                backgroundColor: 'rgba(79, 110, 247, 0.6)',
+                borderColor: 'var(--color-primary)',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+}
+
+function filtrarTabelaAvaliacao(val) {
+    const q = val.toLowerCase();
+    document.querySelectorAll('#tabelaAvaliacao tbody tr').forEach(tr => {
+        tr.style.display = tr.dataset.nome.includes(q) ? '' : 'none';
+    });
+}
+
+function salvarNotaRapida(id) {
+    const nota = document.getElementById(`nota-${id}`).value;
+    
+    fetch('/rh/api/atualizar-avaliacao/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ id: id, nota: nota })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.sucesso) toast('Avaliação atualizada!');
+        else toast(data.erro, 'error');
+    });
 }
 function renderTraining(){
     const cs=[{name:'Liderança Estratégica',enrolled:45,completed:38},{name:'Excel Avançado',enrolled:62,completed:55},{name:'Comunicação Eficaz',enrolled:38,completed:32}];
