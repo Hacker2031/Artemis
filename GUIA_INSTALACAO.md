@@ -59,11 +59,10 @@ source venv/bin/activate
 
 ## 3. Preparação do Django
 
-Com o banco de dados criado e as dependências instaladas, execute as migrações para criar as tabelas do sistema:
+Para instalar as bibliotecas necessárias execute primeiro "cd artemis" para entrar na pasta do projecto.
 
-```bash
-python manage.py migrate
-```
+Depois digite "python -m pip install -r requirements.txt"
+
 
 
 ---
@@ -76,7 +75,7 @@ Para iniciar o ERP, utilize o comando:
 python manage.py runserver  0.0.0.0:8000
 
 ```
-
+*certifique-se que está dentro da pasta artemis (Artemis/artemis)*, que foi explicado no passo anterior. Caso contrário, receberá "no such file or directory". Yebo?
 O sistema estará acessível através do navegador no endereço:
 **http://127.0.0.1:8000**
 
