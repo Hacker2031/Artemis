@@ -22,7 +22,7 @@ class Fornecedor(models.Model):
         return self.nome_empresa
 
 class Produto(models.Model):
-    id_produto = models.CharField(max_length=50, unique=True) # Código Único
+    id_produto = models.CharField(max_length=50, unique=True, blank=True) # Código Único (Auto-gerado se vazio)
     nome = models.CharField(max_length=200)
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
     fornecedor = models.ForeignKey(Fornecedor, on_delete=models.PROTECT)
@@ -31,17 +31,20 @@ class Produto(models.Model):
 
     def save(self, *args, **kwargs):
         # Só geramos o SKU/id_ produto, whatevesser kkkkkkk. se o objeto for novo (não tiver ID)
-        if not self.id:
-            # 1. Pegar o prefixo da categoria (em maiúsculas)
-            prefixo = self.categoria.prefixo.upper()
-            
-            # 2. Contar quantos produtos já existem nesta categoria para gerar o próximo número
-            total_na_categoria = Produto.objects.filter(categoria=self.categoria).count()
-            proximo_numero = total_na_categoria + 1
-            
-            # 3. Formatar o id_produto: Prefixo + Hífen + Número com 3 casas decimais (001, 002...). Sou bom kota kkk.
-            # O zfill(3) garante que o 1 vire 001
-            self.id_produtok = f"{prefixo}-{str(proximo_numero).zfill(3)}"
+        # E se o id_produto não foi fornecido manualmente
+        if not self.id and not self.id_produto:
+            # Verifica se a categoria e o seu prefixo existem antes de tentar gerar o id_produto
+            if self.categoria and self.categoria.prefixo:
+                # 1. Pegar o prefixo da categoria (em maiúsculas)
+                prefixo = self.categoria.prefixo.upper()
+                
+                # 2. Contar quantos produtos já existem nesta categoria para gerar o próximo número
+                total_na_categoria = Produto.objects.filter(categoria=self.categoria).count()
+                proximo_numero = total_na_categoria + 1
+                
+                # 3. Formatar o id_produto: Prefixo + Hífen + Número com 3 casas decimais (001, 002...). Sou bom kota kkk.
+                # O zfill(3) garante que o 1 vire 001
+                self.id_produto = f"{prefixo}-{str(proximo_numero).zfill(3)}"
             
         super(Produto, self).save(*args, **kwargs)
 
