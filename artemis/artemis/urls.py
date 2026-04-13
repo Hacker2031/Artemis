@@ -31,3 +31,4 @@ urlpatterns = [
     path('agente-ia/', include("cronos.urls")),
     path('definicoes/', include("definicoes.urls")),
 ]
+

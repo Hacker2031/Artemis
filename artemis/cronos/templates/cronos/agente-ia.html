@@ -2,291 +2,419 @@
 {% load static %}
 
 {% block extra_links %}
-    <link rel="stylesheet" href="{% static 'css/agente-ia.css' %}">
-    <style>
-        /* ══════════════════════════════════════════════
-           VARIÁVEIS DE CONTRASTE AUTOMÁTICO
-           Detecta luminância do fundo e ajusta a cor do texto
-        ══════════════════════════════════════════════ */
-        :root {
-            --msg-user-bg:   #7c3aed;
-            --msg-user-text: #ffffff;
-            --msg-ai-bg:     var(--color-card, #1e1e2e);
-            --msg-ai-text:   var(--color-text, #e2e8f0);
-        }
+<link rel="stylesheet" href="{% static 'css/agente-ia.css' %}">
+<style>
 
-        /* Para temas claros — detectado via prefers-color-scheme */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --msg-ai-bg:   #f4f0ff;
-                --msg-ai-text: #1a1a2e;
-            }
-        }
+/* ══════════════════════════════════════════════
+   VARIÁVEIS DE CONTRASTE AUTOMÁTICO
+══════════════════════════════════════════════ */
+:root {
+    --cr-purple:     #7c3aed;
+    --cr-purple-dim: rgba(124,58,237,0.10);
+    --cr-purple-mid: rgba(124,58,237,0.30);
+    --cr-border:     rgba(124,58,237,0.15);
+    --cr-radius:     10px;
 
-        /* Se o layout.html definir .light-theme no body */
-        body.light-theme {
-            --msg-ai-bg:   #f4f0ff;
-            --msg-ai-text: #1a1a2e;
-        }
+    --msg-user-bg:   #7c3aed;
+    --msg-user-text: #ffffff;
+    --msg-ai-bg:     var(--color-card, #1e1e2e);
+    --msg-ai-text:   var(--color-text, #e2e8f0);
+}
 
-        /* ── Bolhas ── */
-        .message.user .message-content {
-            background: var(--msg-user-bg) !important;
-            color: var(--msg-user-text) !important;
-        }
-        .message.ai .message-content {
-            background: var(--msg-ai-bg) !important;
-            color: var(--msg-ai-text) !important;
-        }
+@media (prefers-color-scheme: light) {
+    :root {
+        --msg-ai-bg:   #f4f0ff;
+        --msg-ai-text: #1a1a2e;
+    }
+}
 
-        /* Forçar herança de cor nos elementos dentro das bolhas */
-        .message-content *:not(code):not(pre) {
-            color: inherit;
-        }
-        .message.user .message-content a     { color: #c4b5fd; }
-        .message.ai  .message-content a      { color: #9b59b6; }
-        .message.user .message-content code  { background: rgba(0,0,0,0.25); color: #fff; }
-        .message.ai  .message-content code   { background: rgba(155,89,182,0.18); color: var(--msg-ai-text); }
+body.light-theme {
+    --msg-ai-bg:   #f4f0ff;
+    --msg-ai-text: #1a1a2e;
+}
 
-        /* ── Selecção de texto ── */
-        .message-content {
-            user-select: text;
-            -webkit-user-select: text;
-            cursor: text;
-        }
+/* ── Chat container ── */
+.chat-container {
+    background: var(--color-white);
+    border-radius: var(--border-radius-2);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--color-light);
+    height: calc(100vh - 220px);
+    min-height: 400px;
+    max-height: 900px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
 
-        /* ══════════════════════════════════════════════
-           BOTÕES DE ACÇÃO (Copiar / Exportar)
-        ══════════════════════════════════════════════ */
-        .copy-btn, .export-btn {
-            position: absolute;
-            top: 6px;
-            background: transparent;
-            border: 1px solid rgba(155,89,182,0.35);
-            border-radius: 6px;
-            padding: 3px 9px;
-            cursor: pointer;
-            font-size: 11px;
-            color: var(--msg-ai-text, #e2e8f0);
-            opacity: 0;
-            transition: opacity .2s, background .2s;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            z-index: 2;
-        }
-        .copy-btn   { right: 10px; }
-        .export-btn { right: 90px; }
+.chat-header {
+    padding:0.9rem 1.3rem;
+    border-bottom:1px solid var(--color-light);
+    display:flex; justify-content:space-between; align-items:center;
+    flex-shrink:0; background:var(--color-white);
+}
+.chat-header-info { display:flex; align-items:center; gap:0.55rem; }
 
-        .message.ai:hover .copy-btn,
-        .message.ai:hover .export-btn { opacity: 1; }
+.status-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--color-success); flex-shrink:0;
+    animation:pulse-dot 2.5s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+    0%,100% { box-shadow:0 0 0 2px rgba(27,156,133,0.15); }
+    50%      { box-shadow:0 0 0 5px rgba(27,156,133,0.0); }
+}
 
-        .copy-btn:hover,
-        .export-btn:hover { background: rgba(155,89,182,0.15); }
+.chat-header-info h3 { font-size:0.90rem; font-weight:600; margin:0; color:var(--color-dark); }
+.chat-header-info .sub { font-size:0.75rem; color:var(--color-dark-variant); }
 
-        .copy-btn.copied     { opacity:1; color:#4ade80; border-color:#4ade80; }
-        .export-btn.loading  { opacity:1; color:#facc15; border-color:#facc15; cursor:wait; }
-        .export-btn.done     { opacity:1; color:#4ade80; border-color:#4ade80; }
+/* ── Mensagens — scroll contido ── */
+.chat-messages {
+    flex:1;
+    padding:1.3rem;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scroll-behavior:smooth;
+    overscroll-behavior:contain;   /* impede scroll a escapar para a página */
+}
+.chat-messages::-webkit-scrollbar { width:4px; }
+.chat-messages::-webkit-scrollbar-track { background:transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background:var(--color-light); border-radius:4px; }
+.chat-messages::-webkit-scrollbar-thumb:hover { background:var(--cr-purple-mid); }
 
-        /* ══════════════════════════════════════════════
-           MARKDOWN
-        ══════════════════════════════════════════════ */
-        .message-content h1, .message-content h2, .message-content h3 {
-            margin: 10px 0 5px; font-weight:600; line-height:1.3; color: inherit;
-        }
-        .message-content h1 { font-size:1.15em; }
-        .message-content h2 { font-size:1.05em; }
-        .message-content h3 { font-size:0.98em; }
-        .message-content p  { margin:5px 0; line-height:1.6; }
-        .message-content ul,
-        .message-content ol { padding-left:18px; margin:5px 0; }
-        .message-content li { margin:2px 0; line-height:1.5; }
-        .message-content strong { font-weight:600; }
-        .message-content em     { font-style:italic; }
-        .message-content hr {
-            border:none; border-top:1px solid rgba(155,89,182,0.25); margin:10px 0;
-        }
-        .message-content blockquote {
-            border-left:3px solid rgba(155,89,182,0.5);
-            padding-left:10px; margin:8px 0;
-            font-style:italic; opacity:0.88;
-        }
-        .message-content table {
-            border-collapse:collapse; width:100%; margin:10px 0; font-size:0.88em;
-        }
-        .message-content th,
-        .message-content td {
-            border:1px solid rgba(155,89,182,0.25); padding:5px 9px; text-align:left;
-        }
-        .message-content th {
-            background:rgba(155,89,182,0.2); font-weight:600;
-        }
-        .message-content tr:nth-child(even) { background:rgba(155,89,182,0.06); }
+.message {
+    display:flex; gap:0.8rem; margin-bottom:1.3rem;
+    animation:msg-in 0.20s ease;
+}
+@keyframes msg-in {
+    from { opacity:0; transform:translateY(5px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+.message.user { flex-direction:row-reverse; }
 
-        /* ══════════════════════════════════════════════
-           GRÁFICO — Container inline na mensagem
-        ══════════════════════════════════════════════ */
-        .chart-wrapper {
-            margin-top: 14px;
-            padding: 14px;
-            border-radius: 12px;
-            background: rgba(0,0,0,0.18);
-            border: 1px solid rgba(155,89,182,0.2);
-            position: relative;
-        }
-        body.light-theme .chart-wrapper,
-        @media (prefers-color-scheme: light) {
-            .chart-wrapper {
-                background: rgba(255,255,255,0.7);
-            }
-        }
-        .chart-wrapper canvas {
-            max-height: 300px;
-            width: 100% !important;
-        }
-        .chart-title {
-            font-size: 0.82em;
-            font-weight: 600;
-            opacity: 0.7;
-            margin-bottom: 10px;
-            text-align: center;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            color: inherit;
-        }
-        .chart-toggle {
-            position: absolute;
-            top: 8px;
-            right: 10px;
-            background: rgba(155,89,182,0.2);
-            border: none;
-            border-radius: 6px;
-            color: inherit;
-            font-size: 11px;
-            padding: 3px 8px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity .2s;
-        }
-        .chart-toggle:hover { opacity: 1; }
+/* ── Avatar ── */
+.message-avatar {
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:0.72rem; flex-shrink:0;
+}
+.message.user .message-avatar {
+    background:linear-gradient(135deg, var(--cr-purple), #a855f7);
+    color:#fff;
+}
+.message.ai .message-avatar {
+    background:var(--color-light);
+    border:1.5px solid var(--color-light);
+    overflow:hidden; padding:2px;
+}
+.message.ai .message-avatar img {
+    width:100%; height:100%; object-fit:contain; border-radius:50%;
+}
+.cronos-logo {
+    width: 38px;
+    height: 38px;
+    max-width: 38px;
+    max-height: 38px;
+    border-radius: 8px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: block;
+}
+.cronos-brand {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8rem;
+}
+.cronos-header img {
+    display: block;
+    flex-shrink: 0;
+}
+/* ── Conteúdo ── */
+.message-content {
+    max-width:74%;
+    padding:0.80rem 1.05rem;
+    border-radius:var(--cr-radius);
+    font-size:0.875rem; line-height:1.65;
+    position:relative;
+    user-select:text; -webkit-user-select:text;
+    word-break:break-word;
+}
+.message.user .message-content {
+    background: var(--msg-user-bg) !important;
+    color: var(--msg-user-text) !important;
+    border-bottom-right-radius: 3px;
+}
+.message.ai .message-content {
+    background: var(--msg-ai-bg) !important;
+    color: var(--msg-ai-text) !important;
+    border-bottom-left-radius: 3px;
+    border: 1px solid rgba(155,89,182,0.2);
+}
 
-        /* ══════════════════════════════════════════════
-           PAINEL DE HISTÓRICO
-        ══════════════════════════════════════════════ */
-        .historico-overlay {
-            display:none; position:fixed; inset:0;
-            background:rgba(0,0,0,0.45); z-index:999;
-        }
-        .historico-overlay.aberto { display:block; }
+/* Herança de cor nos filhos */
+.message-content *:not(code):not(pre) { color: inherit; }
 
-        .historico-panel {
-            display:none; position:fixed;
-            top:0; right:0;
-            width:320px; height:100vh;
-            background:var(--color-card, #1e1e2e);
-            border-left:1px solid rgba(155,89,182,0.2);
-            z-index:1000; padding:20px;
-            overflow-y:auto;
-            box-shadow:-4px 0 24px rgba(0,0,0,0.35);
-            transition: transform .25s ease;
-        }
-        .historico-panel.aberto { display:block; }
+/* Links */
+.message.user .message-content a  { color: #c4b5fd; }
+.message.ai  .message-content a   { color: #9b59b6; }
 
-        .historico-item {
-            padding:10px 12px; border-radius:8px; margin-bottom:8px;
-            background:rgba(155,89,182,0.08);
-            border:1px solid rgba(155,89,182,0.15);
-            cursor:pointer; font-size:0.88em; line-height:1.4;
-            transition:background .2s, border-color .2s;
-        }
-        .historico-item:hover { background:rgba(155,89,182,0.18); border-color:rgba(155,89,182,0.35); }
-        .historico-item.ativa {
-            border-color:rgba(155,89,182,0.5);
-            background:rgba(155,89,182,0.14);
-        }
-        .historico-item .hist-hora { font-size:0.76em; opacity:0.5; margin-top:4px; }
-        .historico-item .hist-badge {
-            display:inline-block; font-size:0.72em;
-            padding:1px 6px; border-radius:20px;
-            background:rgba(155,89,182,0.2);
-            margin-left:6px; vertical-align:middle;
-        }
-        .historico-vazio { opacity:0.5; font-size:0.9em; text-align:center; margin-top:40px; }
+/* Código inline */
+.message.user .message-content code { background: rgba(0,0,0,0.25);        color: #fff; }
+.message.ai  .message-content code  { background: rgba(155,89,182,0.18);   color: var(--msg-ai-text); }
 
-        /* ══════════════════════════════════════════════
-           CHIPS DE SUGESTÃO
-        ══════════════════════════════════════════════ */
-        .suggestion-chips {
-            display:flex; flex-wrap:wrap; gap:8px;
-            margin-top:12px; padding:0 4px;
-        }
-        .chip {
-            background:rgba(155,89,182,0.12);
-            border:1px solid rgba(155,89,182,0.25);
-            border-radius:20px; padding:6px 14px;
-            font-size:0.83em; cursor:pointer;
-            transition:background .18s, transform .12s;
-            color: var(--msg-ai-text, #e2e8f0);
-        }
-        .chip:hover {
-            background:rgba(155,89,182,0.25);
-            transform:translateY(-1px);
-        }
+/* Chips */
+.chip {
+    background: rgba(155,89,182,0.12);
+    border: 1px solid rgba(155,89,182,0.25);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.83em;
+    color: var(--msg-ai-text, #e2e8f0);
+    cursor: pointer;
+    pointer-events: all;
+    user-select: none;
+    transition: background .18s, transform .12s;
+}
+.chip:hover {
+    background: rgba(155,89,182,0.25);
+    border-color: rgba(155,89,182,0.45);
+    transform: translateY(-1px);
+}
+/* Excepção para cabeçalhos de tabela (mantêm roxo) */
+.message.ai .message-content th { color:#7c3aed !important; }
 
-        /* ══════════════════════════════════════════════
-           SPINNER DE CARREGAMENTO NO HISTÓRICO
-        ══════════════════════════════════════════════ */
-        @keyframes spin { to { transform:rotate(360deg); } }
-        .hist-spinner {
-            display:inline-block; width:14px; height:14px;
-            border:2px solid rgba(155,89,182,0.3);
-            border-top-color:#9b59b6;
-            border-radius:50%;
-            animation:spin .7s linear infinite;
-            vertical-align:middle; margin-right:6px;
-        }
-    </style>
+/* ── Markdown ── */
+.message-content h1,.message-content h2,.message-content h3 {
+    margin:10px 0 5px; font-weight:600; line-height:1.3; color:inherit;
+}
+.message-content h1 { font-size:1.08em; }
+.message-content h2 { font-size:1.00em; }
+.message-content h3 { font-size:0.93em; }
+.message-content p  { margin:5px 0; }
+.message-content ul,.message-content ol { padding-left:18px; margin:5px 0; }
+.message-content li { margin:2px 0; }
+.message-content strong { font-weight:600; }
+.message-content em { font-style:italic; }
+.message-content hr { border:none; border-top:1px solid rgba(0,0,0,0.08); margin:10px 0; }
+.message-content blockquote {
+    border-left:3px solid var(--cr-purple-mid);
+    padding-left:10px; margin:8px 0; font-style:italic; opacity:.80;
+}
+.message-content code {
+    background:rgba(124,58,237,0.08);
+    padding:1px 5px; border-radius:4px; font-size:.84em;
+    font-family:'Courier New',monospace; color:var(--cr-purple);
+}
+.message.user .message-content code { background:rgba(255,255,255,.20); color:#fff; }
+.message-content table { border-collapse:collapse; width:100%; margin:10px 0; font-size:.84em; }
+.message-content th,.message-content td { border:1px solid rgba(0,0,0,.08); padding:5px 9px; text-align:left; }
+.message-content th { background:var(--cr-purple-dim); font-weight:600; color:var(--cr-purple); }
+.message-content tr:nth-child(even) { background:rgba(0,0,0,.02); }
+
+/* ── Botões de acção ── */
+.copy-btn,.export-btn {
+    position:absolute; top:6px;
+    background:var(--color-white);
+    border:1px solid var(--color-light);
+    border-radius:6px; padding:3px 9px;
+    cursor:pointer; font-size:11px; color:var(--color-dark-variant);
+    opacity:0;
+    transition:opacity .18s,background .18s,color .18s,border-color .18s;
+    display:flex; align-items:center; gap:4px; z-index:2; white-space:nowrap;
+}
+.copy-btn   { right:10px; }
+.export-btn { right:88px; }
+.message.ai:hover .copy-btn,
+.message.ai:hover .export-btn { opacity:1; }
+.copy-btn:hover,.export-btn:hover {
+    background:var(--cr-purple-dim); color:var(--cr-purple); border-color:var(--cr-purple-mid);
+}
+.copy-btn.copied    { opacity:1; color:#1b9c85; border-color:#1b9c85; background:rgba(27,156,133,.06); }
+.export-btn.loading { opacity:1; color:#f59e0b; border-color:#f59e0b; cursor:wait; }
+.export-btn.done    { opacity:1; color:#1b9c85; border-color:#1b9c85; background:rgba(27,156,133,.06); }
+
+/* ══════════════════════════════════════════
+   ANIMAÇÃO "A PENSAR"
+══════════════════════════════════════════ */
+.thinking-wrap { display:flex; align-items:center; gap:10px; padding:2px 0; }
+
+.thinking-orb { position:relative; width:26px; height:26px; flex-shrink:0; }
+.thinking-orb .orb-ring {
+    position:absolute; inset:0; border-radius:50%;
+    border:2px solid transparent;
+    animation:orb-spin 1.8s linear infinite;
+}
+.thinking-orb .orb-ring:nth-child(1) { border-top-color:var(--cr-purple); animation-duration:1.3s; }
+.thinking-orb .orb-ring:nth-child(2) { inset:4px; border-right-color:#a855f7; animation-duration:1.9s; animation-direction:reverse; }
+.thinking-orb .orb-ring:nth-child(3) { inset:8px; border-bottom-color:rgba(124,58,237,.45); animation-duration:2.5s; }
+@keyframes orb-spin { to { transform:rotate(360deg); } }
+
+.thinking-label {
+    font-size:.82rem; color:var(--color-dark-variant); font-style:italic;
+    animation:thinking-pulse 1.8s ease-in-out infinite;
+}
+@keyframes thinking-pulse { 0%,100%{opacity:.45;} 50%{opacity:1;} }
+
+.thinking-dots { display:flex; gap:3px; align-items:center; }
+.thinking-dots span {
+    width:4px; height:4px; border-radius:50%;
+    background:var(--cr-purple);
+    animation:dot-bounce 1.2s ease-in-out infinite;
+}
+.thinking-dots span:nth-child(2) { animation-delay:.18s; }
+.thinking-dots span:nth-child(3) { animation-delay:.36s; }
+@keyframes dot-bounce {
+    0%,60%,100%{ transform:translateY(0); opacity:.35; }
+    30%         { transform:translateY(-5px); opacity:1; }
+}
+
+/* ── Gráfico ── */
+.chart-wrapper {
+    margin-top:14px; padding:14px; border-radius:8px;
+    background:rgba(124,58,237,.04);
+    border:1px solid var(--cr-border); position:relative;
+}
+.chart-wrapper canvas { max-height:260px; width:100% !important; }
+.chart-title {
+    font-size:.76rem; font-weight:600; color:var(--color-dark-variant);
+    margin-bottom:10px; text-align:center;
+    text-transform:uppercase; letter-spacing:.05em;
+}
+.chart-toggle {
+    position:absolute; top:8px; right:10px;
+    background:var(--cr-purple-dim); border:none; border-radius:5px;
+    color:var(--cr-purple); font-size:10px; padding:3px 8px;
+    cursor:pointer; font-weight:600;
+}
+.chart-toggle:hover { opacity:.75; }
+
+/* ── Input ── */
+.chat-input {
+    padding:.9rem 1.3rem;
+    border-top:1px solid var(--color-light);
+    display:flex; gap:.7rem; align-items:center;
+    flex-shrink:0; background:var(--color-white);
+}
+.chat-input .form-control {
+    flex:1; border-radius:8px;
+    border:1.5px solid var(--color-light);
+    padding:.6rem 1rem; font-size:.875rem;
+    background:var(--color-background); color:var(--color-dark);
+    transition:border-color .18s,background .18s;
+}
+.chat-input .form-control:focus {
+    outline:none; border-color:var(--cr-purple); background:var(--color-white);
+}
+.chat-input .form-control::placeholder { color:var(--color-dark-variant); opacity:.7; }
+
+/* ── Chips ── */
+.suggestion-chips { display:flex; gap:.45rem; flex-wrap:wrap; margin-top:10px; }
+.chip {
+    padding:.38rem .9rem;
+    background:var(--color-white); border:1px solid var(--color-light);
+    border-radius:20px; font-size:.79rem; cursor:pointer;
+    color:var(--color-dark-variant); font-weight:500; transition:all .15s;
+}
+.chip:hover { background:var(--cr-purple-dim); border-color:var(--cr-purple-mid); color:var(--cr-purple); }
+
+/* ── Histórico ── */
+.historico-overlay {
+    display:none; position:fixed; inset:0;
+    background:rgba(0,0,0,.30); z-index:999; backdrop-filter:blur(2px);
+}
+.historico-overlay.aberto { display:block; }
+.historico-panel {
+    display:none; position:fixed; top:0; right:0;
+    width:300px; height:100vh; background:var(--color-white);
+    border-left:1px solid var(--color-light); z-index:1000;
+    padding:1.3rem; overflow-y:auto;
+    box-shadow:-6px 0 24px rgba(0,0,0,.08);
+    animation:panel-in .20s ease;
+}
+.historico-panel.aberto { display:block; }
+@keyframes panel-in {
+    from { transform:translateX(16px); opacity:0; }
+    to   { transform:translateX(0);    opacity:1; }
+}
+.historico-item {
+    padding:.7rem .85rem; border-radius:8px; margin-bottom:.45rem;
+    background:var(--color-background); border:1px solid var(--color-light);
+    cursor:pointer; font-size:.83rem; line-height:1.4; transition:background .15s,border-color .15s;
+}
+.historico-item:hover { background:var(--cr-purple-dim); border-color:var(--cr-purple-mid); }
+.historico-item.ativa { border-color:var(--cr-purple); background:var(--cr-purple-dim); }
+.historico-item .hist-hora { font-size:.73rem; color:var(--color-dark-variant); margin-top:3px; }
+.historico-item .hist-badge {
+    display:inline-block; font-size:.69rem; padding:1px 6px; border-radius:20px;
+    background:var(--cr-purple-dim); color:var(--cr-purple); margin-left:5px; font-weight:600;
+}
+.historico-vazio { opacity:.45; font-size:.87rem; text-align:center; margin-top:40px; }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+.hist-spinner {
+    display:inline-block; width:12px; height:12px;
+    border:2px solid var(--color-light); border-top-color:var(--cr-purple);
+    border-radius:50%; animation:spin .7s linear infinite;
+    vertical-align:middle; margin-right:5px;
+}
+
+/* ── Painel direito ── */
+.section-label {
+    font-size:.70rem; font-weight:700; letter-spacing:.09em;
+    text-transform:uppercase; color:var(--color-dark-variant);
+    margin:1.1rem 0 .5rem;
+}
+.section-label:first-child { margin-top:0; }
+canvas { max-height:260px; }
+</style>
 {% endblock %}
 
 {% block conteudo %}
-<!-- Painel de histórico -->
 <div class="historico-overlay" id="historicoOverlay" onclick="fecharHistorico()"></div>
 <div class="historico-panel" id="historicoPanel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-        <h3>📋 Conversas</h3>
-        <button class="btn btn-sm btn-outline" onclick="fecharHistorico()">✕</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;">
+        <h3 style="margin:0;font-size:.92rem;color:var(--color-dark);">Conversas</h3>
+        <button class="btn btn-sm btn-outline" onclick="fecharHistorico()">
+            <span class="material-icons-sharp" style="font-size:15px;">close</span>
+        </button>
     </div>
     <div id="historicoLista"></div>
 </div>
 
-<div class="modulo-container">
-    <div class="modulo-header">
-        <h1>
-            <span class="material-symbols-outlined">cognition_2</span>
-            Assistente Inteligente Artemis
-        </h1>
-        <div class="actions">
-            <button class="btn btn-outline" onclick="abrirHistorico()">
+<div class="cronos-wrap">
+
+    <div class="cronos-header">
+        <div class="cronos-brand">
+            <img class="cronos-logo" src="{% static 'images/artemis_sem_fundo_2.png' %}" alt="CRONOS">
+            <div class="cronos-title-block">
+                <h1>CRONOS</h1>
+                <p>Agente de inteligência artificial — Artemis ERP</p>
+            </div>
+        </div>
+        <div class="cronos-actions">
+            <button class="btn btn-outline btn-sm" onclick="abrirHistorico()">
                 <span class="material-icons-sharp">history</span>Conversas
             </button>
-            <button class="btn btn-primary" onclick="novaSessao()">
-                <span class="material-icons-sharp">add</span>Nova Conversa
+            <button class="btn btn-primary btn-sm" onclick="novaSessao()">
+                <span class="material-icons-sharp">add</span>Nova
             </button>
         </div>
     </div>
 
     <div class="chat-container">
         <div class="chat-header">
-            <div>
-                <h3>💬 Chat com CRONOS</h3>
-                <p class="text-muted">Ligado directamente à base de dados</p>
+            <div class="chat-header-info">
+                <div class="status-dot"></div>
+                <h3>CRONOS</h3>
+                <span class="sub">— Ligado à base de dados</span>
             </div>
             <button class="btn btn-sm btn-outline" onclick="novaSessao()">Nova conversa</button>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
             <input type="text" class="form-control" id="messageInput"
-                   placeholder="Escreve uma pergunta sobre RH, funcionários ou departamentos…"
+                   placeholder="Pergunta sobre RH, stock, recrutamento..."
                    onkeypress="if(event.key==='Enter') enviarMensagem()">
             <button class="btn btn-primary" onclick="enviarMensagem()" id="btnEnviar">
                 <span class="material-icons-sharp">send</span>
@@ -294,72 +422,61 @@
         </div>
     </div>
 
-    <div class="grid grid-3 mb-3">
-        <div class="ai-capability">
-            <div class="flex gap-2 mb-2">
-                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">manage_accounts</span>
-                <h3>Gestão de RH</h3>
-            </div>
-            <p class="text-muted">Consulta funcionários, cargos e departamentos em tempo real</p>
-        </div>
-        <div class="ai-capability">
-            <div class="flex gap-2 mb-2">
-                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">bar_chart</span>
-                <h3>Relatórios + Gráficos</h3>
-            </div>
-            <p class="text-muted">Análises visuais, salariais e estrutura organizacional</p>
-        </div>
-        <div class="ai-capability">
-            <div class="flex gap-2 mb-2">
-                <span class="material-symbols-outlined" style="font-size:2rem;color:#9b59b6;">insights</span>
-                <h3>Insights</h3>
-            </div>
-            <p class="text-muted">Identifica padrões e oportunidades nos dados da empresa</p>
-        </div>
-    </div>
 </div>
 {% endblock %}
 
 {% block painel_direito %}
 <div class="lado-direito">
-    <div class="card mt-2">
-        <h3 class="mb-2">Consultas Rápidas</h3>
+    <div class="card">
+        <p class="section-label">Recursos Humanos</p>
         <button class="btn btn-primary w-100 mb-1"
-            onclick="enviarSugestao('Gera um relatório completo de capital humano com análise salarial por departamento e gráfico de distribuição')">
+            onclick="enviarSugestao('Gera um relatório completo de capital humano com análise salarial por departamento e gráfico')">
             <span class="material-icons-sharp">summarize</span>Relatório de RH
         </button>
-        <button class="btn btn-secondary w-100 mb-1"
-            onclick="enviarSugestao('Lista os 10 funcionários com maior salário e os seus respectivos cargos e departamentos')">
-            <span class="material-icons-sharp">emoji_events</span>Top Salários
-        </button>
-        <button class="btn btn-secondary w-100 mb-1"
-            onclick="enviarSugestao('Qual a distribuição de funcionários por departamento? Inclui gráfico de pizza.')">
-            <span class="material-icons-sharp">account_tree</span>Por Departamento
+        <button class="btn btn-outline w-100 mb-1"
+            onclick="enviarSugestao('Lista os 10 funcionários com maior salário com cargos e departamentos')">
+            <span class="material-icons-sharp">workspace_premium</span>Top Salários
         </button>
         <button class="btn btn-outline w-100 mb-1"
-            onclick="enviarSugestao('Mostra todos os cargos existentes com a respectiva faixa salarial mínima, base e máxima e gráfico de barras')">
-            <span class="material-icons-sharp">work</span>Tabela de Cargos
+            onclick="enviarSugestao('Distribuição de funcionários por departamento com gráfico de pizza')">
+            <span class="material-icons-sharp">account_tree</span>Por Departamento
+        </button>
+
+        <p class="section-label">Stock</p>
+        <button class="btn btn-secondary w-100 mb-1"
+            onclick="enviarSugestao('Mostra o stock actual de todos os produtos com quantidade disponível e gráfico de barras')">
+            <span class="material-icons-sharp">inventory</span>Stock Actual
+        </button>
+        <button class="btn btn-outline w-100 mb-1"
+            onclick="enviarSugestao('Quais os produtos abaixo do stock mínimo? Inclui fornecedor e défice')">
+            <span class="material-icons-sharp">warning</span>Alertas de Ruptura
+        </button>
+
+        <p class="section-label">Recrutamento</p>
+        <button class="btn btn-secondary w-100 mb-1"
+            onclick="enviarSugestao('Lista todas as vagas abertas com número de candidaturas e prazo')">
+            <span class="material-icons-sharp">work_outline</span>Vagas Abertas
         </button>
         <button class="btn btn-outline w-100"
-            onclick="enviarSugestao('Quantos funcionários temos no total, distribuídos por sexo e estado civil? Inclui gráfico.')">
-            <span class="material-icons-sharp">diversity_3</span>Diversidade
+            onclick="enviarSugestao('Pipeline de candidatos por estado e fonte de recrutamento com gráfico')">
+            <span class="material-icons-sharp">people_outline</span>Pipeline
         </button>
     </div>
 
     <div class="card mt-2">
-        <h3 class="mb-2">Estado da Sessão</h3>
-        <div style="font-size:0.85em; line-height:2.2;">
+        <p class="section-label">Sessão</p>
+        <div style="font-size:.84rem;line-height:2.4;">
             <div class="flex-between">
-                <span>Base de dados</span>
-                <span class="success">● Ligada</span>
+                <span style="color:var(--color-dark-variant);">Base de dados</span>
+                <span class="success" style="font-size:.78rem;font-weight:600;">Ligada</span>
             </div>
             <div class="flex-between">
-                <span>Mensagens enviadas</span>
-                <span id="contadorMsgs">0</span>
+                <span style="color:var(--color-dark-variant);">Mensagens</span>
+                <span id="contadorMsgs" style="font-weight:600;">0</span>
             </div>
             <div class="flex-between">
-                <span>Conversa actual</span>
-                <span id="contadorHist">0 msg</span>
+                <span style="color:var(--color-dark-variant);">Conversa actual</span>
+                <span id="contadorHist" style="font-weight:600;">0 msg</span>
             </div>
         </div>
     </div>
@@ -367,513 +484,225 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Markdown parser -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<!-- Chart.js para gráficos inline -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="{% static 'js/index.js' %}"></script>
 <script src="{% static 'js/artemis-utils.js' %}"></script>
-
 <script>
-    marked.setOptions({ breaks: true, gfm: true });
+marked.setOptions({ breaks:true, gfm:true });
 
-    /* ══════════════════════════════════════════════
-       ÍCONES SVG
-    ══════════════════════════════════════════════ */
-    const ICON_COPY   = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
-    const ICON_CHECK  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
-    const ICON_EXPORT = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
-    const ICON_CHART  = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>`;
+const LOGO_URL = "{% static 'images/artemis_sem_fundo_2.png' %}";
 
-    /* ══════════════════════════════════════════════
-       PALETA DE CORES PARA GRÁFICOS
-    ══════════════════════════════════════════════ */
-    const CHART_COLORS = [
-        'rgba(155, 89,182, 0.82)', 'rgba( 52,152,219, 0.82)',
-        'rgba( 46,204,113, 0.82)', 'rgba(230,126, 34, 0.82)',
-        'rgba(231, 76, 60, 0.82)', 'rgba(241,196, 15, 0.82)',
-        'rgba( 26,188,156, 0.82)', 'rgba(149,165,166, 0.82)',
-        'rgba(243,156, 18, 0.82)', 'rgba( 39,174, 96, 0.82)',
-    ];
-    const CHART_BORDERS = CHART_COLORS.map(c => c.replace('0.82', '1'));
+const ICON_COPY   = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+const ICON_CHECK  = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+const ICON_EXPORT = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
 
-    /* ══════════════════════════════════════════════
-       DETECÇÃO DE TEMA (claro / escuro)
-    ══════════════════════════════════════════════ */
-    function isDarkTheme() {
-        const bg = getComputedStyle(document.body).backgroundColor;
-        const m  = bg.match(/\d+/g);
-        if (!m) return true;
-        const [r,g,b] = m.map(Number);
-        const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
-        return luminance < 0.5;
-    }
+const CHART_COLORS  = ['rgba(124,58,237,.78)','rgba(52,152,219,.78)','rgba(46,204,113,.78)','rgba(230,126,34,.78)','rgba(231,76,60,.78)','rgba(241,196,15,.78)','rgba(26,188,156,.78)','rgba(149,165,166,.78)'];
+const CHART_BORDERS = CHART_COLORS.map(c=>c.replace('.78','1'));
 
-    function chartTextColor() { return isDarkTheme() ? '#c8b8e8' : '#3a2060'; }
-    function chartGridColor() { return isDarkTheme() ? 'rgba(200,184,232,0.1)' : 'rgba(100,60,160,0.1)'; }
+function isDark(){const bg=getComputedStyle(document.body).backgroundColor,m=bg.match(/\d+/g);if(!m)return false;const[r,g,b]=m.map(Number);return(0.299*r+0.587*g+0.114*b)/255<0.5;}
+const chartText=()=>isDark()?'#c8b8e8':'#4b5563';
+const chartGrid=()=>isDark()?'rgba(255,255,255,.07)':'rgba(0,0,0,.07)';
 
-    /* ══════════════════════════════════════════════
-       RENDERIZAR GRÁFICO
-    ══════════════════════════════════════════════ */
-    let chartCounter = 0;
+let chartCounter=0;
+function renderizarGrafico(jsonStr,container){
+    let cfg;try{cfg=JSON.parse(jsonStr);}catch(e){return;}
+    chartCounter++;
+    const canvasId=`chart-${chartCounter}`;
+    const wrapper=document.createElement('div');
+    wrapper.className='chart-wrapper';
+    if(cfg.title){const t=document.createElement('div');t.className='chart-title';t.textContent=cfg.title;wrapper.appendChild(t);}
+    const toggle=document.createElement('button');
+    toggle.className='chart-toggle';toggle.textContent='Ocultar';
+    toggle.onclick=()=>{const c=document.getElementById(canvasId);const h=c.style.display==='none';c.style.display=h?'block':'none';toggle.textContent=h?'Ocultar':'Ver grafico';};
+    wrapper.appendChild(toggle);
+    const canvas=document.createElement('canvas');canvas.id=canvasId;wrapper.appendChild(canvas);container.appendChild(wrapper);
+    const isPie=['pie','doughnut','polarArea'].includes(cfg.type);
+    const datasets=(cfg.datasets||[]).map((ds,i)=>({...ds,
+        backgroundColor:isPie?CHART_COLORS.slice(0,(ds.data||[]).length):(ds.backgroundColor||CHART_COLORS[i%CHART_COLORS.length]),
+        borderColor:isPie?CHART_BORDERS.slice(0,(ds.data||[]).length):(ds.borderColor||CHART_BORDERS[i%CHART_BORDERS.length]),
+        borderWidth:ds.borderWidth??1.5}));
+    new Chart(canvas,{type:cfg.type||'bar',data:{labels:cfg.labels||[],datasets},
+        options:{responsive:true,maintainAspectRatio:true,
+            plugins:{legend:{labels:{color:chartText(),font:{size:11}}},tooltip:{backgroundColor:'rgba(15,10,30,.88)',titleColor:'#e2d9f3',bodyColor:'#c8b8e8'}},
+            scales:isPie?{}:{x:{ticks:{color:chartText(),font:{size:10}},grid:{color:chartGrid()}},y:{ticks:{color:chartText(),font:{size:10}},grid:{color:chartGrid()}}},
+            animation:{duration:450,easing:'easeInOutQuart'}}});
+}
 
-    function renderizarGrafico(jsonStr, container) {
-        let cfg;
-        try { cfg = JSON.parse(jsonStr); }
-        catch (e) { console.warn('[CRONOS] Gráfico inválido:', e); return; }
+const SUGESTOES=[
+    {label:'Capital humano',     texto:'Gera um relatório completo de capital humano com análise salarial por departamento e gráfico'},
+    {label:'Stock actual',       texto:'Mostra o stock actual de todos os produtos com quantidade disponível e gráfico de barras'},
+    {label:'Vagas abertas',      texto:'Lista todas as vagas abertas com número de candidaturas, cargo e prazo limite'},
+    {label:'Alertas de ruptura', texto:'Quais os produtos abaixo do stock mínimo? Inclui fornecedor e défice'},
+    {label:'Por departamento',   texto:'Distribuição de funcionários por departamento com gráfico de pizza'},
+];
 
-        chartCounter++;
-        const wrapId   = `chart-wrap-${chartCounter}`;
-        const canvasId = `chart-${chartCounter}`;
+let contadorMensagens=0;
+function atualizarContadores(){
+    document.getElementById('contadorMsgs').textContent=contadorMensagens;
+    document.getElementById('contadorHist').textContent=`${contadorMensagens} msg`;
+}
+function scrollChat(){const b=document.getElementById('chatMessages');b.scrollTop=b.scrollHeight;}
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'chart-wrapper';
-        wrapper.id = wrapId;
+async function abrirHistorico(){
+    const lista=document.getElementById('historicoLista');
+    lista.innerHTML=`<p class="historico-vazio"><span class="hist-spinner"></span>A carregar...</p>`;
+    document.getElementById('historicoPanel').classList.add('aberto');
+    document.getElementById('historicoOverlay').classList.add('aberto');
+    try{
+        const res=await fetch("{% url 'cronos_conversas' %}");
+        if(!res.ok)throw new Error();
+        const data=await res.json();
+        const conversas=data.conversas||[];
+        lista.innerHTML=conversas.length?conversas.map(c=>{
+            const dt=new Date(c.data_inicio);
+            const ts=dt.toLocaleDateString('pt-PT')+' '+dt.toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+            const cls=c.ativa?'historico-item ativa':'historico-item';
+            const badge=c.ativa?'<span class="hist-badge">activa</span>':'';
+            return `<div class="${cls}" onclick="carregarConversa(${c.id})"><div><strong>${c.titulo}</strong>${badge}</div><div class="hist-hora">${ts} &middot; ${c.num_mensagens} msg</div></div>`;
+        }).join(''):'<p class="historico-vazio">Nenhuma conversa ainda.</p>';
+    }catch(e){lista.innerHTML='<p class="historico-vazio">Erro ao carregar conversas.</p>';}
+}
 
-        if (cfg.title) {
-            const titleEl = document.createElement('div');
-            titleEl.className = 'chart-title';
-            titleEl.textContent = cfg.title;
-            wrapper.appendChild(titleEl);
-        }
+function fecharHistorico(){
+    document.getElementById('historicoPanel').classList.remove('aberto');
+    document.getElementById('historicoOverlay').classList.remove('aberto');
+}
 
-        /* Botão para esconder/mostrar gráfico */
-        const toggle = document.createElement('button');
-        toggle.className = 'chart-toggle';
-        toggle.innerHTML = `${ICON_CHART} Ocultar`;
-        toggle.onclick = () => {
-            const canvas = document.getElementById(canvasId);
-            const hidden = canvas.style.display === 'none';
-            canvas.style.display = hidden ? 'block' : 'none';
-            toggle.innerHTML = hidden ? `${ICON_CHART} Ocultar` : `${ICON_CHART} Ver gráfico`;
-        };
-        wrapper.appendChild(toggle);
-
-        const canvas = document.createElement('canvas');
-        canvas.id = canvasId;
-        wrapper.appendChild(canvas);
-        container.appendChild(wrapper);
-
-        /* Cores automáticas se não vierem no JSON */
-        const datasets = (cfg.datasets || []).map((ds, i) => {
-            const isPie = ['pie','doughnut','polarArea'].includes(cfg.type);
-            const bgColor = isPie
-                ? CHART_COLORS.slice(0, (ds.data || []).length)
-                : (ds.backgroundColor || CHART_COLORS[i % CHART_COLORS.length]);
-            const bdColor = isPie
-                ? CHART_BORDERS.slice(0, (ds.data || []).length)
-                : (ds.borderColor || CHART_BORDERS[i % CHART_BORDERS.length]);
-            return {
-                ...ds,
-                backgroundColor: bgColor,
-                borderColor:     bdColor,
-                borderWidth:     ds.borderWidth ?? 1.5,
-            };
+async function carregarConversa(id){
+    const box=document.getElementById('chatMessages');
+    box.innerHTML='';mostrarThinking();fecharHistorico();
+    try{
+        const url="{% url 'cronos_conversa' conversa_id=999 %}".replace('999',id);
+        const res=await fetch(url);if(!res.ok)throw new Error();
+        const data=await res.json();
+        box.innerHTML='';contadorMensagens=0;
+        (data.mensagens||[]).forEach(msg=>{
+            msg.tipo==='user'?adicionarMensagemUser(msg.conteudo):adicionarMensagemBot(msg.conteudo);
+            contadorMensagens++;
         });
+        atualizarContadores();scrollChat();
+    }catch(e){box.innerHTML='<p style="text-align:center;color:#ef4444;padding:20px;font-size:.84rem;">Erro ao carregar conversa.</p>';}
+}
 
-        const textColor = chartTextColor();
-        const gridColor = chartGridColor();
-        const isPie = ['pie','doughnut','polarArea'].includes(cfg.type);
+function adicionarMensagemUser(texto){
+    const box=document.getElementById('chatMessages');
+    const div=document.createElement('div');div.className='message user';
+    div.innerHTML=`<div class="message-avatar">U</div><div class="message-content"><p>${texto.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p></div>`;
+    box.appendChild(div);scrollChat();
+}
 
-        new Chart(canvas, {
-            type: cfg.type || 'bar',
-            data: { labels: cfg.labels || [], datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        labels: { color: textColor, font: { size: 12 } }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(20,10,40,0.85)',
-                        titleColor: '#e2d9f3',
-                        bodyColor:  '#c8b8e8',
-                    }
-                },
-                scales: isPie ? {} : {
-                    x: {
-                        ticks: { color: textColor, font: { size: 11 } },
-                        grid:  { color: gridColor }
-                    },
-                    y: {
-                        ticks: { color: textColor, font: { size: 11 } },
-                        grid:  { color: gridColor }
-                    }
-                },
-                animation: { duration: 600, easing: 'easeInOutQuart' }
-            }
+function adicionarMensagemBot(textoMarkdown,chartData=null){
+    const box=document.getElementById('chatMessages');
+    const chartsEmbutidos=[];const re=/<chart>([\s\S]*?)<\/chart>/gi;let m;
+    while((m=re.exec(textoMarkdown))!==null)chartsEmbutidos.push(m[1].trim());
+    const mdLimpo=textoMarkdown.replace(/<chart>[\s\S]*?<\/chart>/gi,'').trim();
+
+    const msgDiv=document.createElement('div');msgDiv.className='message ai';msgDiv.style.position='relative';
+    const avatar=document.createElement('div');avatar.className='message-avatar';
+    avatar.innerHTML=`<img src="${LOGO_URL}" alt="CRONOS">`;
+    const content=document.createElement('div');content.className='message-content';
+    content.innerHTML=marked.parse(mdLimpo);
+
+    if(chartData)renderizarGrafico(JSON.stringify(chartData),content);
+    else chartsEmbutidos.forEach(j=>renderizarGrafico(j,content));
+
+    const exportBtn=document.createElement('button');exportBtn.className='export-btn';
+    exportBtn.innerHTML=`${ICON_EXPORT} Exportar`;exportBtn.title='Exportar como Word (.docx)';
+    exportBtn.addEventListener('click',()=>exportarDocx(mdLimpo,exportBtn,chartData));
+
+    const copyBtn=document.createElement('button');copyBtn.className='copy-btn';
+    copyBtn.innerHTML=`${ICON_COPY} Copiar`;
+    copyBtn.addEventListener('click',()=>{
+        navigator.clipboard.writeText(mdLimpo).then(()=>{
+            copyBtn.innerHTML=`${ICON_CHECK} Copiado`;copyBtn.classList.add('copied');
+            setTimeout(()=>{copyBtn.innerHTML=`${ICON_COPY} Copiar`;copyBtn.classList.remove('copied');},2000);
         });
-    }
+    });
 
-    /* ══════════════════════════════════════════════
-       SUGESTÕES DE BOAS-VINDAS
-    ══════════════════════════════════════════════ */
-    const SUGESTOES = [
-        { icon: '📊', label: 'Relatório de RH',  texto: 'Gera um relatório completo de capital humano com análise salarial por departamento e gráfico de distribuição' },
-        { icon: '🏆', label: 'Top Salários',      texto: 'Lista os 10 funcionários com maior salário e os seus respectivos cargos e departamentos' },
-        { icon: '🥧', label: 'Por Departamento',  texto: 'Qual a distribuição de funcionários por departamento? Inclui gráfico de pizza.' },
-        { icon: '💼', label: 'Tabela de Cargos',  texto: 'Mostra todos os cargos existentes com a respectiva faixa salarial mínima, base e máxima e gráfico de barras' },
-        { icon: '👥', label: 'Diversidade',       texto: 'Quantos funcionários temos no total, distribuídos por sexo e estado civil? Inclui gráfico.' },
-    ];
+    msgDiv.appendChild(avatar);msgDiv.appendChild(content);msgDiv.appendChild(exportBtn);msgDiv.appendChild(copyBtn);
+    box.appendChild(msgDiv);scrollChat();
+}
 
-    let contadorMensagens = 0;
+function mostrarThinking(){
+    const box=document.getElementById('chatMessages');
+    const div=document.createElement('div');div.className='message ai';div.id='typing';
+    const avatar=document.createElement('div');avatar.className='message-avatar';
+    avatar.innerHTML=`<img src="${LOGO_URL}" alt="CRONOS">`;
+    const content=document.createElement('div');content.className='message-content';
+    content.innerHTML=`<div class="thinking-wrap"><div class="thinking-orb"><div class="orb-ring"></div><div class="orb-ring"></div><div class="orb-ring"></div></div><span class="thinking-label">A analisar</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>`;
+    div.appendChild(avatar);div.appendChild(content);box.appendChild(div);scrollChat();
+}
 
-    /* ══════════════════════════════════════════════
-       HISTÓRICO — carregado do servidor, NÃO deletável
-    ══════════════════════════════════════════════ */
-    async function abrirHistorico() {
-        const lista = document.getElementById('historicoLista');
-        lista.innerHTML = `<p class="historico-vazio"><span class="hist-spinner"></span>A carregar…</p>`;
-        document.getElementById('historicoPanel').classList.add('aberto');
-        document.getElementById('historicoOverlay').classList.add('aberto');
+async function exportarDocx(textoMarkdown,btn,chartData=null){
+    const match=textoMarkdown.match(/^#{1,3}\s+(.+)/m);
+    const titulo=match?match[1].replace(/\*\*/g,'').trim():'Relatorio CRONOS';
+    btn.innerHTML=`${ICON_EXPORT} A gerar...`;btn.classList.add('loading');btn.disabled=true;
+    try{
+        const res=await fetch("{% url 'cronos_exportar' %}",{method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body:JSON.stringify({conteudo:textoMarkdown,titulo,chart:chartData})});
+        if(!res.ok){const e=await res.json();alert(`Erro: ${e.erro||'Desconhecido'}`);return;}
+        const blob=await res.blob();const url=URL.createObjectURL(blob);
+        const a=Object.assign(document.createElement('a'),{href:url,download:`${titulo.replace(/\s+/g,'_').slice(0,50)}.docx`});
+        document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+        btn.innerHTML=`${ICON_CHECK} Exportado`;btn.classList.replace('loading','done');
+        setTimeout(()=>{btn.innerHTML=`${ICON_EXPORT} Exportar`;btn.classList.remove('done');btn.disabled=false;},2500);
+    }catch(e){alert('Erro de conexão.');btn.innerHTML=`${ICON_EXPORT} Exportar`;btn.classList.remove('loading');btn.disabled=false;}
+}
 
-        try {
-            const response = await fetch("{% url 'cronos_conversas' %}");
-            if (!response.ok) throw new Error('Erro ao carregar conversas');
-            const data = await response.json();
-            const conversas = data.conversas || [];
+function getCookie(name){for(const c of document.cookie.split(';')){const t=c.trim();if(t.startsWith(name+'='))return decodeURIComponent(t.slice(name.length+1));}return null;}
 
-            if (conversas.length === 0) {
-                lista.innerHTML = '<p class="historico-vazio">Nenhuma conversa ainda.</p>';
-            } else {
-                lista.innerHTML = conversas.map(conv => {
-                    const dt   = new Date(conv.data_inicio);
-                    const hora = dt.toLocaleTimeString('pt-PT', { hour:'2-digit', minute:'2-digit' });
-                    const data = dt.toLocaleDateString('pt-PT');
-                    const cls  = conv.ativa ? 'historico-item ativa' : 'historico-item';
-                    const badge = conv.ativa ? '<span class="hist-badge">🔵 activa</span>' : '';
-                    return `
-                        <div class="${cls}" onclick="carregarConversa(${conv.id})">
-                            <div><strong>${conv.titulo}</strong>${badge}</div>
-                            <div class="hist-hora">🕐 ${data} ${hora} · ${conv.num_mensagens} msg</div>
-                        </div>`;
-                }).join('');
-            }
-        } catch (err) {
-            lista.innerHTML = '<p class="historico-vazio">❌ Erro ao carregar conversas</p>';
-            console.error(err);
-        }
-    }
+async function enviarMensagem(){
+    const input=document.getElementById('messageInput');const msg=input.value.trim();if(!msg)return;
+    const box=document.getElementById('chatMessages');const btnEnviar=document.getElementById('btnEnviar');
+    box.querySelector('.suggestion-chips')?.remove();
+    adicionarMensagemUser(msg);
+    input.value='';input.disabled=true;btnEnviar.disabled=true;
+    contadorMensagens++;atualizarContadores();mostrarThinking();
+    try{
+        const res=await fetch('{% url "perguntar" %}',{method:'POST',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+            body:JSON.stringify({pergunta:msg})});
+        const data=await res.json();
+        document.getElementById('typing')?.remove();
+        res.ok?adicionarMensagemBot(data.resposta,data.chart||null)
+              :adicionarMensagemBot(`**Erro:** ${data.erro||'Erro desconhecido'}`);
+    }catch(e){document.getElementById('typing')?.remove();adicionarMensagemBot('**Erro de conexão.** Verifica se o servidor está activo.');}
+    input.disabled=false;btnEnviar.disabled=false;input.focus();
+}
 
-    function fecharHistorico() {
-        document.getElementById('historicoPanel').classList.remove('aberto');
-        document.getElementById('historicoOverlay').classList.remove('aberto');
-    }
+function enviarSugestao(texto){document.getElementById('messageInput').value=texto;enviarMensagem();}
 
-    async function carregarConversa(conversa_id) {
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px;"><span class="hist-spinner"></span> A carregar conversa…</p>';
-        fecharHistorico();
+function mensagemBoasVindas(){
+    const box=document.getElementById('chatMessages');
+    box.innerHTML='';contadorMensagens=0;atualizarContadores();
 
-        try {
-            const url = "{% url 'cronos_conversa' conversa_id=999 %}".replace('999', conversa_id);
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Erro ao carregar conversa');
-            const data = await response.json();
-            const mensagens = data.mensagens || [];
+    adicionarMensagemBot(
+        '## Bom dia. Sou o CRONOS.\n\n' +
+        'Estou ligado directamente ao banco de dados do **Artemis ERP**.\n\n' +
+        '---\n\n' +
+        '### O que posso fazer por si\n\n' +
+        '**Recursos Humanos**\n' +
+        'Funcionários, salários, férias, faltas, avaliações e equipas\n\n' +
+        '**Stock e Inventário**\n' +
+        'Níveis actuais, movimentações, alertas de ruptura e fornecedores\n\n' +
+        '**Recrutamento**\n' +
+        'Vagas abertas, pipeline de candidatos e resultados do processo selectivo\n\n' +
+        '---\n\n' +
+        '*Faça uma pergunta directa ou seleccione uma consulta rápida no painel lateral.*'
+    );
 
-            chatMessages.innerHTML = '';
-            contadorMensagens = 0;
+    const chips=document.createElement('div');chips.className='suggestion-chips';
+    chips.innerHTML=SUGESTOES.map(s=>`<div class="chip" onclick="enviarSugestao('${s.texto.replace(/'/g,"\\'")}'">${s.label}</div>`).join('');
+    box.appendChild(chips);
+}
 
-            if (mensagens.length === 0) {
-                chatMessages.innerHTML = '<p style="text-align:center;color:#aaa;padding:20px;">Nenhuma mensagem nesta conversa.</p>';
-            } else {
-                mensagens.forEach(msg => {
-                    if (msg.tipo === 'user') {
-                        const userDiv = document.createElement('div');
-                        userDiv.className = 'message user';
-                        userDiv.innerHTML = `
-                            <div class="message-avatar">U</div>
-                            <div class="message-content">
-                                <p>${msg.conteudo.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-                            </div>`;
-                        chatMessages.appendChild(userDiv);
-                    } else {
-                        adicionarMensagemBot(msg.conteudo);
-                    }
-                    contadorMensagens++;
-                });
-            }
-            document.getElementById('contadorMsgs').textContent = contadorMensagens;
-            document.getElementById('contadorHist').textContent = `${contadorMensagens} msg`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+async function novaSessao(){
+    await fetch('{% url "cronos_limpar" %}',{method:'POST',headers:{'X-CSRFToken':getCookie('csrftoken')}}).catch(()=>{});
+    mensagemBoasVindas();
+}
 
-        } catch (err) {
-            chatMessages.innerHTML = '<p style="text-align:center;color:#f00;padding:20px;">❌ Erro ao carregar conversa</p>';
-            console.error(err);
-        }
-    }
-
-    /* ══════════════════════════════════════════════
-       ADICIONAR MENSAGEM DO BOT
-       Extrai <chart>JSON</chart> do markdown antes de renderizar
-    ══════════════════════════════════════════════ */
-    function adicionarMensagemBot(textoMarkdown, chartData = null) {
-        const chatMessages = document.getElementById('chatMessages');
-
-        /* Extrair blocos <chart>...</chart> embutidos no texto (fallback) */
-        const chartRegex = /<chart>([\s\S]*?)<\/chart>/gi;
-        const chartsEmbutidos = [];
-        let match;
-        while ((match = chartRegex.exec(textoMarkdown)) !== null) {
-            chartsEmbutidos.push(match[1].trim());
-        }
-        /* Remover tags <chart> do markdown */
-        const mdLimpo = textoMarkdown.replace(/<chart>[\s\S]*?<\/chart>/gi, '').trim();
-
-        const msgDiv = document.createElement('div');
-        msgDiv.className = 'message ai';
-        msgDiv.style.position = 'relative';
-
-        const avatar = document.createElement('div');
-        avatar.className = 'message-avatar';
-        avatar.textContent = 'CN';
-
-        const content = document.createElement('div');
-        content.className = 'message-content';
-        content.innerHTML = marked.parse(mdLimpo);
-
-        /* Renderizar gráfico: preferência ao chartData da API, fallback às tags embutidas */
-        if (chartData) {
-            renderizarGrafico(JSON.stringify(chartData), content);
-        } else {
-            chartsEmbutidos.forEach(jsonStr => renderizarGrafico(jsonStr, content));
-        }
-
-        /* Botão Exportar .docx — passa chartData em closure */
-        const exportBtn = document.createElement('button');
-        exportBtn.className = 'export-btn';
-        exportBtn.innerHTML = `${ICON_EXPORT} Exportar`;
-        exportBtn.title = 'Exportar como Word (.docx)';
-        exportBtn.addEventListener('click', () => exportarDocx(mdLimpo, exportBtn, chartData));
-
-        /* Botão Copiar */
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'copy-btn';
-        copyBtn.innerHTML = `${ICON_COPY} Copiar`;
-        copyBtn.title = 'Copiar resposta';
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(mdLimpo).then(() => {
-                copyBtn.innerHTML = `${ICON_CHECK} Copiado!`;
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.innerHTML = `${ICON_COPY} Copiar`;
-                    copyBtn.classList.remove('copied');
-                }, 2000);
-            });
-        });
-
-        msgDiv.appendChild(avatar);
-        msgDiv.appendChild(content);
-        msgDiv.appendChild(exportBtn);
-        msgDiv.appendChild(copyBtn);
-        chatMessages.appendChild(msgDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-    /* ══════════════════════════════════════════════
-       EXPORTAR .docx
-    ══════════════════════════════════════════════ */
-    async function exportarDocx(textoMarkdown, btn, chartData = null) {
-        const matchTitulo = textoMarkdown.match(/^#{1,3}\s+(.+)/m);
-        const titulo = matchTitulo
-            ? matchTitulo[1].replace(/\*\*/g,'').trim()
-            : 'Relatório CRONOS';
-
-        btn.innerHTML = `${ICON_EXPORT} A gerar…`;
-        btn.classList.add('loading');
-        btn.disabled = true;
-
-        try {
-            const response = await fetch("{% url 'cronos_exportar' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ conteudo: textoMarkdown, titulo, chart: chartData })
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                alert(`Erro ao exportar: ${err.erro || 'Erro desconhecido'}`);
-                return;
-            }
-
-            const blob = await response.blob();
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href     = url;
-            a.download = `${titulo.replace(/\s+/g,'_').substring(0,50)}.docx`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-
-            btn.innerHTML = `${ICON_CHECK} Exportado!`;
-            btn.classList.remove('loading');
-            btn.classList.add('done');
-            setTimeout(() => {
-                btn.innerHTML = `${ICON_EXPORT} Exportar`;
-                btn.classList.remove('done');
-                btn.disabled = false;
-            }, 2500);
-
-        } catch (err) {
-            alert('Erro de conexão ao exportar.');
-            console.error(err);
-            btn.innerHTML = `${ICON_EXPORT} Exportar`;
-            btn.classList.remove('loading');
-            btn.disabled = false;
-        }
-    }
-
-    /* ══════════════════════════════════════════════
-       CSRF
-    ══════════════════════════════════════════════ */
-    function getCookie(name) {
-        for (const c of document.cookie.split(';')) {
-            const t = c.trim();
-            if (t.startsWith(name + '='))
-                return decodeURIComponent(t.slice(name.length + 1));
-        }
-        return null;
-    }
-
-    /* ══════════════════════════════════════════════
-       ENVIAR MENSAGEM
-    ══════════════════════════════════════════════ */
-    async function enviarMensagem() {
-        const input    = document.getElementById('messageInput');
-        const mensagem = input.value.trim();
-        if (!mensagem) return;
-
-        const chatMessages = document.getElementById('chatMessages');
-        const btnEnviar    = document.getElementById('btnEnviar');
-
-        /* Remove chips de sugestão se ainda existirem */
-        chatMessages.querySelector('.suggestion-chips')?.remove();
-
-        const userDiv = document.createElement('div');
-        userDiv.className = 'message user';
-        userDiv.innerHTML = `
-            <div class="message-avatar">U</div>
-            <div class="message-content">
-                <p>${mensagem.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-            </div>`;
-        chatMessages.appendChild(userDiv);
-
-        input.value = '';
-        input.disabled = true;
-        btnEnviar.disabled = true;
-        contadorMensagens++;
-        document.getElementById('contadorMsgs').textContent = contadorMensagens;
-        document.getElementById('contadorHist').textContent = `${contadorMensagens} msg`;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        /* Indicador de digitação */
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message ai';
-        typingDiv.id = 'typing';
-        typingDiv.innerHTML = `
-            <div class="message-avatar">CN</div>
-            <div class="message-content">
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            </div>`;
-        chatMessages.appendChild(typingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        try {
-            const response = await fetch('{% url "perguntar" %}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCookie('csrftoken')
-                },
-                body: JSON.stringify({ pergunta: mensagem })
-            });
-
-            const data = await response.json();
-            document.getElementById('typing')?.remove();
-
-            if (response.ok) {
-                adicionarMensagemBot(data.resposta, data.chart || null);
-            } else {
-                adicionarMensagemBot(`❌ **Erro:** ${data.erro || 'Erro desconhecido'}`);
-            }
-        } catch (err) {
-            document.getElementById('typing')?.remove();
-            adicionarMensagemBot('❌ **Erro de conexão.** Verifica se o servidor está activo e tenta novamente.');
-            console.error(err);
-        }
-
-        input.disabled = false;
-        btnEnviar.disabled = false;
-        input.focus();
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    /* ══════════════════════════════════════════════
-       SUGESTÕES
-    ══════════════════════════════════════════════ */
-    function enviarSugestao(texto) {
-        document.getElementById('messageInput').value = texto;
-        enviarMensagem();
-    }
-
-    /* ══════════════════════════════════════════════
-       BOAS-VINDAS
-    ══════════════════════════════════════════════ */
-    function mensagemBoasVindas() {
-        const chatMessages = document.getElementById('chatMessages');
-        chatMessages.innerHTML = '';
-        contadorMensagens = 0;
-        document.getElementById('contadorMsgs').textContent = '0';
-        document.getElementById('contadorHist').textContent = '0 msg';
-
-        adicionarMensagemBot(
-            '**Olá! Sou o CRONOS 👋**\n\n' +
-            'Estou ligado directamente à base de dados do **Artemis ERP**.\n\n' +
-            'Posso ajudar com:\n' +
-            '- 📊 Relatórios de RH, análise salarial e **gráficos automáticos**\n' +
-            '- 👤 Informações sobre funcionários e cargos\n' +
-            '- 🏢 Estrutura de departamentos\n' +
-            '- 💡 Insights e recomendações\n\n' +
-            'Como posso ajudar hoje?'
-        );
-
-        const chips = document.createElement('div');
-        chips.className = 'suggestion-chips';
-        chips.innerHTML = SUGESTOES.map(s =>
-            `<div class="chip" onclick="enviarSugestao('${s.texto.replace(/'/g,"\\'")}')">
-                ${s.icon} ${s.label}
-            </div>`
-        ).join('');
-        chatMessages.appendChild(chips);
-    }
-
-    /* ══════════════════════════════════════════════
-       NOVA SESSÃO
-       Fecha a conversa actual no servidor e limpa o chat.
-       O histórico de conversas anteriores é PRESERVADO.
-    ══════════════════════════════════════════════ */
-    async function novaSessao() {
-        /* Fecha a conversa activa no servidor */
-        await fetch('{% url "cronos_limpar" %}', {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-        }).catch(() => {});  /* ignora falhas de rede silenciosamente */
-
-        mensagemBoasVindas();
-    }
-
-    /* ══════════════════════════════════════════════
-       INICIAR
-    ══════════════════════════════════════════════ */
-    document.addEventListener('DOMContentLoaded', mensagemBoasVindas);
+document.addEventListener('DOMContentLoaded',mensagemBoasVindas);
 </script>
 {% endblock %}
