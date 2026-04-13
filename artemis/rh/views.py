@@ -739,10 +739,13 @@ def atualizar_avaliacao(request):
     try:
         data = json.loads(request.body)
         funcionario_id = data.get('id')
-        nova_nota = data.get('nota')
+        nova_nota = int(data.get('nota', 0))
+        
+        if not (0 <= nova_nota <= 100):
+            return JsonResponse({'sucesso': False, 'erro': 'A nota deve estar entre 0 e 100'}, status=400)
         
         funcionario = Funcionarios.objects.get(f_id=funcionario_id)
-        funcionario.avaliacao = nova_nota
+        funcionario.avaliacao = str(nova_nota)
         funcionario.save()
         
         return JsonResponse({'sucesso': True, 'mensagem': 'Avaliação atualizada!'})

@@ -867,19 +867,70 @@
 
     <!-- ══ TAB: AVALIAÇÕES ══ -->
     <div class="tab-content" id="avaliacoes">
-        <div class="grid grid-2">
+        <div class="grid mb-2">
             <div class="card">
-                <div class="card-header"><h3>Performance Média por Departamento</h3></div>
-                <div style="padding:16px"><canvas id="deptPerformanceChart" height="260"></canvas></div>
-            </div>
-            <div class="card">
-                <div class="card-header"><h3>Distribuição de Avaliações</h3></div>
-                <div style="padding:16px"><canvas id="ratingDistChart" height="260"></canvas></div>
+                <div class="card-header">
+                    <h3><span class="material-icons-sharp">analytics</span> Média de Desempenho por Departamento</h3>
+                </div>
+                <div style="padding:20px; height: 300px;">
+                    <canvas id="deptPerformanceChart"></canvas>
+                </div>
             </div>
         </div>
+
         <div class="card mt-3">
-            <div class="card-header"><h3>Avaliações Recentes</h3></div>
-            <div id="evaluationsList" style="padding:16px"></div>
+            <div class="card-header">
+                <h3><span class="material-icons-sharp">grading</span> Atualização Rápida de Notas (0-100)</h3>
+                <div style="display:flex;gap:10px">
+                    <input type="text" class="form-control btn-sm" id="searchAvaliacao" placeholder="Filtrar funcionário..." oninput="filtrarAvaliacoes()">
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table" id="tabelaAvaliacoes">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Departamento</th>
+                            <th>Nota Atual</th>
+                            <th style="width: 250px;">Nova Avaliação (0-100)</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in todos_funcionarios %}
+                        <tr data-nome="{{ f.f_nome|lower }}">
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    <div class="avatar" style="background:var(--bg-hover); color:var(--text-primary); border:1px solid var(--border)">
+                                        {{ f.f_nome|first }}
+                                    </div>
+                                    <div style="font-weight:600">{{ f.f_nome }}</div>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-gray">{{ f.departamento.nome_dpt|default:"Geral" }}</span></td>
+                            <td id="nota-display-{{ f.f_id }}">
+                                <span class="badge {% if f.avaliacao|add:0 >= 80 %}badge-success{% elif f.avaliacao|add:0 >= 50 %}badge-warning{% else %}badge-danger{% endif %}">
+                                    {{ f.avaliacao|default:"0" }}%
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <input type="range" class="form-range" id="input-range-{{ f.f_id }}" value="{{ f.avaliacao|default:0 }}" min="0" max="100" 
+                                           oninput="document.getElementById('input-val-{{ f.f_id }}').value = this.value" style="flex:1; accent-color: var(--color-primary);">
+                                    <input type="number" class="form-control" id="input-val-{{ f.f_id }}" value="{{ f.avaliacao|default:0 }}" min="0" max="100" 
+                                           oninput="document.getElementById('input-range-{{ f.f_id }}').value = this.value" style="width:65px; text-align:center;">
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-primary" onclick="salvarNotaRapida({{ f.f_id }})">
+                                    <span class="material-icons-sharp">save</span>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -1826,27 +1877,11 @@ function mudarTab(tabName, e) {
 Chart.defaults.color='#9ab0c8';
 Chart.defaults.borderColor='rgba(255,255,255,0.07)';
 
-function renderEvaluations() {
-    const evals=[
-        {employee:'Ana Silva',department:'Vendas',score:9.2},
-        {employee:'Carlos Mendes',department:'TI',score:8.8},
-    ];
-    document.getElementById('evaluationsList').innerHTML=evals.map(e=>`
-        <div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                <div><div style="font-weight:600">${e.employee}</div><div class="text-muted fs-sm">${e.department}</div></div>
-                <div style="font-size:1.5rem;font-weight:800;color:var(--color-success)">${e.score}</div>
-            </div>
-            <div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Liderança</span><span>9.0</span></div><div class="progress-bar"><div class="progress-fill success" style="width:90%"></div></div></div>
-            <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>Comunicação</span><span>8.5</span></div><div class="progress-bar"><div class="progress-fill primary" style="width:85%"></div></div></div>
-        </div>`).join('');
-}
-
-
 let evalChartObj = null;
 function initEvaluationCharts() {
-    const ctx = document.getElementById('deptEvaluationChart');
-    if(!ctx || evalChartObj) return;
+    const ctx = document.getElementById('deptPerformanceChart');
+    if(!ctx) return;
+    if(evalChartObj) evalChartObj.destroy();
 
     const labels = {{ dept_labels_json|safe }};
     const data = {{ dept_data_json|safe }};
@@ -1856,19 +1891,19 @@ function initEvaluationCharts() {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Média de Avaliação',
+                label: 'Média (%)',
                 data: data,
-                backgroundColor: 'rgba(79, 110, 247, 0.6)',
-                borderColor: 'var(--color-primary)',
-                borderWidth: 1,
-                borderRadius: 5
+                backgroundColor: labels.map((_, i) => corAvatar(i) + 'cc'),
+                borderColor: labels.map((_, i) => corAvatar(i)),
+                borderWidth: 2,
+                borderRadius: 8
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' } },
+                y: { beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v + '%' } },
                 x: { grid: { display: false } }
             },
             plugins: { legend: { display: false } }
@@ -1876,28 +1911,37 @@ function initEvaluationCharts() {
     });
 }
 
-function filtrarTabelaAvaliacao(val) {
-    const q = val.toLowerCase();
-    document.querySelectorAll('#tabelaAvaliacao tbody tr').forEach(tr => {
+function filtrarAvaliacoes() {
+    const q = document.getElementById('searchAvaliacao').value.toLowerCase();
+    document.querySelectorAll('#tabelaAvaliacoes tbody tr').forEach(tr => {
         tr.style.display = tr.dataset.nome.includes(q) ? '' : 'none';
     });
 }
 
 function salvarNotaRapida(id) {
-    const nota = document.getElementById(`nota-${id}`).value;
+    const nota = document.getElementById(`input-val-${id}`).value;
     
     fetch('/rh/api/atualizar-avaliacao/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': getCookie('csrftoken')
         },
         body: JSON.stringify({ id: id, nota: nota })
     })
     .then(r => r.json())
     .then(data => {
-        if(data.sucesso) toast('Avaliação atualizada!');
-        else toast(data.erro, 'error');
+        if(data.sucesso) {
+            toast('Avaliação atualizada!');
+            // Atualizar o badge visual de nota atual
+            const badge = document.querySelector(`#nota-display-${id} .badge`);
+            badge.textContent = nota + '%';
+            badge.className = `badge ${nota >= 80 ? 'badge-success' : nota >= 50 ? 'badge-warning' : 'badge-danger'}`;
+            // Opcional: recarregar o gráfico se quiser ver o impacto imediato
+            // location.reload(); 
+        } else {
+            toast(data.erro, 'error');
+        }
     });
 }
 function renderTraining(){

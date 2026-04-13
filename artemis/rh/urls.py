@@ -19,5 +19,6 @@ urlpatterns = [
     path('api/processos/<int:candidato_id>/', views.carregarProcessosSelectivos, name="carregarProcessosSelectivos"),
     path('baixar-cv/<int:candidato_id>/', views.baixarCV, name="baixarCV"),
     path('debug-cv/<int:candidato_id>/', views.debugCV, name="debugCV"),
+    path('api/atualizar-avaliacao/', views.atualizar_avaliacao, name="atualizar_avaliacao"),
    ]
 
