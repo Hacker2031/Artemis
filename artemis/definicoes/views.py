@@ -1,19 +1,34 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.contrib.auth import get_user_model
 from users.models import Users
+from funcionarios.models import Funcionarios
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
 User = get_user_model()
+
+
+context = {
+    
+}
 
 @login_required(login_url="loginPage")
 def sistemaPage(request):
     if request.user.tipo not in ['admin', 'Programador']:
         messages.error(request, 'Acesso negado.')
-        return redirect('Dashboard')
-    users = Users.objects.all().order_by('-date_joined')
-    return render(request, "definicoes/definicoes.html", {'users': users})
+        return redirect('agente-ia')
+    
+    # Otimização: select_related para carregar os dados do funcionário e cargo de uma vez
+    users = Users.objects.all().select_related('f_id').order_by('-date_joined')
+    
+    # Procurar todos os funcionários para preencher o dropdown
+    funcionarios = Funcionarios.objects.all().select_related('cargo').order_by('f_nome')
+    
+    return render(request, "definicoes/definicoes.html", {
+        'users': users, 
+        'funcionarios': funcionarios
+    })
 
 @csrf_exempt
 @login_required(login_url="loginPage")
@@ -33,10 +48,10 @@ def create_user(request):
             nivel = request.POST.get('nivel', 'operario')
             
             if password1 != password2:
-                return JsonResponse({'error': 'As senhas não coincidem.'})
+                messages.error(request, "As senhas não coincidem.")
             
             if Users.objects.filter(username=username).exists():
-                return JsonResponse({'error': 'Usuário já existe.'})
+                messages.error(request, "Utilizador já existe")
             
             user = Users.objects.create_user(
                 username=username,
@@ -52,22 +67,13 @@ def create_user(request):
             if f_id_str:
                 try:
                     f_id = int(f_id_str)
-                    from funcionarios.models import Funcionarios
                     funcionario = Funcionarios.objects.get(f_id=f_id)
                     user.f_id = funcionario
                     user.save()
                 except (ValueError, Funcionarios.DoesNotExist):
                     pass  # Ignore invalid f_id
             
-            return JsonResponse({'success': True, 'user': {
-                'username': user.username,
-                'name': f"{user.first_name} {user.last_name}".strip(),
-                'email': user.email,
-                'tipo': user.get_tipo_display(),
-                'nivel': user.get_nivel_display(),
-                'f_id': user.f_id.f_id if user.f_id else None
-            }})
+            messages.success(request, 'Utilizador criado com sucesso.')
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    
-    return JsonResponse({'error': 'Método inválido.'}, status=405)
+             messages.error(request, f"Erro ao registar Utilizador: {e}")
+    return redirect('sistema')

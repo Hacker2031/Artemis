@@ -84,3 +84,8 @@ E para qualquer outro dispositivo através do endereço IP do host, apontando pa
 
 ##  Módulo Cronos (IA)
 Para que as funcionalidades de IA funcionem corretamente, certifique-se de que a sua `GOOGLE_API_KEY` está configurada no arquivo `.env` na raiz do projeto.
+
+
+***IMPORTANTE!!!***
+
+Este projecto e as suas dependências são, na sua integridade, propriedade da *WAGYUU Squad*. Qualquer uso sem a devida autorização dos proprietários poderá resultar em graves confrontos legislativos. Obrigado.

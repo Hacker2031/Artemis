@@ -2,45 +2,56 @@
 {% load static %}
 
 {% block extra_css %}
-        .sistema-container { max-width: 1200px; margin: 0 auto; }
-        .sistema-tabs { display: flex; background: var(--color-white); border-radius: var(--border-radius-2) var(--border-radius-2) 0 0; box-shadow: var(--box-shadow-sm); overflow: hidden; }
-        .sistema-tab { flex: 1; padding: 1rem 0; text-align: center; background: none; border: none; font-weight: 500; cursor: pointer; transition: var(--transition-all); color: var(--color-dark-variant); position: relative; }
-        .sistema-tab.active { background: var(--color-primary); color: white; }
-        .sistema-tab:not(.active):hover { background: rgba(108,155,207,0.1); }
-        .tab-content { display: none; background: var(--color-white); border-radius: 0 0 var(--border-radius-2) var(--border-radius-2); box-shadow: var(--box-shadow); padding: 2rem; }
-        .tab-content.active { display: block; }
+        .sistema-container { max-width: 1200px; margin: 0 auto; padding: 1.5rem 0; }
+        .sistema-tabs { display: flex; background: var(--color-white); border-radius: var(--border-radius-2) var(--border-radius-2) 0 0; box-shadow: var(--box-shadow); overflow: hidden; border-bottom: 2px solid var(--color-light); }
+        .sistema-tab { flex: 1; padding: 1rem 0; text-align: center; background: none; border: none; font-weight: 600; cursor: pointer; transition: var(--transition-all); color: var(--color-dark-variant); position: relative; font-size: 0.95rem; }
+        .sistema-tab.active { color: var(--color-primary); border-bottom: 3px solid var(--color-primary); margin-bottom: -2px; }
+        .sistema-tab:not(.active):hover { background: var(--color-light); color: var(--color-dark); }
+        .tab-content { display: none; background: var(--color-white); border-radius: 0 0 var(--border-radius-2) var(--border-radius-2); box-shadow: var(--box-shadow); padding: 2rem; border-top: none; }
+        .tab-content.active { display: block; margin-top: 0; }
         
         /* Form styles */
-        .user-form-card { background: linear-gradient(135deg, rgba(108,155,207,0.05), rgba(27,156,133,0.05)); border: 1px solid rgba(108,155,207,0.2); padding: 2rem; border-radius: var(--border-radius-2); margin-bottom: 2rem; }
+        .user-form-card { background-color: var(--color-white); padding: 2rem; border-radius: var(--card-border-radius); box-shadow: var(--box-shadow-sm); margin-bottom: 2rem; border: 1px solid var(--color-light); }
+        .user-form-card h3 { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.5rem; color: var(--color-dark); font-size: 1.2rem; }
+        .user-form-card h3 .material-symbols-outlined { color: var(--color-primary); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-weight: 500; margin-bottom: 0.5rem; color: var(--color-dark); }
-        .form-group input, .form-group select { padding: 0.75rem 1rem; border: 2px solid var(--color-light); border-radius: var(--border-radius-1); background: white; transition: var(--transition-all); font-size: 0.95rem; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(108,155,207,0.1); }
-        .btn-primary { background: linear-gradient(135deg, var(--color-primary), #5a8bc5); color: white; border: none; padding: 1rem 2rem; border-radius: var(--border-radius-1); font-weight: 600; cursor: pointer; transition: var(--transition-all); font-size: 1rem; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--box-shadow); }
+        .form-group input, .form-group select { padding: 0.75rem 1rem; border: 1px solid var(--color-dark-variant); border-radius: var(--border-radius-1); background: var(--color-background); color: var(--color-dark); transition: var(--transition-all); font-size: 0.95rem; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(108,155,207,0.3); background: var(--color-light); }
+        .form-group small { color: var(--color-dark-variant); font-size: 0.8rem; margin-top: 0.3rem; }
+        .btn-primary { background-color: var(--color-primary); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: var(--border-radius-1); font-weight: 600; cursor: pointer; transition: var(--transition-all); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-primary:hover { background-color: #5588bb; box-shadow: var(--box-shadow-sm); }
         .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         
         /* Users table */
         .users-table-container { overflow-x: auto; }
-        .users-table { width: 100%; border-collapse: collapse; background: white; border-radius: var(--border-radius-1); overflow: hidden; box-shadow: var(--box-shadow-sm); }
-        .users-table th { background: var(--color-primary); color: white; padding: 1rem; text-align: left; font-weight: 600; }
-        .users-table td { padding: 1rem; border-bottom: 1px solid var(--color-light); }
-        .users-table tr:hover { background: rgba(108,155,207,0.05); }
-        .badge { padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.8rem; font-weight: 500; }
+        .users-table { width: 100%; border-collapse: collapse; background: var(--color-white); border-radius: var(--card-border-radius); overflow: hidden; box-shadow: var(--box-shadow); }
+        .users-table th { background: var(--color-light); color: var(--color-dark-variant); padding: 1rem; text-align: left; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; }
+        .users-table td { padding: 1rem; border-bottom: 1px solid var(--color-light); color: var(--color-dark); font-size: 0.85rem; }
+        .users-table tr:last-child td { border-bottom: none; }
+        .users-table tr:hover { background: var(--color-light); }
+        .users-table strong { color: var(--color-primary); }
+        .badge { padding: 0.3rem 0.8rem; border-radius: var(--border-radius-1); font-size: 0.75rem; font-weight: 600; }
         .badge-tipo { background: rgba(27,156,133,0.2); color: var(--color-success); }
         .badge-nivel { background: rgba(247,208,96,0.2); color: var(--color-warning); }
-        .no-users { text-align: center; padding: 3rem; color: var(--color-dark-variant); }
+        .no-users { text-align: center; padding: 3rem; color: var(--color-dark-variant); background: var(--color-white); border-radius: var(--card-border-radius); box-shadow: var(--box-shadow-sm); margin-top: 1.5rem; }
+        .no-users h4 { color: var(--color-dark); margin-top: 1rem; }
+        .no-users .material-symbols-outlined { color: var(--color-dark-variant); }
         
         /* Integracoes */
-        .integration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        .integration-card { background: linear-gradient(135deg, rgba(108,155,207,0.08), rgba(27,156,133,0.08)); border: 1px solid rgba(108,155,207,0.2); border-radius: var(--border-radius-2); padding: 1.5rem; text-align: center; transition: var(--transition-all); }
+        .integration-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .integration-card { background-color: var(--color-white); border: 1px solid var(--color-light); border-radius: var(--card-border-radius); padding: 1.5rem; text-align: center; transition: var(--transition-all); box-shadow: var(--box-shadow-sm); }
         .integration-card:hover { transform: translateY(-5px); box-shadow: var(--box-shadow); }
+        .integration-card h4 { color: var(--color-dark); margin-bottom: 0.5rem; }
+        .integration-card p { color: var(--color-dark-variant); font-size: 0.85rem; margin-bottom: 1rem; }
+        .integration-card .btn-secondary { background-color: var(--color-light); color: var(--color-dark); padding: 0.6rem 1.2rem; font-size: 0.85rem; border-radius: var(--border-radius-1); }
+        .integration-card .btn-secondary:hover { background-color: var(--color-dark-variant); color: var(--color-white); }
         
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
         .modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background: var(--color-white); padding: 2rem; border-radius: var(--border-radius-2); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: var(--box-shadow); }
+        .modal-content { background: var(--color-white); padding: 2rem; border-radius: var(--card-border-radius); max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: var(--box-shadow); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
         .close-modal { cursor: pointer; font-size: 1.5rem; color: var(--color-dark-variant); }
         
@@ -114,7 +125,7 @@
                         <select name="f_id">
                             <option value="">-- Selecione um Funcionário --</option>
                             {% for func in funcionarios %}
-                                <option value="{{ func.f_id }}">{{ func.f_nome }} (ID: {{ func.f_id }})</option>
+                                <option value="{{ func.f_id }}">{{ func.f_nome }}{% if func.cargo %} — {{ func.cargo }}{% endif %}</option>
                             {% endfor %}
                         </select>
                         <small>Escolha o funcionário que utilizará esta conta</small>
@@ -210,7 +221,13 @@
     </div>
 </div>
 {% endblock %}
+{% block messages %}
+{% for message in messages %}
 
+<script id="message"> alert("{{ message }}")</script>
+
+{% endfor %}
+{% endblock messages %}
 {% block scripts %}
 <script>
 let currentUsers = {{ users|safe }}; // Initial users for client-side
@@ -245,7 +262,7 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
             showNotification('Sucesso!', 'Utilizador criado com sucesso.', 'success');
             e.target.reset();
             addUserToTable(data.user);
-            updateCount();
+            updateCount(1); // Increment count for new user
         } else {
             showNotification('Erro!', data.error || 'Erro desconhecido.', 'error');
         }
@@ -260,22 +277,23 @@ document.getElementById('userForm').addEventListener('submit', async (e) => {
 // Add user to table
 function addUserToTable(user) {
     const tbody = document.getElementById('usersTableBody');
-    const row = tbody.insertRow(0);
+    const row = tbody.insertRow(); // Add to the end
     row.innerHTML = `
         <td><strong>${user.username}</strong></td>
         <td>${user.name || '—'}</td>
         <td>${user.email || '—'}</td>
-        <td><span class="badge badge-tipo">${user.tipo}</span></td>
-        <td><span class="badge badge-nivel">${user.nivel}</span></td>
+        <td><span class="badge badge-tipo">${user.tipo_display}</span></td>
+        <td><span class="badge badge-nivel">${user.nivel_display}</span></td>
         <td>${user.f_id || '—'}</td>
-        <td>${new Date().toLocaleString('pt-PT')}</td>
+        <td>${new Date(user.date_joined).toLocaleString('pt-PT', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
     `;
 }
 
 // Update count
-function updateCount() {
-    const countEl = document.querySelector('h3:has(span[title="people"])');
-    if (countEl) countEl.innerHTML = `<span class="material-symbols-outlined">people</span> Utilizadores Cadastrados (${document.querySelectorAll('#usersTableBody tr').length})`;
+function updateCount(change = 0) {
+    const countElement = document.querySelector('.users-table-container h3');
+    let currentCount = parseInt(countElement.textContent.match(/\((\d+)\)/)[1]);
+    countElement.innerHTML = `<span class="material-symbols-outlined">people</span> Utilizadores Cadastrados (${currentCount + change})`;
 }
 
 // Notification modal

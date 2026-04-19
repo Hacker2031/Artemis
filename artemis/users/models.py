@@ -42,7 +42,6 @@ class Users(AbstractUser):
         verbose_name='Nível',
     )
 
-    # ── helpers de permissão ──────────────────────────────────────────────────
 
     @property
     def is_programador(self):

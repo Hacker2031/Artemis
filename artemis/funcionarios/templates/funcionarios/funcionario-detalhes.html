@@ -122,10 +122,12 @@
                 <span class="material-icons-sharp">arrow_back</span>
                 Voltar
             </button>
+            {% if request.user.can_edit_funcionarios%}
             <button class="btn btn-primary" onclick="window.location.href='{% url 'EditarFuncionario' funcionario.f_id %}'">
                 <span class="material-icons-sharp">edit</span>
                 Editar
             </button>
+            {% endif %}
         </div>
     </div>
 
@@ -235,4 +237,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
+{% block scripts%}
+<script src="{% static "js/index.js" %}"></script>
+<script src="{% static "js/artemis-utils.js" %}"></script>
 {% endblock %}
