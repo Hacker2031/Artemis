@@ -32,4 +32,3 @@ def criar_controlo_funcionario(sender, instance, created, **kwargs):
                 ferias_vencidas=0,
                 ultimo_ano_ferias=date.today().year,
             )
-            print(f"✓ Registo de Controlo criado automaticamente para: {instance.f_nome}")

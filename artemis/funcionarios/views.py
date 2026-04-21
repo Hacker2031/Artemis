@@ -267,17 +267,18 @@ def salvarFuncionario(request):
             novo_funcionario.save()
 
             # Criar registo de controlo apenas para funcionários novos
-            if not id:
-                Controlo.objects.create(
-                    fun_id=novo_funcionario,
-                    numero_faltas=0,
-                    numero_presencas=0,
-                    inicio_carreira=novo_funcionario.data_contratacao,
-                    fim_carreira=None,
-                    dias_acomulados=0,
-                    dias_disponiveis=22,
-                    dias_ferias=22,
-                )
+            
+            # if not id:
+            #     Controlo.objects.create(
+            #         fun_id=novo_funcionario,
+            #         numero_faltas=0,
+            #         numero_presencas=0,
+            #         inicio_carreira=novo_funcionario.data_contratacao,
+            #         fim_carreira=None,
+            #         dias_acomulados=0,
+            #         dias_disponiveis=22,
+            #         dias_ferias=22,
+            #     )
 
             # Se a promoção veio de um candidato, marcar o candidato como promovido
             candidato_id = request.POST.get('candidato_origem_id')
