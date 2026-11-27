@@ -168,4 +168,5 @@ xxhash==3.6.0
 yarl==1.23.0
 zstandard==0.25.0
 python-docx   
-python-docx matplotlib
+python-docx
+matplotlib
